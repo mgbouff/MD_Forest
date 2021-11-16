@@ -18,6 +18,8 @@ library(janitor)
 # Read in State data
 state_tab <- read_excel("tabulated_forest.xlsx", sheet = 1)
 
+# Read in County data
+county_tab <- read_excel("tabulated_forest.xlsx", sheet = 2)
 ```
 ### Forested Area at the State Level
 ```{r}
@@ -25,7 +27,7 @@ state_tab <- read_excel("tabulated_forest.xlsx", sheet = 1)
 # Maryland Statewide Tabulated Forest Cover
 #---------------------------------------
 
-# Wrangle state data
+# Wrangle state data (tidy, get rid of non-forested, convert to acres)
 state_clean <- state_tab %>% 
   clean_names()%>% 
   filter(reclassified_value == "1") %>%
@@ -41,7 +43,29 @@ ggplot(data = state_clean, aes(x = year, y = acres))+
   theme_minimal()
 
 # State change between time periods
+state_change <- state_clean %>% 
+  mutate(year_diff = acres - lag(acres))
 
+# Plot difference between time periods
+ggplot(data = state_change, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2000, 2005, 2010, 2015),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage",
+       title = "Change in Maryland forested acres\nbetween 5 year time periods from 2000 to 2020") +
+  scale_y_continuous(limits=c(-30000,5000))+
+  geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=1997))+
+  theme_minimal()
 
 ```
+### Forested Area at the County Level
+```{r}
+#---------------------------------------
+# Tabulated Forest Cover by county
+#---------------------------------------
 
+# Wrangle county data (convert to tidy format, convert to acres)
+county_clean <- county_tab %>% 
+  clean_names()
