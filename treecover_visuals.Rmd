@@ -16,10 +16,11 @@ library(readxl)
 library(janitor)
 
 # Read in State data
-state_tab <- read_excel("tabulated_forest.xlsx", sheet = 1)
+state_tab <- read_excel("tabulated_forest.xlsx", sheet = "state")
 
 # Read in County data
-county_tab <- read_excel("tabulated_forest.xlsx", sheet = 2)
+county_tab <- read_excel("tabulated_forest.xlsx", sheet = "county")
+# Issue is coming from here. When I read in the data it is doubled for some reason
 ```
 ### Forested Area at the State Level
 ```{r}
@@ -27,7 +28,7 @@ county_tab <- read_excel("tabulated_forest.xlsx", sheet = 2)
 # Maryland Statewide Tabulated Forest Cover
 #---------------------------------------
 
-# Wrangle state data (tidy, get rid of non-forested, convert to acres)
+# Wrangle state data (get rid of non-forested, convert to acres)
 state_clean <- state_tab %>% 
   clean_names()%>% 
   filter(reclassified_value == "1") %>%
@@ -38,11 +39,11 @@ state_clean <- state_tab %>%
 ggplot(data = state_clean, aes(x = year, y = acres))+
   geom_line(color = "seagreen4", size = 2)+
     labs(x = "Year",
-       y = "Acres of Forest",
-       title = "Forested acres in the state of Maryland") +
+       y = "Acres of Forest") +
   theme_minimal()
 
 # State change between time periods
+#---------------------------------------
 state_change <- state_clean %>% 
   mutate(year_diff = acres - lag(acres))
 
@@ -52,8 +53,7 @@ ggplot(data = state_change, aes(x = year, y = year_diff))+
   scale_x_continuous(breaks = c(2000, 2005, 2010, 2015),
     labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
     labs(x = "Time Period",
-       y = "Change in Total Acreage",
-       title = "Change in Maryland forested acres\nbetween 5 year time periods from 2000 to 2020") +
+       y = "Change in Total Acreage") +
   scale_y_continuous(limits=c(-30000,5000))+
   geom_hline(aes(yintercept=0))+
     geom_vline(aes(xintercept=1997))+
@@ -68,4 +68,43 @@ ggplot(data = state_change, aes(x = year, y = year_diff))+
 
 # Wrangle county data (convert to tidy format, convert to acres)
 county_clean <- county_tab %>% 
+  pivot_longer(!COUNTY, names_to = "year", values_to = "area_m") %>% 
+  mutate(acres = area_m*0.000247105) %>% 
+  mutate(year = as.numeric(year)) %>%
   clean_names()
+
+# Plot totals over time by county
+ggplot(data = county_clean, aes(x = year, y = acres)) +
+  geom_point(color = "seagreen4") +
+  scale_x_continuous(breaks = c(2000, 2005, 2010, 2015, 2020), 
+                     labels = c("2000","", "2010","","2020")) +
+  scale_y_continuous(breaks = c(100000, 200000, 300000), 
+                     labels = c("100", "200", "300")) +
+  facet_wrap(~county) +
+      labs(x = "Year",
+       y = "Forested Area (in thousands of acres)") +
+  theme_minimal()
+#It appears to be graphing both the area in meters and in acres and I don't know why. It even does it when I take out the meters column :(
+
+# County change between time periods
+#---------------------------------------
+county_change <- county_clean %>% 
+  group_by(county) %>% 
+  mutate(year_diff = acres - lag(acres))
+
+# Plot difference between time periods
+ggplot(data = county_change, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2000, 2005, 2010, 2015),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage") +
+  facet_wrap(~county, scales = "free")+
+  theme_minimal()
+
+# Breaking Up the counties into individual dfs
+#---------------------------------------
+allegany <- county_change %>% 
+  filter(county == "Allegany")
+
+```
