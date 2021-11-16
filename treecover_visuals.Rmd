@@ -1,0 +1,47 @@
+---
+title: "Tabulated Tree Cover"
+author: "Marie Bouffard"
+date: "11/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# Attach packages
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+# Read in State data
+state_tab <- read_excel("tabulated_forest.xlsx", sheet = 1)
+
+```
+### Forested Area at the State Level
+```{r}
+#---------------------------------------
+# Maryland Statewide Tabulated Forest Cover
+#---------------------------------------
+
+# Wrangle state data
+state_clean <- state_tab %>% 
+  clean_names()%>% 
+  filter(reclassified_value == "1") %>%
+  select(year:area_m, -reclassified_value) %>% 
+  mutate(acres = area_m*0.000247105)
+
+# Plot totals over time
+ggplot(data = state_clean, aes(x = year, y = acres))+
+  geom_line(color = "seagreen4", size = 2)+
+    labs(x = "Year",
+       y = "Acres of Forest",
+       title = "Forested acres in the state of Maryland") +
+  theme_minimal()
+
+# State change between time periods
+
+
+```
+
