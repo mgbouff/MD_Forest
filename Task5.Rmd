@@ -1,0 +1,434 @@
+---
+title: "Task 5: Tabulated Forest Cover/Change"
+author: "Marie Bouffard"
+date: "11/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# Attach packages
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(here)
+
+# Read in State data
+state_tab <- read_excel(here("Data", "tabulated_forest.xlsx"), sheet = "state")
+
+# Read in County data
+county_tab <- read_excel(here("Data","tabulated_forest.xlsx"), sheet = "county")
+
+```
+### Forested Area at the State Level
+```{r}
+#---------------------------------------
+# Maryland Statewide Tabulated Forest Cover
+#---------------------------------------
+
+# Wrangle state data (get rid of non-forested, convert to acres)
+state_clean <- state_tab %>% 
+  clean_names() %>% 
+  filter(reclassified_value == "1") %>%
+  select(year:area_m, -reclassified_value) %>% 
+  mutate(acres = area_m*0.000247105)
+
+# Plot totals over time
+plot_totals_state <- ggplot(data = state_clean, aes(x = year, y = acres))+
+  geom_line(color = "seagreen4", size = 2)+
+    labs(x = "Year",
+       y = "Acres of Forest") +
+  theme_minimal() +
+  theme(text = element_text(size = 16, family = "Times"))
+
+ggsave(here("Graphics", "totals_state.jpg"),plot_totals_state)
+
+plot_totals_state
+
+# State change between time periods
+#---------------------------------------
+state_change <- state_clean %>% 
+  mutate(year_diff = acres - lead(acres))
+
+# Plot difference between time periods
+plot_change_state <- ggplot(data = state_change, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage") +
+  # scale_y_continuous(limits=c(-30000,1000))+
+  # geom_hline(aes(yintercept=0))+
+  #   geom_vline(aes(xintercept=1997))+
+  theme_minimal()+
+  theme(text = element_text(size = 16, family = "Times"))
+
+plot_change_state
+
+ggsave(here("Graphics", "change_state.jpg"),plot_change_state)
+
+```
+### Forested Area at the County Level
+```{r}
+#---------------------------------------
+# Tabulated Forest Cover by county
+#---------------------------------------
+
+# Wrangle county data (convert to tidy format, convert to acres)
+county_clean <- county_tab %>% 
+  filter(Value == 1) %>%
+  select("COUNTY":"2020", -Value) %>% 
+  pivot_longer(!COUNTY, names_to = "year", values_to = "area_m") %>% 
+  mutate(acres = area_m*0.000247105) %>% 
+  mutate(year = as.numeric(year)) %>%
+  clean_names()
+
+# Plot totals over time by county
+plot_totals_county_all <- ggplot(data = county_clean, aes(x = year, y = acres)) +
+  geom_line(color = "seagreen4") +
+  scale_x_continuous(breaks = c(2000, 2005, 2010, 2015, 2020), 
+                     labels = c("2000","", "2010","","2020")) +
+  facet_wrap(~county, ncol = 4, scales = "free_y") +
+      labs(x = "Year",
+       y = "Forested Area (acres)") +
+  theme_minimal() +
+  theme(text = element_text(family = "Times"),
+    axis.title = element_text(size = 16, family = "Times"),
+    axis.text = element_text(size = 10, family = "Times"),
+    panel.spacing.x = unit(2, "lines"))
+
+ggsave(here("Graphics", "totals_county_all.jpg"),plot_totals_county_all)
+
+plot_totals_county_all
+
+# Test Fixed y axis
+# plot_totals_county_all_fixed_y <- ggplot(data = county_clean, aes(x = year, y = acres)) +
+#   geom_line(color = "seagreen4") +
+#   scale_x_continuous(breaks = c(2000, 2005, 2010, 2015, 2020), 
+#                      labels = c("2000","", "2010","","2020")) +
+#   scale_y_continuous(breaks = c(100000, 200000, 300000),
+#                      labels = c("100", "200", "300"))+
+#   facet_wrap(~county, ncol = 4) +
+#       labs(x = "Year",
+#        y = "Forested Area (thousands of acres)") +
+#   theme_minimal() +
+#   theme(axis.title = element_text(size = 16, family = "Times"),
+#         axis.text = element_text(size = 10, family = "Times"),
+#         panel.spacing.x = unit(2, "lines"))
+# 
+# ggsave(here("Graphics", "totals_county_all_fixed_y.jpg"),plot_totals_county_all_fixed_y)
+
+# County change between time periods
+#---------------------------------------
+county_change <- county_clean %>% 
+  group_by(county) %>% 
+  mutate(year_diff = acres - lag(acres))
+
+# Plot difference between time periods
+plot_change_county_all <- ggplot(data = county_change, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Total Change in Acreage") +
+    geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=2002))+
+  facet_wrap(~county, ncol = 4, scales = "free_y")+
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times"),
+    axis.title = element_text(size = 16, family = "Times"),
+    axis.text = element_text(size = 10, family = "Times"),
+    panel.spacing = unit(1, "lines")
+    )
+
+ggsave(here("Graphics", "change_county_all.jpg"),plot_change_county_all)
+
+plot_change_county_all
+
+# Try faceting by time period instead of county
+#---------------------------------------
+# Wrangle for time period categories
+
+
+county_change_period <- county_change %>%
+  filter(year %in% c(2005,2010,2015,2020)) %>% 
+  mutate(time_period = case_when(
+    year == 2005 ~ "2000 - 2005",
+    year == 2010 ~ "2005 - 2010",
+    year == 2015 ~ "2010 - 2015",
+    year == 2020 ~ "2015 - 2020"
+  ))
+
+#Trying to rename years to time periods
+# period_names <- list(
+#   "2005"="2000-2005",
+#   "2010"="2005-2010",
+#   "2015"="2010-2015",
+#   "2020"="2015-2020")
+# 
+# period_labeller <- function(year,value){
+#   return(period_names[value])
+# }
+
+county_change_by_period <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
+  geom_col(aes(fill = county))+
+  facet_wrap(~time_period)+
+  labs(x = "County",
+       y = "Total Change in Acreage")+
+  theme_minimal()+
+  geom_hline(aes(yintercept=0))+
+  geom_vline(aes(xintercept=0))+
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.text.x = element_blank()
+  ) +
+  guides(fill = guide_legend(nrow = 4))
+
+county_change_by_period
+
+# ggsave(here("Graphics", "county_change_by_period.jpg"), county_change_by_period)
+
+```
+```{r}
+
+county_change_by_period_v2 <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
+  geom_col(aes(fill = county))+
+  facet_wrap(~time_period)+
+  labs(x = " ",
+       y = "Total Change in Acreage")+
+  theme_light()+
+  geom_hline(aes(yintercept=0))+
+  geom_vline(aes(xintercept=0))+
+  theme(
+    axis.text.x = element_blank(),
+    strip.background = element_rect("grey30")
+  ) + 
+  guides(fill = guide_legend(title = "County",))
+
+county_change_by_period_v2
+
+ggsave(here("Graphics", "county_change_by_period_v2.jpg"), county_change_by_period_v2)
+
+```
+
+
+### Counties Individually
+
+Allegany County
+```{r}
+
+# Allegany
+#---------------------------------------
+allegany <- county_change %>% 
+  filter(county == "Allegany")
+
+allegany_total <- ggplot(data = allegany, aes(x = year, y = acres)) +
+  geom_line(color = "seagreen4", size = 2) +
+      labs(x = "Year",
+       y = "Forested Area (acres)",
+       title = "Allegany County") +
+  theme_minimal()
+
+allegany_total
+
+allegany_change <- ggplot(data = allegany, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage",
+       title = "Allegany County") +
+  geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=2002))+
+  theme_minimal()
+
+allegany_change
+
+```
+Anne Arundel County
+```{r}
+# Anne Arundel
+#---------------------------------------
+anne_arundel <- county_change %>% 
+  filter(county == "Anne Arundel")
+
+anne_arundel_total <- ggplot(data = anne_arundel, aes(x = year, y = acres)) +
+  geom_line(color = "seagreen4", size = 2) +
+      labs(x = "Year",
+       y = "Forested Area (acres)",
+       title = "Anne Arundel County") +
+  theme_minimal()
+
+anne_arundel_total
+
+anne_arundel_change <- ggplot(data = anne_arundel, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage",
+       title = "Anne Arundel County") +
+  geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=2002))+
+  theme_minimal()
+
+anne_arundel_change
+
+```
+Baltimore County
+```{r}
+# Baltimore
+#---------------------------------------
+baltimore <- county_change %>% 
+  filter(county == "Baltimore")
+
+baltimore_total <- ggplot(data = baltimore, aes(x = year, y = acres)) +
+  geom_line(color = "seagreen4", size = 2) +
+      labs(x = "Year",
+       y = "Forested Area (acres)",
+       title = "Baltimore County") +
+  theme_minimal()
+
+baltimore_total
+
+baltimore_change <- ggplot(data = baltimore, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage",
+       title = "Baltimore County") +
+  geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=2002))+
+  theme_minimal()
+
+baltimore_change
+
+```
+Baltimore City County
+```{r}
+# Baltimore City
+#---------------------------------------
+baltimore_city <- county_change %>% 
+  filter(county == "Baltimore City")
+
+baltimore_city_total <- ggplot(data = baltimore_city, aes(x = year, y = acres)) +
+  geom_line(color = "seagreen4", size = 2) +
+      labs(x = "Year",
+       y = "Forested Area (acres)",
+       title = "Baltimore City County") +
+  theme_minimal()
+
+baltimore_city_total
+
+baltimore_city_change <- ggplot(data = baltimore_city, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage",
+       title = "Baltimore City County") +
+  geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=2002))+
+  theme_minimal()
+
+baltimore_city_change
+
+```
+Calvert County
+```{r}
+# Calvert
+#---------------------------------------
+calvert <- county_change %>% 
+  filter(county == "Calvert")
+
+calvert_total <- ggplot(data = calvert, aes(x = year, y = acres)) +
+  geom_line(color = "seagreen4", size = 2) +
+      labs(x = "Year",
+       y = "Forested Area (acres)",
+       title = "Calvert County") +
+  theme_minimal()
+
+calvert_total
+
+calvert_change <- ggplot(data = calvert, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage",
+       title = "Calvert County") +
+  geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=2002))+
+  theme_minimal()
+
+calvert_change
+
+```
+	
+Caroline County
+```{r}
+# Caroline
+#---------------------------------------
+caroline <- county_change %>% 
+  filter(county == "Caroline")
+
+caroline_total <- ggplot(data = caroline, aes(x = year, y = acres)) +
+  geom_line(color = "seagreen4", size = 2) +
+      labs(x = "Year",
+       y = "Forested Area (acres)",
+       title = "Caroline County") +
+  theme_minimal()
+
+caroline_total
+
+caroline_change <- ggplot(data = calvert, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage",
+       title = "Caroline County") +
+  geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=2002))+
+  theme_minimal()
+
+caroline_change
+
+```
+	
+Carroll County
+```{r}
+# Carroll
+#---------------------------------------
+carroll <- county_change %>% 
+  filter(county == "Carroll")
+
+carroll_total <- ggplot(data = carroll, aes(x = year, y = acres)) +
+  geom_line(color = "seagreen4", size = 2) +
+      labs(x = "Year",
+       y = "Forested Area (acres)",
+       title = "Carroll County") +
+  theme_minimal()
+
+carroll_total
+
+carroll_change <- ggplot(data = carroll, aes(x = year, y = year_diff))+
+  geom_col(fill = "seagreen4")+
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Change in Total Acreage",
+       title = "Carroll County") +
+  geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=2002))+
+  theme_minimal()
+
+carroll_change
+
+```
