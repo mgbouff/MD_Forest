@@ -1,0 +1,48 @@
+---
+title: "Task 1"
+author: "Marie Bouffard"
+date: "11/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# Attach packages
+library(tidyverse)
+library(janitor)
+library(here)
+
+# Read in Plantable Area data
+plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>% 
+  clean_names() %>% 
+  rename(county = i_county)
+
+```
+
+### Task 1b. Plantable Area
+
+```{r}
+
+#---------------------------------------
+# Plantable Area by county
+#---------------------------------------
+
+plantable_county <- ggplot(data = plantable_county, aes(x = county, y = area_acres)) +
+  geom_col(fill = "seagreen4") +
+  labs(x = "County", y = "Acres") +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times"),
+    axis.title = element_text(size = 16, family = "Times")
+    )
+
+plantable_county
+
+ggsave(here("Graphics", "1b_plantable_county.jpg"),plantable_county)
+
+```
+
