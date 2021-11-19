@@ -32,12 +32,15 @@ plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>%
 
 plantable_county <- ggplot(data = plantable_county, aes(x = county, y = area_acres)) +
   geom_col(fill = "seagreen4") +
-  labs(x = "County", y = "Acres") +
+  labs(x = "County", 
+       y = "Acres",
+       title = "Plantable Area by County") +
   coord_flip() +
   theme_minimal() +
   theme(
     text = element_text(family = "Times"),
-    axis.title = element_text(size = 16, family = "Times")
+    axis.title = element_text(size = 14, family = "Times"),
+    plot.title = element_text(size = 16, family = "Times")
     )
 
 plantable_county

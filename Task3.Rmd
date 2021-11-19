@@ -1,0 +1,109 @@
+---
+title: "Task 3"
+author: "Marie Bouffard"
+date: "11/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# Attach packages
+library(tidyverse)
+library(janitor)
+library(here)
+library(kableExtra)
+
+# Read in urban area change data
+urban_change <- read.csv(here("Data", "3_UrbanAreas_Change.csv")) %>% 
+  clean_names()
+
+```
+
+Overview Stats
+```{r}
+
+#---------------------------------------
+# Total Change
+#---------------------------------------
+
+# Calculate total area lost overall, 2013, 2018
+tc_stats <- urban_change %>% 
+  select(tc_change_acres:tc_acres2018) %>% 
+    summarize(
+    tc_all = sum(tc_change_acres),
+    tc_2013 = max(tc_acres2013),
+    tc_2018 = mean(tc_acres2018)
+  )
+
+# Make table
+kable(tc_stats,
+      col.names = c("Total Change",
+                    "2013 Change",
+                    "2018 Change")) %>%
+  kable_paper(html_font = "Times")%>% 
+  save_kable(file = here("Graphics","3_TC_stats.png")) # Don't know what this isn't exporting an image
+
+```
+
+### UATYP10
+```{r}
+
+# Get total change for each urban area type
+urban_type <- urban_change %>% 
+  select(uatyp10, tc_change_acres) %>% 
+  group_by(uatyp10) %>% 
+    summarize(
+    tc_all = sum(tc_change_acres),
+  ) %>%
+  mutate(uatyp10 = case_when(
+    uatyp10 == "U" ~ "Urbanized Areas",
+    uatyp10 == "C" ~ "Urbanized Clusters"))
+
+# Plot
+uatyp10_plot <- ggplot(urban_type, aes(x = uatyp10, y = tc_all)) +
+geom_col(aes(fill = uatyp10)) +
+  labs(x = "Urban Area Type",
+       y = "Acres",
+       title = "Total Change by Urban Area Type and Time Period") +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0))+
+  theme(
+    plot.title = element_text(size = 16, family = "Times"),
+    axis.title.y = element_text(size = 14, family = "Times"),
+    axis.title.x = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Times"),
+    axis.text.x = element_text(size = 16, family = "Times"),
+    legend.position = "none"
+    )
+
+uatyp10_plot
+
+ggsave(here("Graphics", "3_uatyp10.jpg"))
+
+```
+
+### NAME10
+```{r}
+
+# Graph all Name10 acres...
+
+name10 <- urban_change %>% 
+  select(name10, tc_change_acres)
+
+name10_plot <- ggplot(data = name10, aes(x = name10, y = tc_change_acres)) +
+  geom_col(fill = "seagreen4") +
+  coord_flip() +
+  theme_minimal() +
+  geom_vline(aes(xintercept=0))
+
+name10_plot
+
+ggsave(here("Graphics", "3_name10.jpg"))
+
+# Holding off on this one
+
+```
+
