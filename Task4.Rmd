@@ -17,13 +17,18 @@ library(janitor)
 library(here)
 library(kableExtra)
 library(stringr)
+library(patchwork)
 
 # Read in Projected LU data (2025 to 2055 Change Sheet)
 LU_change_raw <- read_excel(here("Data", "4_MD_LU_2025_2055.xlsx"), sheet = 3) 
 
 # Read in zoning data
 zoning_raw <- read.csv(here("Data", "4_GenZoning_LC_Forest_Change.csv")) %>% 
-  clean_names()
+  clean_names() %>% 
+  rename(genzone = i_genzone) %>% 
+  mutate(genzone = str_to_title(genzone))
+
+lc_pallette <- c("#B0A4CC", "#8F7CB6", "#665191", "#41335B",  "#F6833C", "#E45D0B","#C35009", "#02c39a", "#046865", "#E1BC29", "#FFEE88")
 
 ```
 
@@ -104,22 +109,226 @@ ggsave(here("Graphics", "4_lu_change_unsquish.jpg"), lu_change_plot_unsquish)
 
 
 ```
+
 ### General Zoning
 
 ```{r}
 #---------------------------------------
 # Forest change by general zoning
 #---------------------------------------
-
 zone_change <- zoning_raw %>% 
-  select(i_genzone, zoning, acres, low_veg_area_acres_change:tc_outside_forest_change_acres) %>% 
-  rename(genzone = i_genzone) %>% 
-  mutate(genzone = str_to_title(genzone))
+  select(genzone, zoning, tc_area_acres_change:impervious_area_acres_change) %>% 
+  pivot_longer(!genzone:zoning, names_to = "lc", values_to = "acres_change") %>%
+  group_by(genzone, lc) %>%
+  summarize(tc_acres = sum(acres_change)) %>% 
+  mutate(genzone = as.factor(genzone)) %>%
+  mutate(genzone = fct_relevel(genzone,
+            "Very Low Density Residential", "Low Density Residential", "Medium Density Residential", "High Density Residential", "Rural Low Density Residential", "Rural Medium Density Residential", "Rural High Density Residential", "Industrial", "Commercial", "Mixed Use", "Other")) %>% 
+    mutate(full_name = case_when(
+    lc == "tc_area_acres_change" ~ "Total Change",
+    lc == "barren_area_acres_change" ~ "Barren Areas",
+    lc == "buildings_area_acres_change" ~ "Building Areas",
+    lc == "impervious_area_acres_change" ~ "Impervious Areas",
+    lc == "low_veg_area_acres_change" ~ "Low Vegetation Areas",
+    lc == "road_area_acres_change" ~ "Road Areas",
+    lc == "shrub_area_acres_change" ~ "Shrub Areas",
+    lc == "water_area_acres_change" ~ "Water Areas",
+    lc == "wetlands_area_acres_change" ~ "Wetland Areas",
+  )) %>% 
+  mutate(full_name = as.factor(full_name)) %>% 
+  mutate(full_name = fct_relevel(full_name, "Total Change", "Barren Areas", "Building Areas", "Impervious Areas", "Low Vegetation Areas", "Road Areas", "Shrub Areas", "Water Areas", "Wetland Areas"))
 
-# Plot low veg areas
-ggplot(data = zone_change, aes(x = genzone, y = low_veg_area_acres_change)) +
-  geom_col() +
-  coord_flip()
+# "tc_area_acres_change", "barren_area_acres_change", "buildings_area_acres_change", "impervious_area_acres_change", "low_veg_area_acres_change", "road_area_acres_change", "shrub_area_acres_change", "water_area_acres_change", "wetlands_area_acres_change"
+  
+
+# Facet by land cover
+# zone_change_all <- 
+ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  facet_wrap(~full_name, scales = "free") +
+  labs(x = "Zone",
+       y = "Change in Acres",
+       title = "Total Area Change") +
+  scale_fill_manual(values = lc_pallette) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+  # legend.position = "none",
+  # legend.position = "bottom",
+    axis.text = element_blank(),
+    axis.title.x = element_blank()
+  ) +
+  guides(fill = guide_legend(title = "Zone Type"))
+
+# ggsave(here("Graphics","4_zone_change_all.jpg"),zone_change_all)
+
+```
+Individually
+```{r}
+
+# Total Change
+tc_change <- zone_change %>% 
+  filter(lc == "tc_area_acres_change")
+
+tc_change_plot <- ggplot(data = tc_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  labs(x = "Zone",
+       y = "Acres",
+       title = "Total Area Change") +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none"
+  )
+
+ggsave(here("Graphics", "4_zone_change", "tc_change.jpg"), tc_change_plot)
+
+# Wetlands Area Change
+wetland_change <- zone_change %>% 
+  filter(lc == "wetlands_area_acres_change")
+
+wetland_change_plot <- ggplot(data = wetland_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  labs(x = "Zone",
+       y = "Acres",
+       title = "Wetlands Area Change") +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none"
+  )
+
+ggsave(here("Graphics", "4_zone_change", "wetland_change.jpg"), wetland_change_plot)
+
+# Water Area Change
+water_change <- zone_change %>% 
+  filter(lc == "water_area_acres_change")
+
+water_change_plot <- ggplot(data = water_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  labs(x = "Zone",
+       y = "Acres",
+       title = "Water Area Change") +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none"
+  )
+
+ggsave(here("Graphics", "4_zone_change", "water_change.jpg"), water_change_plot)
+
+# Shrub Area Change
+shrub_change <- zone_change %>% 
+  filter(lc == "shrub_area_acres_change")
+
+shrub_change_plot <- ggplot(data = shrub_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  labs(x = "Zone",
+       y = "Acres",
+       title = "Shrub Area Change") +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none"
+  )
+
+ggsave(here("Graphics", "4_zone_change", "shrub_change.jpg"), shrub_change_plot)
+
+# Road Area Change
+road_change <- zone_change %>% 
+  filter(lc == "road_area_acres_change")
+
+road_change_plot <- ggplot(data = road_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  labs(x = "Zone",
+       y = "Acres",
+       title = "Road Area Change") +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none"
+  )
+
+ggsave(here("Graphics", "4_zone_change", "road_change.jpg"), road_change_plot)
+
+# Low Vegetation Area Change
+low_veg_change <- zone_change %>% 
+  filter(lc == "low_veg_area_acres_change")
+
+low_veg_change_plot <- ggplot(data = low_veg_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  labs(x = "Zone",
+       y = "Acres",
+       title = "Low Vegetation Area Change") +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none"
+  )
+
+ggsave(here("Graphics", "4_zone_change", "low_veg_change.jpg"), low_veg_change_plot)
+
+# Impervious Area Change
+impervious_change <- zone_change %>% 
+  filter(lc == "impervious_area_acres_change")
+
+impervious_change_plot <- ggplot(data = impervious_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  labs(x = "Zone",
+       y = "Acres",
+       title = "Impervious Area Change") +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none"
+  )
+
+ggsave(here("Graphics", "4_zone_change", "impervious_change.jpg"), impervious_change_plot)
+
+# Building Area Change
+building_change <- zone_change %>% 
+  filter(lc == "buildings_area_acres_change")
+
+building_change_plot <- ggplot(data = building_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  labs(x = "Zone",
+       y = "Acres",
+       title = "Building Area Change") +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none"
+  )
+
+ggsave(here("Graphics", "4_zone_change", "building_change.jpg"), building_change_plot)
+
+# Barren Area Change
+barren_change <- zone_change %>% 
+  filter(lc == "barren_area_acres_change")
+
+barren_change_plot <- ggplot(data = barren_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(aes(fill = genzone)) +
+  labs(x = "Zone",
+       y = "Acres",
+       title = "Barren Area Change") +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none"
+  )
+
+ggsave(here("Graphics", "4_zone_change", "barren_change.jpg"), barren_change_plot)
+
+
 
 ```
 
