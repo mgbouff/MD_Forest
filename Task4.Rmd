@@ -1,0 +1,125 @@
+---
+title: "Task 4: Projected Land Use"
+author: "Marie Bouffard"
+date: "11/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# Attach packages
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(here)
+library(kableExtra)
+library(stringr)
+
+# Read in Projected LU data (2025 to 2055 Change Sheet)
+LU_change_raw <- read_excel(here("Data", "4_MD_LU_2025_2055.xlsx"), sheet = 3) 
+
+# Read in zoning data
+zoning_raw <- read.csv(here("Data", "4_GenZoning_LC_Forest_Change.csv")) %>% 
+  clean_names()
+
+```
+
+### Projected Land Use change
+
+```{r}
+
+#---------------------------------------
+# Projected Land use by land use type and county
+#---------------------------------------
+lu_change <- LU_change_raw %>% 
+  clean_names() %>% 
+  select(county, ir_25_55:wlf_25_55, mo_25_55:pas_25_55) %>% 
+  pivot_longer(!county, names_to = "land_use", values_to = "acres") %>% 
+    mutate(full_name = case_when(
+    land_use == "ir_25_55" ~ "Impervious Roads",
+    land_use == "inr_25_55" ~ "Impervious Non-Roads",
+    land_use == "tci_25_55" ~ "Tree Canopy Over Impervious",
+    land_use == "tg_25_55" ~ "Turf Grass",
+    land_use == "tct_25_55" ~ "Tree Canopy over Turf Grass",
+    land_use == "fore_25_55" ~ "Forest",
+    land_use == "wlo_25_55" ~ "Wetlands (Other)",
+    land_use == "wlf_25_55" ~ "Wetlands (Floodplain)",
+    land_use == "wlt_25_55" ~ "Wetlands (Tidal)",
+#    land_use == "wat_25_55" ~ "Water",
+    land_use == "mo_25_55" ~ "Mixed Open",
+    land_use == "crp_25_55" ~ "Cropland",
+    land_use == "pas_25_55" ~ "Pasture",
+  ))
+
+# Use stringr::str_wrap() to create breaks in long facet titles
+stwr <- function(string, nwrap = 20){
+  paste(strwrap(string, width = nwrap), collapse = "\n")
+}
+
+stwr = Vectorize(stwr)
+
+lu_change$full_name = stwr(lu_change$full_name)
+
+# Plot
+
+lu_change_plot <- ggplot(lu_change, aes(x = county, y = acres)) +
+  geom_col(aes(fill = county)) +
+  facet_wrap(~full_name, scales = "free_y") +
+  labs(x = "County", y = "Acres") +
+  theme_light() +
+   geom_hline(aes(yintercept=0)) +
+  theme(
+    strip.background = element_rect("grey30"),
+    text = element_text(family = "Times"),
+    axis.title = element_text(size = 14, family = "Times"),
+    axis.text.x = element_blank(),
+    legend.title = element_text(size = 14, family = "Times")) +
+  guides(fill = guide_legend(title = "County"))
+
+lu_change_plot
+
+ggsave(here("Graphics", "4_lu_change.jpg"), lu_change_plot)
+
+# Cheating to unsquish graph by taking out legend and putting a screenshot of it with unsquished graph
+
+lu_change_plot_unsquish <- ggplot(lu_change, aes(x = county, y = acres)) +
+  geom_col(aes(fill = county)) +
+  facet_wrap(~full_name, scales = "free_y") +
+  labs(x = "County", y = "Acres") +
+  theme_light() +
+   geom_hline(aes(yintercept=0)) +
+  theme(
+    strip.background = element_rect("grey30"),
+    text = element_text(family = "Times"),
+    axis.title = element_text(size = 14, family = "Times"),
+    axis.text.x = element_blank(),
+    legend.position = "none")
+
+lu_change_plot_unsquish
+
+ggsave(here("Graphics", "4_lu_change_unsquish.jpg"), lu_change_plot_unsquish)
+
+
+```
+### General Zoning
+
+```{r}
+#---------------------------------------
+# Forest change by general zoning
+#---------------------------------------
+
+zone_change <- zoning_raw %>% 
+  select(i_genzone, zoning, acres, low_veg_area_acres_change:tc_outside_forest_change_acres) %>% 
+  rename(genzone = i_genzone) %>% 
+  mutate(genzone = str_to_title(genzone))
+
+# Plot low veg areas
+ggplot(data = zone_change, aes(x = genzone, y = low_veg_area_acres_change)) +
+  geom_col() +
+  coord_flip()
+
+```
+
