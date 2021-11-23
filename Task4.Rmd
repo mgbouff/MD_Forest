@@ -23,7 +23,7 @@ library(patchwork)
 LU_change_raw <- read_excel(here("Data", "4_MD_LU_2025_2055.xlsx"), sheet = 3) 
 
 # Read in zoning data
-zoning_raw <- read.csv(here("Data", "4_GenZoning_LC_Forest_Change.csv")) %>% 
+zoning_raw <- read.csv(here("Data", "4_GenZoning_LC_Forest_Change.csv")) %>%
   clean_names() %>% 
   rename(genzone = i_genzone) %>% 
   mutate(genzone = str_to_title(genzone))
@@ -110,6 +110,51 @@ ggsave(here("Graphics", "4_lu_change_unsquish.jpg"), lu_change_plot_unsquish)
 
 ```
 
+### Tree canopy change inside and outside forest
+```{r}
+#---------------------------------------
+# Inside/Outside Tree Canopy Forest Change
+#---------------------------------------
+
+# Clean and caluclate net change for each zone in and out of forest
+in_out_forest_change <- zoning_raw %>% 
+  select(genzone, tc_inside_forest_change_acres, tc_outside_forest_change_acres) %>% 
+  pivot_longer(!genzone, names_to = "in_or_out", values_to = "acres_change") %>% 
+  group_by(genzone, in_or_out) %>%
+  summarize(tc_acres = sum(acres_change)) %>% 
+  mutate(in_or_out = case_when(
+    in_or_out == "tc_inside_forest_change_acres" ~ "Inside Forest Change",
+    in_or_out == "tc_outside_forest_change_acres" ~ "Outside Forest Change"
+  )) %>% 
+  mutate(genzone = as.factor(genzone)) %>%
+  mutate(genzone = fct_relevel(genzone,
+            "Very Low Density Residential", "Low Density Residential", "Medium Density Residential", "High Density Residential", "Rural Low Density Residential", "Rural Medium Density Residential", "Rural High Density Residential", "Industrial", "Commercial", "Mixed Use", "Other"))
+
+# Plot
+in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = tc_acres)) +
+  geom_col(position = "dodge", 
+           aes(fill = in_or_out)) +
+  labs(
+    x = "Change in Acres",
+    y = "Zone Type"
+  ) +
+  scale_fill_manual(values = c("#24693d", # Inside
+                               "#6eb663" # Outside
+                               )) +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+
+in_out_forest_plot
+
+ggsave(here("Graphics","4_in_out_forest_change.jpg"), in_out_forest_plot)
+
+```
+
 ### General Zoning
 
 ```{r}
@@ -117,7 +162,7 @@ ggsave(here("Graphics", "4_lu_change_unsquish.jpg"), lu_change_plot_unsquish)
 # Forest change by general zoning
 #---------------------------------------
 zone_change <- zoning_raw %>% 
-  select(genzone, zoning, tc_area_acres_change:impervious_area_acres_change) %>% 
+  select(genzone, zoning, tc_area_acres_change:impervious_area_acres_change) %>%
   pivot_longer(!genzone:zoning, names_to = "lc", values_to = "acres_change") %>%
   group_by(genzone, lc) %>%
   summarize(tc_acres = sum(acres_change)) %>% 
@@ -142,8 +187,7 @@ zone_change <- zoning_raw %>%
   
 
 # Facet by land cover
-# zone_change_all <- 
-ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
+zone_change_all <- ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
   geom_col(aes(fill = genzone)) +
   facet_wrap(~full_name, scales = "free") +
   labs(x = "Zone",
@@ -153,14 +197,13 @@ ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
   theme(
-  # legend.position = "none",
-  # legend.position = "bottom",
+   legend.position = "none",
     axis.text = element_blank(),
     axis.title.x = element_blank()
   ) +
   guides(fill = guide_legend(title = "Zone Type"))
 
-# ggsave(here("Graphics","4_zone_change_all.jpg"),zone_change_all)
+ggsave(here("Graphics","4_zone_change_all.jpg"),zone_change_all)
 
 ```
 Individually
