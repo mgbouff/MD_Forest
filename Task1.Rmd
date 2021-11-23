@@ -18,7 +18,8 @@ library(here)
 # Read in Plantable Area data
 plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>% 
   clean_names() %>% 
-  rename(county = i_county)
+  rename(county = i_county) %>% 
+  mutate(county = as.factor(county))
 
 ```
 
@@ -30,7 +31,7 @@ plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>%
 # Plantable Area by county
 #---------------------------------------
 
-plantable_county <- ggplot(data = plantable_county, aes(x = county, y = area_acres)) +
+plantable_county_plot <- ggplot(data = plantable_county, aes(x = fct_rev(county), y = area_acres)) +
   geom_col(fill = "seagreen4") +
   labs(x = "County", 
        y = "Acres",
@@ -39,13 +40,14 @@ plantable_county <- ggplot(data = plantable_county, aes(x = county, y = area_acr
   theme_minimal() +
   theme(
     text = element_text(family = "Times"),
-    axis.title = element_text(size = 14, family = "Times"),
-    plot.title = element_text(size = 16, family = "Times")
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14, family = "Times", face = "bold"),
+    plot.title = element_text(size = 16, family = "Times", face = "bold")
     )
 
-plantable_county
+plantable_county_plot
 
-ggsave(here("Graphics", "1b_plantable_county.jpg"),plantable_county)
+ggsave(here("Graphics", "1b_plantable_county.jpg"),plantable_county_plot)
 
 ```
 

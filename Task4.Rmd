@@ -20,7 +20,8 @@ library(stringr)
 library(patchwork)
 
 # Read in Projected LU data (2025 to 2055 Change Sheet)
-LU_change_raw <- read_excel(here("Data", "4_MD_LU_2025_2055.xlsx"), sheet = 3) 
+LU_change_raw <- read_excel(here("Data", "4_MD_LU_2025_2055.xlsx"), sheet = 3) %>% 
+  mutate(County = str_to_title(County))
 
 # Read in zoning data
 zoning_raw <- read.csv(here("Data", "4_GenZoning_LC_Forest_Change.csv")) %>%
@@ -28,7 +29,21 @@ zoning_raw <- read.csv(here("Data", "4_GenZoning_LC_Forest_Change.csv")) %>%
   rename(genzone = i_genzone) %>% 
   mutate(genzone = str_to_title(genzone))
 
-lc_pallette <- c("#B0A4CC", "#8F7CB6", "#665191", "#41335B",  "#F6833C", "#E45D0B","#C35009", "#02c39a", "#046865", "#E1BC29", "#FFEE88")
+# Land Use Pallette
+lc_pallette <- c("#B0A4CC", # Light purple
+                 "#8F7CB6", # Medium purple
+                 "#665191", # Dark Purple
+                 "#41335B", # Darkest Purple 
+                 "#F6833C", # Light Orange
+                 "#E45D0B", # Medium Orange
+                 "#C35009", # Dark Orange
+                 "#02c39a", # Teal
+                 "#046865", # Dark Teal
+                 "#E1BC29", # Dark Yellow
+                 "#FFEE88") # Light Yellow
+
+# County Pallet
+county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
 
 ```
 
@@ -72,34 +87,46 @@ lu_change$full_name = stwr(lu_change$full_name)
 
 lu_change_plot <- ggplot(lu_change, aes(x = county, y = acres)) +
   geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
   facet_wrap(~full_name, scales = "free_y") +
   labs(x = "County", y = "Acres") +
-  theme_light() +
+  theme_minimal() +
    geom_hline(aes(yintercept=0)) +
   theme(
-    strip.background = element_rect("grey30"),
     text = element_text(family = "Times"),
-    axis.title = element_text(size = 14, family = "Times"),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+    axis.title.y = element_text(size = 14, face = "bold"),
     axis.text.x = element_blank(),
-    legend.title = element_text(size = 14, family = "Times")) +
-  guides(fill = guide_legend(title = "County"))
+    axis.title.x = element_blank(),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5) +
+  guides(fill = guide_legend(title = "County", 
+                             title.position = "top",
+                             nrow = 4))
 
 lu_change_plot
 
-ggsave(here("Graphics", "4_lu_change.jpg"), lu_change_plot)
+ggsave(here("Graphics", "4_lu_change.jpg"), lu_change_plot, width = 7, height = 7, dpi = "print")
 
 # Cheating to unsquish graph by taking out legend and putting a screenshot of it with unsquished graph
 
 lu_change_plot_unsquish <- ggplot(lu_change, aes(x = county, y = acres)) +
   geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
   facet_wrap(~full_name, scales = "free_y") +
   labs(x = "County", y = "Acres") +
-  theme_light() +
+  theme_minimal() +
    geom_hline(aes(yintercept=0)) +
   theme(
-    strip.background = element_rect("grey30"),
     text = element_text(family = "Times"),
-    axis.title = element_text(size = 14, family = "Times"),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+    axis.title.y = element_text(size = 18, family = "Times"),
+    axis.title.x = element_blank(),
     axis.text.x = element_blank(),
     legend.position = "none")
 
@@ -130,14 +157,16 @@ in_out_forest_change <- zoning_raw %>%
   mutate(genzone = fct_relevel(genzone,
             "Very Low Density Residential", "Low Density Residential", "Medium Density Residential", "High Density Residential", "Rural Low Density Residential", "Rural Medium Density Residential", "Rural High Density Residential", "Industrial", "Commercial", "Mixed Use", "Other"))
 
+# Use stwr function created above to create line breaks in zone names
+# Works but takes away order of zones
+# in_out_forest_change$genzone = stwr(in_out_forest_change$genzone)
+
 # Plot
 in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = tc_acres)) +
   geom_col(position = "dodge", 
            aes(fill = in_or_out)) +
-  labs(
-    x = "Change in Acres",
-    y = "Zone Type"
-  ) +
+  labs(x = "Zone Type",
+    y = "Change in Acres") +
   scale_fill_manual(values = c("#24693d", # Inside
                                "#6eb663" # Outside
                                )) +
@@ -145,6 +174,9 @@ in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = t
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
   theme(
+    text = element_text(family = "Times"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14, family = "Times", face = "bold"),
     legend.position = "bottom",
     legend.title = element_blank()
   )
@@ -190,23 +222,34 @@ zone_change <- zoning_raw %>%
 zone_change_all <- ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
   geom_col(aes(fill = genzone)) +
   facet_wrap(~full_name, scales = "free") +
-  labs(x = "Zone",
-       y = "Change in Acres",
-       title = "Total Area Change") +
+  labs(
+#    title = "Total Area Change",
+    x = "Zone",
+    y = "Change in Acres") +
   scale_fill_manual(values = lc_pallette) +
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
   theme(
-   legend.position = "none",
-    axis.text = element_blank(),
-    axis.title.x = element_blank()
+  legend.position = "none",
+#  legend.title = element_text(size = 13, face = "bold"),
+   text = element_text(family = "Times"),
+   axis.text.x = element_blank(),
+   axis.title.x = element_blank(),
+   axis.title.y = element_text(size = 13, face = "bold"),
+strip.background = element_rect(color = "grey40", fill = "grey30"),
+strip.text = element_text(size = 11, color = "white", face = "bold"),
+panel.border = element_rect(color = "grey40", fill = NA),
   ) +
   guides(fill = guide_legend(title = "Zone Type"))
 
-ggsave(here("Graphics","4_zone_change_all.jpg"),zone_change_all)
+zone_change_all
+
+ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all)
 
 ```
+
 Individually
+
 ```{r}
 
 # Total Change

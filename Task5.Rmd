@@ -22,6 +22,9 @@ state_tab <- read_excel(here("Data", "tabulated_forest.xlsx"), sheet = "state")
 # Read in County data
 county_tab <- read_excel(here("Data","tabulated_forest.xlsx"), sheet = "county")
 
+# Categorical County Color Pallette
+county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
+
 ```
 ### Forested Area at the State Level
 ```{r}
@@ -175,7 +178,8 @@ county_change_period <- county_change %>%
 # }
 
 county_change_by_period <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
-  geom_col(aes(fill = county))+
+  geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
   facet_wrap(~time_period)+
   labs(x = "County",
        y = "Total Change in Acreage")+
@@ -198,26 +202,35 @@ county_change_by_period
 
 county_change_by_period_v2 <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
   geom_col(aes(fill = county))+
-  facet_wrap(~time_period)+
+  facet_wrap(~time_period) +
+  scale_fill_manual(values = county_pallette) +
   labs(x = " ",
        y = "Total Change in Acreage")+
-  theme_light()+
+  theme_minimal()+
   geom_hline(aes(yintercept=0))+
   geom_vline(aes(xintercept=0))+
   theme(
     axis.text.x = element_blank(),
-    strip.background = element_rect("grey30")
-  ) + 
-  guides(fill = guide_legend(title = "County",))
-
+    axis.title.y = element_text(size = 14, face = "bold"),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 14, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+#    legend.position = "none"
+    legend.position = "bottom",
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.title.align = 0.5
+  ) +
+  guides(fill = guide_legend(title = "County",
+                             title.position = "top",
+                             nrow = 4))
+# )
 county_change_by_period_v2
 
 ggsave(here("Graphics", "county_change_by_period_v2.jpg"), county_change_by_period_v2)
 
 ```
 
-
-### Counties Individually
+### Counties Individually (Just in case)
 
 Allegany County
 ```{r}
