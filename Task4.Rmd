@@ -23,6 +23,11 @@ library(patchwork)
 LU_change_raw <- read_excel(here("Data", "4_MD_LU_2025_2055.xlsx"), sheet = 3) %>% 
   mutate(County = str_to_title(County))
 
+# Updated Projected LU data
+lu_change_update <- read_excel(here("Data", "4_MD_Tech_Study_cz_2021_20210929.xlsx"), sheet = 3) %>% 
+  clean_names() %>% 
+  mutate(cntyname = str_to_title(cntyname))
+
 # Read in zoning data
 zoning_raw <- read.csv(here("Data", "4_GenZoning_LC_Forest_Change.csv")) %>%
   clean_names() %>% 
@@ -47,10 +52,72 @@ county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#15
 
 ```
 
+### New Projected Land Use change
+```{r}
+#---------------------------------------
+# Updated projected land use by land use type and county
+#---------------------------------------
+lu_update <- lu_change_update %>% 
+  pivot_longer(!fips:cntyname, names_to = "land_use", values_to = "acres") %>% 
+    mutate(full_name = case_when(
+    land_use == "ir_chg" ~ "Impervious Roads",
+    land_use == "inr_chg" ~ "Impervious Non-Roads",
+    land_use == "tci_chg" ~ "Tree Canopy Over Impervious",
+    land_use == "tg_chg" ~ "Turf Grass",
+    land_use == "tct_chg" ~ "Tree Canopy over Turf Grass",
+    land_use == "fore_chg" ~ "Forest",
+    land_use == "wlo_chg" ~ "Wetlands (Other)",
+    land_use == "wlf_chg" ~ "Wetlands (Floodplain)",
+#    land_use == "wlt_chg" ~ "Wetlands (Tidal)",
+#    land_use == "wat_chg" ~ "Water",
+    land_use == "mo_chg" ~ "Mixed Open",
+    land_use == "crp_chg" ~ "Cropland",
+    land_use == "pas_chg" ~ "Pasture",
+  )) %>% 
+  drop_na()
+
+# Use stringr::str_wrap() to create breaks in long facet titles
+stwr <- function(string, nwrap = 20){
+  paste(strwrap(string, width = nwrap), collapse = "\n")
+}
+
+stwr = Vectorize(stwr)
+
+lu_update$full_name = stwr(lu_update$full_name)
+
+# Plot
+
+lu_update_plot <- ggplot(lu_update, aes(x = cntyname, y = acres)) +
+  geom_col(aes(fill = cntyname)) +
+  scale_fill_manual(values = county_pallette) +
+  facet_wrap(~full_name, scales = "free_y") +
+  labs(x = "County", y = "Acres") +
+  theme_minimal() +
+   geom_hline(aes(yintercept=0)) +
+  theme(
+    text = element_text(family = "Times"),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+    axis.title.y = element_text(size = 14, face = "bold"),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5) +
+  guides(fill = guide_legend(title = "County", 
+                             title.position = "top",
+                             nrow = 4))
+
+lu_update_plot
+
+ggsave(here("Graphics", "4_lu_update.jpg"), lu_update_plot)
+
+```
+
 ### Projected Land Use change
 
 ```{r}
-
 #---------------------------------------
 # Projected Land use by land use type and county
 #---------------------------------------
@@ -133,7 +200,6 @@ lu_change_plot_unsquish <- ggplot(lu_change, aes(x = county, y = acres)) +
 lu_change_plot_unsquish
 
 ggsave(here("Graphics", "4_lu_change_unsquish.jpg"), lu_change_plot_unsquish)
-
 
 ```
 
