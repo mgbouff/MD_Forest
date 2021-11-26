@@ -148,7 +148,7 @@ plot_change_county_all <- ggplot(data = county_change, aes(x = year, y = year_di
     panel.spacing = unit(1, "lines")
     )
 
-ggsave(here("Graphics", "change_county_all.jpg"),plot_change_county_all)
+# ggsave(here("Graphics", "change_county_all.jpg"),plot_change_county_all)
 
 plot_change_county_all
 
@@ -198,6 +198,7 @@ county_change_by_period
 # ggsave(here("Graphics", "county_change_by_period.jpg"), county_change_by_period)
 
 ```
+
 ```{r}
 
 county_change_by_period_v2 <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
@@ -226,7 +227,30 @@ county_change_by_period_v2 <- ggplot(data = county_change_period, aes(x = county
 # )
 county_change_by_period_v2
 
-ggsave(here("Graphics", "county_change_by_period_v2.jpg"), county_change_by_period_v2)
+# ggsave(here("Graphics", "county_change_by_period_v2.jpg"), county_change_by_period_v2)
+
+# County Change by Period With Lables for Jarlath
+county_change_demo <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
+  geom_col(aes(fill = county))+
+  geom_text(aes(label = county, color = county), check_overlap = TRUE, angle = 45, size = 3.5) +
+  facet_wrap(~time_period) +
+  scale_fill_manual(values = county_pallette) +
+  scale_color_manual(values = county_pallette) +
+  labs(x = " ",
+       y = "Total Change in Acreage")+
+  theme_minimal()+
+  geom_hline(aes(yintercept=0))+
+  geom_vline(aes(xintercept=0))+
+  theme(
+    axis.text.x = element_blank(),
+    axis.title.y = element_text(size = 14, face = "bold"),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 14, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+    legend.position = "none"
+  )
+
+# ggsave(here("Graphics", "county_change_labled.jpg"), county_change_demo)
 
 ```
 

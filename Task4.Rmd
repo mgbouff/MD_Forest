@@ -23,10 +23,10 @@ library(patchwork)
 LU_change_raw <- read_excel(here("Data", "4_MD_LU_2025_2055.xlsx"), sheet = 3) %>% 
   mutate(County = str_to_title(County))
 
-# Updated Projected LU data
+# Updated Projected LU data (2025 to 2055 Change Sheet)
 lu_change_update <- read_excel(here("Data", "4_MD_Tech_Study_cz_2021_20210929.xlsx"), sheet = 3) %>% 
   clean_names() %>% 
-  mutate(cntyname = str_to_title(cntyname))
+  mutate(cntyname = str_to_title(cntyname)) # change counties from all caps to sentence case
 
 # Read in zoning data
 zoning_raw <- read.csv(here("Data", "4_GenZoning_LC_Forest_Change.csv")) %>%
@@ -68,8 +68,8 @@ lu_update <- lu_change_update %>%
     land_use == "fore_chg" ~ "Forest",
     land_use == "wlo_chg" ~ "Wetlands (Other)",
     land_use == "wlf_chg" ~ "Wetlands (Floodplain)",
-#    land_use == "wlt_chg" ~ "Wetlands (Tidal)",
-#    land_use == "wat_chg" ~ "Water",
+#    land_use == "wlt_chg" ~ "Wetlands (Tidal)", 
+#    land_use == "wat_chg" ~ "Water", # Model not run for water and wetland
     land_use == "mo_chg" ~ "Mixed Open",
     land_use == "crp_chg" ~ "Cropland",
     land_use == "pas_chg" ~ "Pasture",
@@ -86,7 +86,6 @@ stwr = Vectorize(stwr)
 lu_update$full_name = stwr(lu_update$full_name)
 
 # Plot
-
 lu_update_plot <- ggplot(lu_update, aes(x = cntyname, y = acres)) +
   geom_col(aes(fill = cntyname)) +
   scale_fill_manual(values = county_pallette) +
@@ -99,21 +98,54 @@ lu_update_plot <- ggplot(lu_update, aes(x = cntyname, y = acres)) +
     strip.background = element_rect(color = "grey40", fill = "grey30"),
     strip.text = element_text(color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA),
+#    legend.position = "none",
+   legend.title = element_text(size = 14, face = "bold"),
+   legend.position = "bottom",
+   legend.title.align = 0.5,
     axis.title.y = element_text(size = 14, face = "bold"),
     axis.text.x = element_blank(),
-    axis.title.x = element_blank(),
-    legend.title = element_text(size = 14, face = "bold"),
-    legend.position = "bottom",
-    legend.title.align = 0.5) +
+    axis.title.x = element_blank()) +
   guides(fill = guide_legend(title = "County", 
                              title.position = "top",
                              nrow = 4))
 
 lu_update_plot
 
-ggsave(here("Graphics", "4_lu_update.jpg"), lu_update_plot)
+# ggsave(here("Graphics", "4_lu_update_legend.jpg"), lu_update_plot)
 
 ```
+
+Projected Land Use Faceted by County
+```{r}
+
+lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
+  geom_col(aes(fill = full_name)) +
+#  scale_fill_manual(values = county_pallette) +
+  facet_wrap(~cntyname, scales = "free_y") +
+  labs(x = "Land Use", y = "Acres") +
+  theme_minimal() +
+   geom_hline(aes(yintercept=0)) +
+  theme(
+    text = element_text(family = "Times"),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+#    legend.position = "none",
+   legend.title = element_text(size = 14, face = "bold"),
+   legend.position = "bottom",
+   legend.title.align = 0.5,
+    axis.title.y = element_text(size = 14, face = "bold"),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank()) +
+  guides(fill = guide_legend(title = "Land USe", 
+                             title.position = "top",
+                             nrow = 3))
+ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
+
+lu_county_plot
+
+```
+
 
 ### Projected Land Use change
 
@@ -176,7 +208,7 @@ lu_change_plot <- ggplot(lu_change, aes(x = county, y = acres)) +
 
 lu_change_plot
 
-ggsave(here("Graphics", "4_lu_change.jpg"), lu_change_plot, width = 7, height = 7, dpi = "print")
+# ggsave(here("Graphics", "4_lu_change.jpg"), lu_change_plot, width = 7, height = 7, dpi = "print")
 
 # Cheating to unsquish graph by taking out legend and putting a screenshot of it with unsquished graph
 
@@ -199,7 +231,7 @@ lu_change_plot_unsquish <- ggplot(lu_change, aes(x = county, y = acres)) +
 
 lu_change_plot_unsquish
 
-ggsave(here("Graphics", "4_lu_change_unsquish.jpg"), lu_change_plot_unsquish)
+# ggsave(here("Graphics", "4_lu_change_unsquish.jpg"), lu_change_plot_unsquish)
 
 ```
 
@@ -249,7 +281,7 @@ in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = t
 
 in_out_forest_plot
 
-ggsave(here("Graphics","4_in_out_forest_change.jpg"), in_out_forest_plot)
+# ggsave(here("Graphics","4_in_out_forest_change.jpg"), in_out_forest_plot)
 
 ```
 
@@ -282,6 +314,8 @@ zone_change <- zoning_raw %>%
   mutate(full_name = fct_relevel(full_name, "Total Change", "Barren Areas", "Building Areas", "Impervious Areas", "Low Vegetation Areas", "Road Areas", "Shrub Areas", "Water Areas", "Wetland Areas"))
 
 # "tc_area_acres_change", "barren_area_acres_change", "buildings_area_acres_change", "impervious_area_acres_change", "low_veg_area_acres_change", "road_area_acres_change", "shrub_area_acres_change", "water_area_acres_change", "wetlands_area_acres_change"
+
+zone_change$full_name = stwr(zone_change$full_name)
   
 
 # Facet by land cover
@@ -296,21 +330,91 @@ zone_change_all <- ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
   theme(
-  legend.position = "none",
-#  legend.title = element_text(size = 13, face = "bold"),
+#  legend.position = "none",
+  legend.title = element_text(size = 13, face = "bold"),
    text = element_text(family = "Times"),
    axis.text.x = element_blank(),
    axis.title.x = element_blank(),
    axis.title.y = element_text(size = 13, face = "bold"),
 strip.background = element_rect(color = "grey40", fill = "grey30"),
-strip.text = element_text(size = 11, color = "white", face = "bold"),
+strip.text = element_text(size = 8.5, color = "white", face = "bold"),
 panel.border = element_rect(color = "grey40", fill = NA),
   ) +
   guides(fill = guide_legend(title = "Zone Type"))
 
 zone_change_all
 
-ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all)
+# ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all)
+
+```
+### Loop Attempt
+
+Notes from Jacob
+
+data = whatever
+
+cf_list <- unique(data$county_name)
+
+for(cf_i in 1:cf_list) {
+    temp_data <- data[which(data$county_name==cf_list[cf_i])]
+    co_name = cf_list[cf_i]
+    outfilename = paste0("C:/somefolder/subfolder/",co_name,"_specificplot.png") 
+    ggplot()
+    ggsave(
+    outfilename,
+    plot = last_plot(),
+    device = NULL,
+    path = NULL,
+    scale = 1,
+    width = NA,
+    height = NA,
+    units = c("in", "cm", "mm", "px"),
+    dpi = 300,
+    limitsize = TRUE,
+    bg = NULL,
+    ...
+    )
+    
+```{r}
+
+#---------------------------------------
+# Attempted Looping onProjected Land use by land use type and county
+#---------------------------------------
+
+cf_list <- unique(lu_update$cntyname)
+
+for(cf_i in 1:cf_list) {
+    temp_data <- lu_update[which(lu_update$cntyname==cf_list[cf_i])]
+    co_name = cf_list[cf_i]
+    outfilename = paste0("C:\\Users\\mbouf\\Documents\\UVM\\Maryland_Technical_Forest\\MD_Forest\\Graphics\\LU_County_Loops",co_name,"_lu_plot.png") 
+    ggplot(lu_update, aes(x = cntyname, y = acres)) +
+  geom_col(aes(fill = cntyname)) +
+  scale_fill_manual(values = county_pallette) +
+  facet_wrap(~full_name, scales = "free_y") +
+  labs(x = "County", y = "Acres") +
+  theme_minimal() +
+   geom_hline(aes(yintercept=0)) +
+  theme(
+    text = element_text(family = "Times"),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+    axis.title.y = element_text(size = 14, face = "bold"),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5) +
+  guides(fill = guide_legend(title = "County", 
+                             title.position = "top",
+                             nrow = 4))
+    ggsave(
+    outfilename,
+    plot = last_plot(),
+    path = here("Graphics", "LU_County_Loops"),
+    dpi = 300
+    )}
+
 
 ```
 
