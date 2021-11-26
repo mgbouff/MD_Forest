@@ -47,6 +47,19 @@ lc_pallette <- c("#B0A4CC", # Light purple
                  "#E1BC29", # Dark Yellow
                  "#FFEE88") # Light Yellow
 
+# Zoning Palette
+zone_palette <- c("#5cb652", # Cropland, light green
+                 "#24693d", # Forest, Dark Green
+                 "#F9A620", # Impervious roads, light orange
+                 "#F08701", # Impervious non-roads, dark orange 
+                 "#585191", # Mixed Open, dark purple
+                 "#97CC04", # Pasture, light green
+                 "#E4572E", # Tree Canopy over impervious, red-orange
+                 "#62466B", # Tree Canopy over turf grass, dark purple
+                 "#9A7AA0", # Turf Grass, light purple
+                 "#4059AD", # Wetlands Other, blue
+                 "#21A0A0") # Wetlands floodplain, teal
+
 # County Pallet
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
 
@@ -120,7 +133,7 @@ Projected Land Use Faceted by County
 
 lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
   geom_col(aes(fill = full_name)) +
-#  scale_fill_manual(values = county_pallette) +
+  scale_fill_manual(values = zone_palette) +
   facet_wrap(~cntyname, scales = "free_y") +
   labs(x = "Land Use", y = "Acres") +
   theme_minimal() +
@@ -137,10 +150,10 @@ lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
     axis.title.y = element_text(size = 14, face = "bold"),
     axis.text.x = element_blank(),
     axis.title.x = element_blank()) +
-  guides(fill = guide_legend(title = "Land USe", 
+  guides(fill = guide_legend(title = "Land Use", 
                              title.position = "top",
                              nrow = 3))
-ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
+ ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
 
 lu_county_plot
 
@@ -347,6 +360,7 @@ zone_change_all
 # ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all)
 
 ```
+
 ### Loop Attempt
 
 Notes from Jacob
