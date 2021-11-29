@@ -26,8 +26,29 @@ county_tab <- read_excel(here("Data","tabulated_forest.xlsx"), sheet = "county")
 land_use <- read.csv(here("Data", "5_LandUse.csv")) %>% 
   clean_names()
 
+# Set Blanks to NA
+  land_use[land_use == ""] <- NA
+
 # Categorical County Color Pallette
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
+
+lu_pallette <- c("#F9DB6D", # Barren, light yellow
+                 "#D9682A", # Buildings, brick
+                 "#24693d", # Forest, green
+                 "#F08701", # Impervious, orange 
+                 "#8DBE87", # Low veg, light green
+                 "#F9A620", # Roads, light orange
+                 "#57AF94", # Shrub, green-blue
+                 "#6eb663", # Outside Forest, light green
+                 "#4059AD", # Water, royal blue
+                 "#21A0A0") # Blue-green
+
+# Use stringr::str_wrap() to create breaks in long facet titles
+stwr <- function(string, nwrap = 15){
+  paste(strwrap(string, width = nwrap), collapse = "\n")
+}
+
+stwr = Vectorize(stwr)
 
 ```
 ### Forested Area at the State Level
@@ -218,23 +239,61 @@ county_change_by_period
 
 ### Land Use
 
-Land Use Change in Acres
+Acres
 ```{r}
-
+#---------------------------------------
+# Land Use Change in Acres
+#---------------------------------------
 land_use_acres <- land_use %>% 
   select(i_desclu, low_veg_change_acres:outside_forest_change_acres) %>% 
-  pivot_longer(!i_desclu, names_to = "land_use", values_to = "acres")
+  pivot_longer(!i_desclu, names_to = "land_use", values_to = "acres") %>% 
+  drop_na() %>% 
+    mutate(land_use = case_when(
+    land_use == "low_veg_change_acres" ~ "Low Vegetation",
+    land_use == "barren_change_acres" ~ "Barren",
+    land_use == "water_change_acres" ~ "Water",
+    land_use == "buildings_change_acres" ~ "Buildings",
+    land_use == "road_change_acres" ~ "Roads",
+    land_use == "shrub_change_acres" ~ "Shrub",
+    land_use == "wetlands_change_acres" ~ "Wetland",
+    land_use == "impervious_change_acres" ~ "Impervious",
+    land_use == "forest_change_acres" ~ "Forest",
+    land_use == "outside_forest_change_acres" ~ "Tree Canopy Outside Forest"))
 
-ggplot(data = land_use_acres, aes(x = land_use, y = acres)) +
+# String Wrap Function
+land_use_acres$i_desclu = stwr(land_use_acres$i_desclu)
+
+lu_acres_plot <- ggplot(data = land_use_acres, aes(x = land_use, y = acres)) +
   geom_col(aes(fill = land_use)) +
   facet_wrap(~i_desclu, scales = "free_y") +
   labs(title = "Land Use Change",
        y = "Change in Acreage") +
   theme_minimal() +
-  geom_hline(aes(yintercept=0))
+  geom_hline(aes(yintercept=0)) +
+  scale_fill_manual(values = lu_pallette) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    text = element_text(family = "Times"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14, family = "Times", face = "bold"),
+    plot.title = element_text(size = 16, family = "Times", face = "bold"),
+#    legend.position = "none",
+    legend.position = "bottom",
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.title.align = 0.5,
+     strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+   ) +
+    guides(fill = guide_legend(title = "Land Use",
+                               title.position = "top",
+                               nrow = 2))
+lu_acres_plot
+
+ggsave(here("Graphics", "5_land_use_change_legend.jpg"), lu_acres_plot)
 
 ```
-
 
 ```{r}
 
