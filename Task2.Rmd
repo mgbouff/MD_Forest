@@ -1,0 +1,157 @@
+---
+title: "Task 2: Forest Health"
+author: "Marie Bouffard"
+date: "11/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# Attach packages
+library(tidyverse)
+library(here)
+library(janitor)
+
+# Read in State Fragmentation Data
+state_frag <- read.csv(here("Data", "2_frag_statestats.csv")) %>% 
+  clean_names()
+
+```
+
+### State Forest Fragmentation
+```{r}
+#---------------------------------------
+# Fragmentation Metrics Change 2013-2018
+#---------------------------------------
+
+state_frag_change <- state_frag %>% 
+  select(patch_change:lcore_change) %>% 
+  pivot_longer(patch_change:lcore_change, names_to = "metric", values_to = "acres_change") %>% 
+  mutate(metric = case_when(
+    metric == "patch_change" ~ "Patch",
+    metric == "edge_change" ~ "Edge",
+    metric == "score_change" ~ "Small Core",
+    metric == "mcore_change" ~ "Medium Core",
+    metric == "lcore_change" ~ "Large Core")) %>% 
+  mutate(metric = as.factor(metric)) %>% 
+  mutate(metric = fct_relevel(metric,
+                              "Large Core",
+                              "Medium Core",
+                              "Small Core",
+                              "Edge",
+                              "Patch"))
+
+state_frag_plot <- ggplot(data = state_frag_change, aes(x = metric, y = acres_change)) +
+  geom_col(fill = "seagreen4") +
+  labs(x = "Forest Type", 
+       y = "Total Acreage Change",
+       title = "Total Area Change 2013 to 2018") +
+    scale_y_continuous(breaks = c(-15000, -10000, -5000, 0, 5000, 10000),
+                     labels = c("-15,000", "-10,000", "-5,000", "0", "5,000", "10,000")) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+    text = element_text(family = "Times"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14, family = "Times", face = "bold"),
+    plot.title = element_text(size = 16, family = "Times", face = "bold")
+    )
+
+state_frag_plot
+
+ggsave(here("Graphics", "2_state_frag_change.jpg"), state_frag_plot)
+
+```
+2018 Totals
+```{r}
+
+#---------------------------------------
+# Fragmentation Totals 2018
+#---------------------------------------
+
+state_frag_2018 <- state_frag %>% 
+  select(patch_acres_2018:lcore_acres_2018) %>% 
+  pivot_longer(patch_acres_2018:lcore_acres_2018, names_to = "metric", values_to = "acres") %>% 
+  mutate(metric = case_when(
+    metric == "patch_acres_2018" ~ "Patch",
+    metric == "edge_acres_2018" ~ "Edge",
+    metric == "s_core_acres_2018" ~ "Small Core",
+    metric == "m_core_acres_2018" ~ "Medium Core",
+    metric == "lcore_acres_2018" ~ "Large Core")) %>% 
+  mutate(metric = as.factor(metric)) %>% 
+  mutate(metric = fct_relevel(metric,
+                              "Large Core",
+                              "Medium Core",
+                              "Small Core",
+                              "Edge",
+                              "Patch"))
+
+state_2018_plot <- ggplot(data = state_frag_2018, aes(x = metric, y = acres)) +
+  geom_col(fill = "seagreen4") +
+  labs(x = "Forest Type", 
+       y = "Total Acreage",
+       title = "Forest Type 2018") +
+  scale_y_continuous(breaks = c(300000, 600000, 900000),
+                     labels = c("300,000", "600,000", "900,000")) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+    text = element_text(family = "Times"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14, family = "Times", face = "bold"),
+    plot.title = element_text(size = 16, family = "Times", face = "bold")
+    )
+
+state_2018_plot
+
+ggsave(here("Graphics", "2_state_frag_2018.jpg"), state_2018_plot)
+
+```
+2013 totals
+```{r}
+
+#---------------------------------------
+# Fragmentation Totals 2013
+#---------------------------------------
+
+state_frag_2013 <- state_frag %>% 
+  select(patch_acres_2013:lcore_acres_2013) %>% 
+  pivot_longer(patch_acres_2013:lcore_acres_2013, names_to = "metric", values_to = "acres") %>% 
+  mutate(metric = case_when(
+    metric == "patch_acres_2013" ~ "Patch",
+    metric == "edge_acres_2013" ~ "Edge",
+    metric == "s_core_acres_2013" ~ "Small Core",
+    metric == "m_core_acres_2013" ~ "Medium Core",
+    metric == "lcore_acres_2013" ~ "Large Core")) %>% 
+  mutate(metric = as.factor(metric)) %>% 
+  mutate(metric = fct_relevel(metric,
+                              "Large Core",
+                              "Medium Core",
+                              "Small Core",
+                              "Edge",
+                              "Patch"))
+
+state_2013_plot <- ggplot(data = state_frag_2013, aes(x = metric, y = acres)) +
+  geom_col(fill = "seagreen4") +
+  labs(x = "Forest Type", 
+       y = "Total Acreage",
+       title = "Forest Type 2013") +
+  scale_y_continuous(breaks = c(300000, 600000, 900000),
+                     labels = c("300,000", "600,000", "900,000")) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+    text = element_text(family = "Times"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14, family = "Times", face = "bold"),
+    plot.title = element_text(size = 16, family = "Times", face = "bold")
+    )
+
+state_2013_plot
+
+ggsave(here("Graphics", "2_state_frag_2013.jpg"), state_2013_plot)
+
+```

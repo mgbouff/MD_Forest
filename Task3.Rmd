@@ -44,7 +44,7 @@ kable(tc_stats,
                     "2013 Change",
                     "2018 Change")) %>%
   kable_paper(html_font = "Times")%>% 
-  save_kable(file = here("Graphics","3_TC_stats.png")) # Don't know what this isn't exporting an image
+  save_kable(file = here("Graphics","3_TC_stats.png"), tc_stats) # Don't know what this isn't exporting an image
 
 ```
 
