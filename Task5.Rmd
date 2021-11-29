@@ -22,6 +22,10 @@ state_tab <- read_excel(here("Data", "tabulated_forest.xlsx"), sheet = "state")
 # Read in County data
 county_tab <- read_excel(here("Data","tabulated_forest.xlsx"), sheet = "county")
 
+# Read in Land Use data
+land_use <- read.csv(here("Data", "5_LandUse.csv")) %>% 
+  clean_names()
+
 # Categorical County Color Pallette
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
 
@@ -51,6 +55,9 @@ ggsave(here("Graphics", "totals_state.jpg"),plot_totals_state)
 
 plot_totals_state
 
+```
+Change between Time periods
+```{r}
 # State change between time periods
 #---------------------------------------
 state_change <- state_clean %>% 
@@ -71,9 +78,11 @@ plot_change_state <- ggplot(data = state_change, aes(x = year, y = year_diff))+
 
 plot_change_state
 
-ggsave(here("Graphics", "change_state.jpg"),plot_change_state)
+# ggsave(here("Graphics", "change_state.jpg"),plot_change_state)
 
 ```
+
+
 ### Forested Area at the County Level
 ```{r}
 #---------------------------------------
@@ -124,6 +133,9 @@ plot_totals_county_all
 # 
 # ggsave(here("Graphics", "totals_county_all_fixed_y.jpg"),plot_totals_county_all_fixed_y)
 
+```
+Change by time periods faceted by county
+```{r}
 # County change between time periods
 #---------------------------------------
 county_change <- county_clean %>% 
@@ -152,10 +164,15 @@ plot_change_county_all <- ggplot(data = county_change, aes(x = year, y = year_di
 
 plot_change_county_all
 
+```
+
+Change by time periods faceted by time period
+
+```{r}
 # Try faceting by time period instead of county
 #---------------------------------------
-# Wrangle for time period categories
 
+# Wrangle for time period categories
 
 county_change_period <- county_change %>%
   filter(year %in% c(2005,2010,2015,2020)) %>% 
@@ -198,6 +215,26 @@ county_change_by_period
 # ggsave(here("Graphics", "county_change_by_period.jpg"), county_change_by_period)
 
 ```
+
+### Land Use
+
+Land Use Change in Acres
+```{r}
+
+land_use_acres <- land_use %>% 
+  select(i_desclu, low_veg_change_acres:outside_forest_change_acres) %>% 
+  pivot_longer(!i_desclu, names_to = "land_use", values_to = "acres")
+
+ggplot(data = land_use_acres, aes(x = land_use, y = acres)) +
+  geom_col(aes(fill = land_use)) +
+  facet_wrap(~i_desclu, scales = "free_y") +
+  labs(title = "Land Use Change",
+       y = "Change in Acreage") +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0))
+
+```
+
 
 ```{r}
 
@@ -255,7 +292,6 @@ county_change_demo <- ggplot(data = county_change_period, aes(x = county, y = ye
 ```
 
 ### Counties Individually (Just in case)
-
 Allegany County
 ```{r}
 
@@ -407,7 +443,6 @@ calvert_change <- ggplot(data = calvert, aes(x = year, y = year_diff))+
 calvert_change
 
 ```
-	
 Caroline County
 ```{r}
 # Caroline
@@ -438,7 +473,6 @@ caroline_change <- ggplot(data = calvert, aes(x = year, y = year_diff))+
 caroline_change
 
 ```
-	
 Carroll County
 ```{r}
 # Carroll
