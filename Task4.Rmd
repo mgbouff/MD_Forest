@@ -57,7 +57,7 @@ zone_palette <- c("#5cb652", # Cropland, light green
                  "#E4572E", # Tree Canopy over impervious, red-orange
                  "#62466B", # Tree Canopy over turf grass, dark purple
                  "#9A7AA0", # Turf Grass, light purple
-                 "#4059AD", # Wetlands Other, blue
+                 "#57AF94", # Wetlands Other, blue-green
                  "#21A0A0") # Wetlands floodplain, teal
 
 # County Pallet
@@ -153,7 +153,7 @@ lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
   guides(fill = guide_legend(title = "Land Use", 
                              title.position = "top",
                              nrow = 3))
- ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
+# ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
 
 lu_county_plot
 
