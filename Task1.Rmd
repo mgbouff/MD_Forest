@@ -15,6 +15,16 @@ library(tidyverse)
 library(janitor)
 library(here)
 
+#1a.
+# Read in 2018 state data
+state_forest <- read.csv(here("Data", "1a_state_short_2018.csv")) %>% 
+  clean_names()
+
+# Read in 2018 county data
+county_forest <- read.csv(here("Data", "1a_County_short_2018.csv")) %>% 
+  clean_names()
+
+# 1b.
 # Read in Plantable Area data
 plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>% 
   clean_names() %>% 
@@ -22,6 +32,85 @@ plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>%
   mutate(county = as.factor(county))
 
 ```
+
+### Task 1a. 2018 forest stats
+```{r}
+#---------------------------------------
+# 2018 statewide tree canopy inside vs. outside forest
+#---------------------------------------
+
+state_in_out <- state_forest %>% 
+  select(tc_a_acres_inside_forest, tc_a_acres_outside_forest) %>% 
+  pivot_longer(tc_a_acres_inside_forest:tc_a_acres_outside_forest,
+               names_to = "type",
+               values_to = "acres") %>% 
+  mutate(type = case_when(
+    type == "tc_a_acres_inside_forest" ~ "Inside Forest",
+    type == "tc_a_acres_outside_forest" ~ "Outside Forest"))
+
+# Plot
+state_in_out_plot <- ggplot(data = state_in_out, aes(x = type, y = acres)) +
+  geom_col(aes(fill = type)) +
+  scale_fill_manual(values = c("#24693d", "#6eb663")) +
+  labs(title = "2018 Tree Canopy Inside and Outside Forests",
+       y = "Tree Canopy Area (Acres)") +
+  scale_y_continuous(breaks = c(0, 500000, 1000000, 1500000),
+                     labels = c("0", "500,000", "1,000,000", "1,500,000")) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times", size = 12),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 14, face = "bold"),
+    legend.position = "none"
+  )
+
+state_in_out_plot
+
+ggsave(here("Graphics", "1a_state_in_out_forest_2018.jpg"), state_in_out_plot)
+
+```
+
+
+```{r}
+#---------------------------------------
+# 2018 tree canopy inside vs. outside forest by county
+#---------------------------------------
+
+county_in_out <- county_forest %>% 
+  select(county, tc_a_acres_inside_forest, tc_a_acres_outside_forest) %>% 
+  pivot_longer(!county, names_to = "type", values_to = "acres") %>% 
+      mutate(type = case_when(
+    type == "tc_a_acres_inside_forest" ~ "Inside Forest",
+    type == "tc_a_acres_outside_forest" ~ "Outside Forest"))
+
+# Plot
+county_in_out_plot <- ggplot(data = county_in_out, aes(x = county, y = acres))+
+  geom_col(aes(fill = type), position = "dodge") +
+  scale_fill_manual(values = c("#24693d", "#6eb663")) +
+  scale_y_continuous(breaks = c(0, 50000, 100000, 150000),
+                     labels = c("0", "50,000", "100,000", "150,000")) +
+  labs(title = "2018 Tree Canopy Inside and Outside Forests",
+       x = "County",
+       y = "Tree Canopy Area (Acres)") +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times", size = 12),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.title = element_blank()
+  )
+
+county_in_out_plot
+
+ggsave(here("Graphics", "1a_county_in_out_forest_2018.jpg"), county_in_out_plot)
+
+```
+
 
 ### Task 1b. Plantable Area
 
