@@ -276,14 +276,14 @@ lu_acres_plot <- ggplot(data = land_use_acres, aes(x = land_use, y = acres)) +
     axis.text.x = element_blank(),
     text = element_text(family = "Times"),
     axis.text = element_text(size = 12),
-    axis.title = element_text(size = 14, family = "Times", face = "bold"),
-    plot.title = element_text(size = 16, family = "Times", face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold"),
 #    legend.position = "none",
     legend.position = "bottom",
     legend.title = element_text(size = 14, face = "bold"),
     legend.title.align = 0.5,
      strip.background = element_rect(color = "grey40", fill = "grey30"),
-    strip.text = element_text(color = "white", face = "bold"),
+    strip.text = element_text(size = 9, color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA)
    ) +
     guides(fill = guide_legend(title = "Land Use",

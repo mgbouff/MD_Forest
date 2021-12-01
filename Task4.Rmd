@@ -57,11 +57,18 @@ zone_palette <- c("#5cb652", # Cropland, light green
                  "#E4572E", # Tree Canopy over impervious, red-orange
                  "#62466B", # Tree Canopy over turf grass, dark purple
                  "#9A7AA0", # Turf Grass, light purple
-                 "#57AF94", # Wetlands Other, blue-green
+                 "#5ADBFF", # Wetlands Other, light blue
                  "#21A0A0") # Wetlands floodplain, teal
 
 # County Pallet
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
+
+# Use stringr::str_wrap() to create breaks in long facet titles
+stwr <- function(string, nwrap = 20){
+  paste(strwrap(string, width = nwrap), collapse = "\n")
+}
+
+stwr = Vectorize(stwr)
 
 ```
 
@@ -89,13 +96,7 @@ lu_update <- lu_change_update %>%
   )) %>% 
   drop_na()
 
-# Use stringr::str_wrap() to create breaks in long facet titles
-stwr <- function(string, nwrap = 20){
-  paste(strwrap(string, width = nwrap), collapse = "\n")
-}
-
-stwr = Vectorize(stwr)
-
+# Use string wrap function
 lu_update$full_name = stwr(lu_update$full_name)
 
 # Plot
@@ -131,6 +132,9 @@ lu_update_plot
 Projected Land Use Faceted by County
 ```{r}
 
+# Use string wrap function
+lu_update$full_name = stwr(lu_update$full_name)
+
 lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
   geom_col(aes(fill = full_name)) +
   scale_fill_manual(values = zone_palette) +
@@ -153,7 +157,7 @@ lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
   guides(fill = guide_legend(title = "Land Use", 
                              title.position = "top",
                              nrow = 3))
-# ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
+ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
 
 lu_county_plot
 
