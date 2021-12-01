@@ -157,7 +157,7 @@ lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
   guides(fill = guide_legend(title = "Land Use", 
                              title.position = "top",
                              nrow = 3))
-ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
+# ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
 
 lu_county_plot
 
@@ -293,7 +293,8 @@ in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = t
     axis.text = element_text(size = 12),
     axis.title = element_text(size = 14, family = "Times", face = "bold"),
     legend.position = "bottom",
-    legend.title = element_blank()
+    legend.title = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))
   )
 
 in_out_forest_plot
@@ -348,11 +349,11 @@ zone_change_all <- ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
   geom_hline(aes(yintercept=0)) +
   theme(
 #  legend.position = "none",
-  legend.title = element_text(size = 13, face = "bold"),
+  legend.title = element_text(size = 16, face = "bold"),
    text = element_text(family = "Times"),
    axis.text.x = element_blank(),
    axis.title.x = element_blank(),
-   axis.title.y = element_text(size = 13, face = "bold"),
+   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 13, face = "bold"),
 strip.background = element_rect(color = "grey40", fill = "grey30"),
 strip.text = element_text(size = 8.5, color = "white", face = "bold"),
 panel.border = element_rect(color = "grey40", fill = NA),
@@ -361,7 +362,7 @@ panel.border = element_rect(color = "grey40", fill = NA),
 
 zone_change_all
 
-# ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all)
+# ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all, width = 8, height = 7)
 
 ```
 

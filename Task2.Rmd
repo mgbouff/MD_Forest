@@ -57,12 +57,14 @@ state_frag_plot <- ggplot(data = state_frag_change, aes(x = metric, y = acres_ch
     text = element_text(family = "Times"),
     axis.text = element_text(size = 12),
     axis.title = element_text(size = 14, family = "Times", face = "bold"),
-    plot.title = element_text(size = 16, family = "Times", face = "bold")
+    plot.title = element_text(size = 16, family = "Times", face = "bold"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))
     )
 
 state_frag_plot
 
-ggsave(here("Graphics", "2_state_frag_change.jpg"), state_frag_plot)
+# ggsave(here("Graphics", "2_state_frag_change.jpg"), state_frag_plot)
 
 ```
 2018 Totals
@@ -102,12 +104,14 @@ state_2018_plot <- ggplot(data = state_frag_2018, aes(x = metric, y = acres)) +
     text = element_text(family = "Times"),
     axis.text = element_text(size = 12),
     axis.title = element_text(size = 14, family = "Times", face = "bold"),
-    plot.title = element_text(size = 16, family = "Times", face = "bold")
+    plot.title = element_text(size = 16, family = "Times", face = "bold"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))
     )
 
 state_2018_plot
 
-ggsave(here("Graphics", "2_state_frag_2018.jpg"), state_2018_plot)
+# ggsave(here("Graphics", "2_state_frag_2018.jpg"), state_2018_plot)
 
 ```
 2013 totals
@@ -147,11 +151,13 @@ state_2013_plot <- ggplot(data = state_frag_2013, aes(x = metric, y = acres)) +
     text = element_text(family = "Times"),
     axis.text = element_text(size = 12),
     axis.title = element_text(size = 14, family = "Times", face = "bold"),
-    plot.title = element_text(size = 16, family = "Times", face = "bold")
+    plot.title = element_text(size = 16, family = "Times", face = "bold"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))
     )
 
 state_2013_plot
 
-ggsave(here("Graphics", "2_state_frag_2013.jpg"), state_2013_plot)
+# ggsave(here("Graphics", "2_state_frag_2013.jpg"), state_2013_plot)
 
 ```

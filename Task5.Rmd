@@ -43,6 +43,9 @@ lu_pallette <- c("#F9DB6D", # Barren, light yellow
                  "#4059AD", # Water, royal blue
                  "#21A0A0") # Blue-green
 
+# County Pallet
+county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
+
 # Use stringr::str_wrap() to create breaks in long facet titles
 stwr <- function(string, nwrap = 15){
   paste(strwrap(string, width = nwrap), collapse = "\n")
@@ -69,10 +72,15 @@ plot_totals_state <- ggplot(data = state_clean, aes(x = year, y = acres))+
   geom_line(color = "seagreen4", size = 2)+
     labs(x = "Year",
        y = "Acres of Forest") +
+    scale_y_continuous(breaks = c(3300000, 3325000, 3350000),
+    labels = c("3,300,000","3,325,000","3,350,000"))+
   theme_minimal() +
-  theme(text = element_text(size = 16, family = "Times"))
+  theme(text = element_text(size = 14, family = "Times"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-ggsave(here("Graphics", "totals_state.jpg"),plot_totals_state)
+# ggsave(here("Graphics", "totals_state.jpg"),plot_totals_state)
 
 plot_totals_state
 
@@ -89,13 +97,18 @@ plot_change_state <- ggplot(data = state_change, aes(x = year, y = year_diff))+
   geom_col(fill = "seagreen4")+
   scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
     labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    scale_y_continuous(breaks = c(0, 10000, 20000),
+    labels = c("0","10,000","20,000"))+
     labs(x = "Time Period",
        y = "Change in Total Acreage") +
   # scale_y_continuous(limits=c(-30000,1000))+
   # geom_hline(aes(yintercept=0))+
   #   geom_vline(aes(xintercept=1997))+
   theme_minimal()+
-  theme(text = element_text(size = 16, family = "Times"))
+  theme(text = element_text(size = 16, family = "Times"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
 plot_change_state
 
@@ -121,38 +134,45 @@ county_clean <- county_tab %>%
 
 # Plot totals over time by county
 plot_totals_county_all <- ggplot(data = county_clean, aes(x = year, y = acres)) +
-  geom_line(color = "seagreen4") +
+  geom_line(color = "seagreen4", size = 1) +
   scale_x_continuous(breaks = c(2000, 2005, 2010, 2015, 2020), 
                      labels = c("2000","", "2010","","2020")) +
   facet_wrap(~county, ncol = 4, scales = "free_y") +
       labs(x = "Year",
        y = "Forested Area (acres)") +
   theme_minimal() +
-  theme(text = element_text(family = "Times"),
+  theme(text = element_text(family = "Times", size = 10),
     axis.title = element_text(size = 16, family = "Times"),
     axis.text = element_text(size = 10, family = "Times"),
-    panel.spacing.x = unit(2, "lines"))
+    panel.spacing.x = unit(2, "lines"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"))
 
-ggsave(here("Graphics", "totals_county_all.jpg"),plot_totals_county_all)
+# ggsave(here("Graphics", "totals_county_all.jpg"),plot_totals_county_all, width=7, height=7)
 
 plot_totals_county_all
 
-# Test Fixed y axis
-# plot_totals_county_all_fixed_y <- ggplot(data = county_clean, aes(x = year, y = acres)) +
-#   geom_line(color = "seagreen4") +
-#   scale_x_continuous(breaks = c(2000, 2005, 2010, 2015, 2020), 
-#                      labels = c("2000","", "2010","","2020")) +
-#   scale_y_continuous(breaks = c(100000, 200000, 300000),
-#                      labels = c("100", "200", "300"))+
-#   facet_wrap(~county, ncol = 4) +
-#       labs(x = "Year",
-#        y = "Forested Area (thousands of acres)") +
-#   theme_minimal() +
-#   theme(axis.title = element_text(size = 16, family = "Times"),
-#         axis.text = element_text(size = 10, family = "Times"),
-#         panel.spacing.x = unit(2, "lines"))
-# 
-# ggsave(here("Graphics", "totals_county_all_fixed_y.jpg"),plot_totals_county_all_fixed_y)
+# Plot totals over time by county with county pallette
+plot_totals_county_cp <- ggplot(data = county_clean, aes(x = year, y = acres)) +
+  geom_line(aes(color = county), size = 1) +
+  scale_color_manual(values = county_pallette) +
+  scale_x_continuous(breaks = c(2000, 2005, 2010, 2015, 2020), 
+                     labels = c("2000","", "2010","","2020")) +
+  facet_wrap(~county, ncol = 4, scales = "free_y") +
+      labs(x = "Year",
+       y = "Forested Area (acres)") +
+  theme_minimal() +
+  theme(text = element_text(family = "Times", size = 10),
+    axis.title = element_text(size = 16, family = "Times"),
+    axis.text = element_text(size = 10, family = "Times"),
+    panel.spacing.x = unit(2, "lines"),
+    legend.position = "none",
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"))
+
+# ggsave(here("Graphics", "totals_county_all_cp.jpg"),plot_totals_county_cp, width=7, height=7)
+
+plot_totals_county_cp
 
 ```
 Change by time periods faceted by county
@@ -178,12 +198,42 @@ plot_change_county_all <- ggplot(data = county_change, aes(x = year, y = year_di
     text = element_text(family = "Times"),
     axis.title = element_text(size = 16, family = "Times"),
     axis.text = element_text(size = 10, family = "Times"),
-    panel.spacing = unit(1, "lines")
+    axis.text.x = element_text(angle = 90),
+    panel.spacing = unit(1, "lines"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold")
     )
 
-# ggsave(here("Graphics", "change_county_all.jpg"),plot_change_county_all)
+# ggsave(here("Graphics", "change_county_all.jpg"),plot_change_county_all, width=7, height=7)
 
 plot_change_county_all
+
+# Plot difference between time periods with county pallette
+plot_change_county_cp <- ggplot(data = county_change, aes(x = year, y = year_diff))+
+  geom_col(aes(fill = county))+
+  scale_fill_manual(values = county_pallette) +
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
+    labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
+    labs(x = "Time Period",
+       y = "Total Change in Acreage") +
+    geom_hline(aes(yintercept=0))+
+    geom_vline(aes(xintercept=2002))+
+  facet_wrap(~county, ncol = 4, scales = "free_y")+
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times"),
+    axis.title = element_text(size = 16, family = "Times"),
+    axis.text = element_text(size = 10, family = "Times"),
+    axis.text.x = element_text(angle = 90),
+    panel.spacing = unit(1, "lines"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+    legend.position = "none"
+    )
+
+# ggsave(here("Graphics", "change_county_cp.jpg"),plot_change_county_cp, width=7, height=7)
+
+plot_change_county_cp
 
 ```
 
@@ -274,8 +324,8 @@ lu_acres_plot <- ggplot(data = land_use_acres, aes(x = land_use, y = acres)) +
   theme(
     axis.title.x = element_blank(),
     axis.text.x = element_blank(),
-    text = element_text(family = "Times"),
-    axis.text = element_text(size = 12),
+    text = element_text(family = "Times", size = 14),
+    axis.text = element_text(size = 14),
     axis.title = element_text(size = 14, face = "bold"),
     plot.title = element_text(size = 16, face = "bold"),
 #    legend.position = "none",
@@ -283,7 +333,7 @@ lu_acres_plot <- ggplot(data = land_use_acres, aes(x = land_use, y = acres)) +
     legend.title = element_text(size = 14, face = "bold"),
     legend.title.align = 0.5,
      strip.background = element_rect(color = "grey40", fill = "grey30"),
-    strip.text = element_text(size = 9, color = "white", face = "bold"),
+    strip.text = element_text(size = 12, color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA)
    ) +
     guides(fill = guide_legend(title = "Land Use",
@@ -291,7 +341,7 @@ lu_acres_plot <- ggplot(data = land_use_acres, aes(x = land_use, y = acres)) +
                                nrow = 2))
 lu_acres_plot
 
-ggsave(here("Graphics", "5_land_use_change_legend.jpg"), lu_acres_plot)
+# ggsave(here("Graphics", "5_land_use_change_legend.jpg"), lu_acres_plot, width=9, height=7)
 
 ```
 
@@ -315,7 +365,7 @@ county_change_by_period_v2 <- ggplot(data = county_change_period, aes(x = county
 #    legend.position = "none"
     legend.position = "bottom",
     legend.title = element_text(size = 14, face = "bold"),
-    legend.title.align = 0.5
+    legend.title.align = 0.5,
   ) +
   guides(fill = guide_legend(title = "County",
                              title.position = "top",
@@ -326,25 +376,25 @@ county_change_by_period_v2
 # ggsave(here("Graphics", "county_change_by_period_v2.jpg"), county_change_by_period_v2)
 
 # County Change by Period With Lables for Jarlath
-county_change_demo <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
-  geom_col(aes(fill = county))+
-  geom_text(aes(label = county, color = county), check_overlap = TRUE, angle = 45, size = 3.5) +
-  facet_wrap(~time_period) +
-  scale_fill_manual(values = county_pallette) +
-  scale_color_manual(values = county_pallette) +
-  labs(x = " ",
-       y = "Total Change in Acreage")+
-  theme_minimal()+
-  geom_hline(aes(yintercept=0))+
-  geom_vline(aes(xintercept=0))+
-  theme(
-    axis.text.x = element_blank(),
-    axis.title.y = element_text(size = 14, face = "bold"),
-    strip.background = element_rect(color = "grey40", fill = "grey30"),
-    strip.text = element_text(size = 14, color = "white", face = "bold"),
-    panel.border = element_rect(color = "grey40", fill = NA),
-    legend.position = "none"
-  )
+# county_change_demo <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
+#   geom_col(aes(fill = county))+
+#   geom_text(aes(label = county, color = county), check_overlap = TRUE, angle = 45, size = 3.5) +
+#   facet_wrap(~time_period) +
+#   scale_fill_manual(values = county_pallette) +
+#   scale_color_manual(values = county_pallette) +
+#   labs(x = " ",
+#        y = "Total Change in Acreage")+
+#   theme_minimal()+
+#   geom_hline(aes(yintercept=0))+
+#   geom_vline(aes(xintercept=0))+
+#   theme(
+#     axis.text.x = element_blank(),
+#     axis.title.y = element_text(size = 14, face = "bold"),
+#     strip.background = element_rect(color = "grey40", fill = "grey30"),
+#     strip.text = element_text(size = 14, color = "white", face = "bold"),
+#     panel.border = element_rect(color = "grey40", fill = NA),
+#     legend.position = "none"
+#   )
 
 # ggsave(here("Graphics", "county_change_labled.jpg"), county_change_demo)
 
