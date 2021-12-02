@@ -44,6 +44,18 @@ lc_pallette <- c("#6eb663", # Forest Canopy, light green
                  "#57AF94" # Shrub, green-blue
                  )
 
+lc_county_pallette <- c(
+  "#6eb663", # Forest Canopy, light green
+  "#8DBE87", # Low veg, light green
+  "#F08701", # Impervious, orange 
+  "#F9A620", # Roads, light orange
+  "#D9682A", # Buildings, brick
+  "#4059AD", # Water, royal blue
+  "#21A0A0",  # Wetland, Blue-green
+  "#F9DB6D", # Barren, light yellow
+  "#57AF94" # Shrub, green-blue
+)
+
 
 ```
 
@@ -173,7 +185,6 @@ state_lc_percent_stack
 ggsave(here("Graphics", "1a_state_lc_stack.jpg"), state_lc_percent_stack, width = 7.29, height = 3)
 
 ```
-
 #### County Level
 Tree canopy inside vs. outside forests
 ```{r}
@@ -186,10 +197,11 @@ county_in_out <- county_forest %>%
   pivot_longer(!county, names_to = "type", values_to = "acres") %>% 
       mutate(type = case_when(
     type == "tc_a_acres_inside_forest" ~ "Inside Forest",
-    type == "tc_a_acres_outside_forest" ~ "Outside Forest"))
+    type == "tc_a_acres_outside_forest" ~ "Outside Forest")) %>% 
+  mutate(county = as.factor(county))
 
 # Plot
-county_in_out_plot <- ggplot(data = county_in_out, aes(x = county, y = acres))+
+county_in_out_plot <- ggplot(data = county_in_out, aes(x = fct_rev(county), y = acres))+
   geom_col(aes(fill = type), position = "dodge") +
   scale_fill_manual(values = c("#24693d", "#6eb663")) +
   scale_y_continuous(breaks = c(0, 50000, 100000, 150000),
@@ -210,13 +222,53 @@ county_in_out_plot <- ggplot(data = county_in_out, aes(x = county, y = acres))+
 
 county_in_out_plot
 
-ggsave(here("Graphics", "1a_county_in_out_forest_2018.jpg"), county_in_out_plot)
+# ggsave(here("Graphics", "1a_county_in_out_forest_2018.jpg"), county_in_out_plot)
+
+```
+Other land use change by county
+```{r}
+#---------------------------------------
+# 2018 statewide land cover change by county
+#---------------------------------------
+
+county_lc_2018 <- county_forest %>% 
+  select(county, can_p:shrub_p) %>% 
+  pivot_longer(!county, names_to = "type", values_to = "percent") %>% 
+    mutate(type = case_when(
+    type == "can_p" ~ "Tree Canopy",
+    type == "low_veg_p" ~ "Low Vegetation",
+    type == "barren_p" ~ "Barren",
+    type == "water_p" ~ "Water",
+    type == "build_p" ~ "Building",
+    type == "road_p" ~ "Road",
+    type == "imperv_p" ~ "Impervious",
+    type == "wetlands_p" ~ "Wetlands",
+    type == "shrub_p" ~ "Shrub")) %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(type = fct_reorder(type, desc(percent)))
+
+ggplot(data = county_lc_2018, aes(fill = type, x = fct_rev(county), y = percent)) +
+  geom_bar(position = "fill", stat = "identity") +
+  labs(
+    title = "2018 Land Cover Proportions by County",
+    y = "Percent Land Cover") +
+  scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
+                     labels = c("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%")) +
+  scale_fill_manual(values = lc_county_pallette) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.title = element_text(size = 14)
+  )
 
 ```
 
 
 ### Task 1b. Plantable Area
-
 ```{r}
 
 #---------------------------------------
