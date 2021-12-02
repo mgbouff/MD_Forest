@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(tidyverse)
 library(janitor)
 library(here)
+library(scales)
 
 #1a.
 # Read in 2018 state data
@@ -31,14 +32,29 @@ plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>%
   rename(county = i_county) %>% 
   mutate(county = as.factor(county))
 
+lc_pallette <- c("#6eb663", # Forest Canopy, light green
+                 "#8DBE87", # Low veg, light green
+                 "#F08701", # Impervious, orange 
+                 "#21A0A0",  # Wetland, Blue-green
+                 "#F9A620", # Roads, light orange
+                 "#D9682A", # Buildings, brick
+#                 "#24693d", # Forest, green
+                 "#4059AD", # Water, royal blue
+                 "#F9DB6D", # Barren, light yellow
+                 "#57AF94" # Shrub, green-blue
+                 )
+
+
 ```
 
 ### Task 1a. 2018 forest stats
+
+#### State Level
+Tree canopy inside vs. outside forests
 ```{r}
 #---------------------------------------
 # 2018 statewide tree canopy inside vs. outside forest
 #---------------------------------------
-
 state_in_out <- state_forest %>% 
   select(tc_a_acres_inside_forest, tc_a_acres_outside_forest) %>% 
   pivot_longer(tc_a_acres_inside_forest:tc_a_acres_outside_forest,
@@ -71,8 +87,95 @@ state_in_out_plot
 ggsave(here("Graphics", "1a_state_in_out_forest_2018.jpg"), state_in_out_plot)
 
 ```
+Other land use change
+```{r}
+#---------------------------------------
+# 2018 statewide land cover change
+#---------------------------------------
 
+# Get percents 
+state_lc_percent <- state_forest %>% 
+  select(i_total_a_acres:imperv_a_acres) %>% 
+  pivot_longer(can_a_acres:imperv_a_acres, names_to = "lc", values_to = "acres") %>%
+  mutate(lc = case_when(
+#    lc == "i_total_a_acres" ~ "Total Acres",
+    lc == "can_a_acres" ~ "Tree Canopy",
+    lc == "low_veg_a_acres" ~ "Low Vegetation",
+    lc == "barren_a_acres" ~ "Barren",
+    lc == "water_a_acres" ~ "Water",
+    lc == "build_a_acres" ~ "Building",
+    lc == "road_a_acres" ~ "Road",
+    lc == "imperv_a_acres" ~ "Impervious",
+    lc == "wetlands_a_acres" ~ "Wetlands",
+    lc == "shrub_a_acres" ~ "Shrub")) %>% 
+  mutate(percent = acres/sum(acres),
+         label = scales::percent(percent)) %>% 
+  mutate(lc = fct_reorder(lc, desc(percent)))
 
+state_lc_percent$state <- "Maryland"
+
+# plot columns
+#---------------------------------------
+state_lc_percent_col <- ggplot(data = state_lc_percent, aes(x = lc, y = percent, label = label)) +
+  geom_col(aes(fill = lc)) +
+  geom_text(hjust = -0.1, color = "grey40", size = 3) +
+  scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.65),
+                     labels = c("0%", "10%", "20%", "30%", "40%", "50%", " ")) +
+  scale_fill_manual(values = lc_pallette) +
+  labs(x = "Land Use Type",
+       y = "Percent of Land Cover") +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times", size = 12),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+#    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.position = "none"
+  )
+
+state_lc_percent_col
+
+# ggsave(here("Graphics", "1a_state_lc_col.jpg"), state_lc_percent_col, width = 7.5, height = 4.5)
+
+# plot stacked bar
+#---------------------------------------
+state_lc_percent_stack <- ggplot(data = state_lc_percent, aes(fill = lc, x = state, y = percent, label = label)) +
+  geom_bar(position = "fill", stat = "identity") +
+  geom_text(
+#    vjust = -12, 
+    hjust = -5, 
+    size = 3,
+    color = "white") +
+  labs(
+    title = "2018 Land Cover Proportions",
+    y = "Percent State Land Cover") +
+  scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
+                     labels = c("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%")) +
+  scale_fill_manual(values = lc_pallette) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.title = element_text(size = 14),
+    legend.position = "top",
+    legend.title.align = 0.5
+  ) +
+  guides(fill = guide_legend(title = "Land Cover Type",
+                             title.position = "top"))
+
+state_lc_percent_stack
+
+ggsave(here("Graphics", "1a_state_lc_stack.jpg"), state_lc_percent_stack, width = 7.29, height = 3)
+
+```
+
+#### County Level
+Tree canopy inside vs. outside forests
 ```{r}
 #---------------------------------------
 # 2018 tree canopy inside vs. outside forest by county

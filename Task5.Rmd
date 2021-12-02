@@ -41,7 +41,7 @@ lu_pallette <- c("#F9DB6D", # Barren, light yellow
                  "#57AF94", # Shrub, green-blue
                  "#6eb663", # Outside Forest, light green
                  "#4059AD", # Water, royal blue
-                 "#21A0A0") # Blue-green
+                 "#21A0A0") # Wetland, Blue-green
 
 # County Pallet
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
