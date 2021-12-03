@@ -318,7 +318,7 @@ zone_change <- zoning_raw %>%
   mutate(genzone = fct_relevel(genzone,
             "Very Low Density Residential", "Low Density Residential", "Medium Density Residential", "High Density Residential", "Rural Low Density Residential", "Rural Medium Density Residential", "Rural High Density Residential", "Industrial", "Commercial", "Mixed Use", "Other")) %>% 
     mutate(full_name = case_when(
-    lc == "tc_area_acres_change" ~ "Total Change",
+    lc == "tc_area_acres_change" ~ "Tree Canopy Change",
     lc == "barren_area_acres_change" ~ "Barren Areas",
     lc == "buildings_area_acres_change" ~ "Building Areas",
     lc == "impervious_area_acres_change" ~ "Impervious Areas",
@@ -362,7 +362,7 @@ panel.border = element_rect(color = "grey40", fill = NA),
 
 zone_change_all
 
-# ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all, width = 8, height = 7)
+ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all, width = 8, height = 7)
 
 ```
 

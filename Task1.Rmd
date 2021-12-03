@@ -285,7 +285,7 @@ state_merge <- state_merge[,c("county", "type", "percent")]
 
 state_county_merge <- rbind(state_merge, county_lc_2018) %>% 
   mutate(county = as.factor(county)) %>%  
-  mutate(county = fct_relevel(county, "Statewide"))
+  mutate(county = fct_relevel(county, "Statewide", " "))
 
 # Make bold label for state
 # bold.state <- "Statewide"
@@ -293,7 +293,7 @@ state_county_merge <- rbind(state_merge, county_lc_2018) %>%
 # Almost works
 
 # Plot
-ggplot(data = state_county_merge, aes(fill = type, x = fct_rev(county), y = percent)) +
+county_state_merge_plot <- ggplot(data = state_county_merge, aes(fill = type, x = fct_rev(county), y = percent)) +
   geom_bar(position = "fill", stat = "identity") +
   labs(
     title = "2018 Land Cover Proportions by County",
@@ -308,9 +308,15 @@ ggplot(data = state_county_merge, aes(fill = type, x = fct_rev(county), y = perc
 #    axis.text.y = element_text(face = bold.label),
     plot.title = element_text(size = 16, face = "bold"),
     axis.title = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
-    legend.title = element_text(size = 14)
+    legend.title = element_text(size = 14),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
   )+
   guides(fill = guide_legend(title = "Land Cover Type"))
+
+county_state_merge_plot
+
+ggsave(here("Graphics", "1a_county_state_lu_change.jpg"), county_state_merge_plot)
 
 ```
 
@@ -326,7 +332,9 @@ plantable_county_plot <- ggplot(data = plantable_county, aes(x = fct_rev(county)
   geom_col(fill = "seagreen4") +
   labs(x = "County", 
        y = "Acres",
-       title = "Plantable Area by County") +
+       title = "Plantable Area by Jursidction") +
+  scale_y_continuous(breaks = c(0, 25000, 50000, 75000),
+                     labels = c("0", "25,000", "50,000", "75,000")) +
   coord_flip() +
   theme_minimal() +
   theme(
@@ -337,8 +345,6 @@ plantable_county_plot <- ggplot(data = plantable_county, aes(x = fct_rev(county)
     )
 
 plantable_county_plot
-
-ggsave(here("Graphics", "1b_plantable_county.jpg"),plantable_county_plot)
 
 ```
 
