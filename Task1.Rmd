@@ -48,10 +48,10 @@ lc_county_pallette <- c(
   "#6eb663", # Forest Canopy, light green
   "#8DBE87", # Low veg, light green
   "#F08701", # Impervious, orange 
+  "#21A0A0",  # Wetland, Blue-green
   "#F9A620", # Roads, light orange
   "#D9682A", # Buildings, brick
   "#4059AD", # Water, royal blue
-  "#21A0A0",  # Wetland, Blue-green
   "#F9DB6D", # Barren, light yellow
   "#57AF94" # Shrub, green-blue
 )
@@ -247,10 +247,11 @@ county_lc_2018 <- county_forest %>%
   mutate(county = as.factor(county)) %>% 
   mutate(type = fct_reorder(type, desc(percent)))
 
-ggplot(data = county_lc_2018, aes(fill = type, x = fct_rev(county), y = percent)) +
+county_lc_percent_stack <- ggplot(data = county_lc_2018, aes(fill = type, x = fct_rev(county), y = percent)) +
   geom_bar(position = "fill", stat = "identity") +
   labs(
     title = "2018 Land Cover Proportions by County",
+    x = "County",
     y = "Percent Land Cover") +
   scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
                      labels = c("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%")) +
@@ -259,11 +260,57 @@ ggplot(data = county_lc_2018, aes(fill = type, x = fct_rev(county), y = percent)
   theme_minimal() +
   theme(
     plot.title = element_text(size = 16, face = "bold"),
-    axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    axis.title = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
     legend.title = element_text(size = 14)
-  )
+  )+
+  guides(fill = guide_legend(title = "Land Cover Type"))
+
+county_lc_percent_stack
+
+ggsave(here("Graphics", "1a_county_lc_stack.jpg"), county_lc_percent_stack)
+
+```
+Attempt merge state row into county plot
+```{r}
+
+# Merge Dataframes
+state_merge <- state_lc_percent %>% 
+  mutate(type = lc) %>% 
+  select(type, percent) %>% 
+  mutate(percent = percent*100)
+  
+state_merge$county <- c("Statewide")
+
+state_merge <- state_merge[,c("county", "type", "percent")]
+
+state_county_merge <- rbind(state_merge, county_lc_2018) %>% 
+  mutate(county = as.factor(county)) %>%  
+  mutate(county = fct_relevel(county, "Statewide"))
+
+# Make bold label for state
+# bold.state <- "Statewide"
+# bold.label <- ifelse(levels(state_county_merge$county) %in% bold.state, yes = "bold", no = "plain")
+# Almost works
+
+# Plot
+ggplot(data = state_county_merge, aes(fill = type, x = fct_rev(county), y = percent)) +
+  geom_bar(position = "fill", stat = "identity") +
+  labs(
+    title = "2018 Land Cover Proportions by County",
+    x = "County",
+    y = "Percent Land Cover") +
+  scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
+                     labels = c("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%")) +
+  scale_fill_manual(values = lc_county_pallette) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+#    axis.text.y = element_text(face = bold.label),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.title = element_text(size = 14)
+  )+
+  guides(fill = guide_legend(title = "Land Cover Type"))
 
 ```
 
