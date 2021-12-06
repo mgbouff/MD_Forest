@@ -123,7 +123,7 @@ lu_update_plot <- ggplot(lu_update, aes(x = cntyname, y = acres)) +
   geom_col(aes(fill = cntyname)) +
   scale_fill_manual(values = county_pallette) +
   facet_wrap(~full_name, scales = "free_y") +
-  labs(x = "County", y = "Acres") +
+  labs(x = "County", y = "Change in Area (Acres)") +
   theme_minimal() +
    geom_hline(aes(yintercept=0)) +
   theme(
@@ -138,13 +138,13 @@ lu_update_plot <- ggplot(lu_update, aes(x = cntyname, y = acres)) +
     axis.title.y = element_text(size = 14, face = "bold"),
     axis.text.x = element_blank(),
     axis.title.x = element_blank()) +
-  guides(fill = guide_legend(title = "County", 
+  guides(fill = guide_legend(title = "Jurisdiction", 
                              title.position = "top",
                              nrow = 4))
 
 lu_update_plot
 
-# ggsave(here("Graphics", "4_lu_update_legend.jpg"), lu_update_plot)
+ggsave(here("Graphics", "4_lu_update_legend.jpg"), lu_update_plot, width = 8.5, height = 7)
 
 ```
 
@@ -158,7 +158,7 @@ lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
   geom_col(aes(fill = full_name)) +
   scale_fill_manual(values = zone_palette) +
   facet_wrap(~cntyname, scales = "free_y") +
-  labs(x = "Land Use", y = "Acres") +
+  labs(x = "Land Use", y = "Change in Area (Acres)") +
   theme_minimal() +
    geom_hline(aes(yintercept=0)) +
   theme(
@@ -176,7 +176,7 @@ lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
   guides(fill = guide_legend(title = "Land Use", 
                              title.position = "top",
                              nrow = 3))
-# ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
+ggsave(here("Graphics", "4_lu_county.jpg"), lu_county_plot)
 
 lu_county_plot
 
@@ -284,8 +284,8 @@ in_out_forest_change <- zoning_raw %>%
   group_by(genzone, in_or_out) %>%
   summarize(tc_acres = sum(acres_change)) %>% 
   mutate(in_or_out = case_when(
-    in_or_out == "tc_inside_forest_change_acres" ~ "Inside Forest Change",
-    in_or_out == "tc_outside_forest_change_acres" ~ "Outside Forest Change"
+    in_or_out == "tc_inside_forest_change_acres" ~ "Forest",
+    in_or_out == "tc_outside_forest_change_acres" ~ "Tree Canopy Outside Forest"
   )) %>% 
   mutate(genzone = as.factor(genzone)) %>%
   mutate(genzone = fct_relevel(genzone,
@@ -300,8 +300,10 @@ in_out_forest_change <- zoning_raw %>%
 in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = tc_acres)) +
   geom_col(position = "dodge", 
            aes(fill = in_or_out)) +
-  labs(x = "Zone Type",
-    y = "Change in Acres") +
+  labs(
+    title = "Change in Tree Canopy Are by Zone Type",
+#    x = "Zone Type",
+    y = "Change in Area (Acres)") +
   scale_fill_manual(values = c("#24693d", # Inside
                                "#6eb663" # Outside
                                )) +
@@ -309,17 +311,20 @@ in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = t
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
   theme(
-    text = element_text(family = "Times"),
+    text = element_text(family = "Times", size = 12),
     axis.text = element_text(size = 12),
-    axis.title = element_text(size = 14, family = "Times", face = "bold"),
+    axis.title.x = element_text(size = 14, family = "Times", face = "bold"),
+    axis.title.y = element_blank(),
     legend.position = "bottom",
     legend.title = element_blank(),
-    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))
+    legend.text = element_text(size = 12),
+    plot.title = element_text(size = 16, face = "bold")
+#    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))
   )
 
 in_out_forest_plot
 
-# ggsave(here("Graphics","4_in_out_forest_change.jpg"), in_out_forest_plot)
+ggsave(here("Graphics","4_in_out_forest_change.jpg"), in_out_forest_plot, width = 9.5, height = 7)
 
 ```
 
@@ -364,7 +369,7 @@ zone_change_all <- ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
   labs(
 #    title = "Total Area Change",
     x = "Zone",
-    y = "Change in Acres") +
+    y = "Change in Area (Acres)") +
   scale_fill_manual(values = lc_pallette) +
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
@@ -383,7 +388,7 @@ panel.border = element_rect(color = "grey40", fill = NA),
 
 zone_change_all
 
-ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all, width = 8, height = 7)
+ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all, width = 8, height = 5.5)
 
 ```
 
@@ -448,12 +453,54 @@ sewer_acres_plot
 ggsave(here("Graphics", "4_sewer_service_acres.jpg"), sewer_acres_plot)
 
 ```
-Percent
+Sewer Service Area Forest Change
 ```{r}
+#---------------------------------------
+# Forest Change by Sewer Service Area
+#---------------------------------------
+sewer_forest_change <- sewer_service %>% 
+  select(genz_swr, forest_change_acres:outside_forest_change_acres) %>% 
+  pivot_longer(!genz_swr, names_to = "forest_type", values_to = "acres") %>% 
+  group_by(genz_swr, forest_type) %>% 
+  summarize(acres_change = sum(acres)) %>% 
+  drop_na() %>% 
+  mutate(forest_type = case_when(
+    forest_type == "forest_change_acres" ~ "Forest",
+    forest_type == "outside_forest_change_acres" ~ "Tree Canopy Outside Forest"))
 
-sewer_percent <- sewer_service %>% 
-  select(genz_swr, tc_percent_change:imperv_percent_change)%>% 
-  pivot_longer(!genz_swr, names_to = "type", values_to = "percent")
+# Use stringr function
+sewer_forest_change$genz_swr = stwr(sewer_forest_change$genz_swr)
+
+# Plot
+#---------------------------------------
+sewer_forest_plot <- ggplot(data = sewer_forest_change, aes(x = forest_type, y = acres_change)) +
+  geom_col(position = "dodge", aes(fill = forest_type)) +
+  labs(title = "Tree Canopy Change by Sewer Service Area",
+       y = "Change in Area (Acres)") +
+  facet_wrap(~genz_swr, scales = "free_y") +
+  scale_fill_manual(values = c("#24693d", # Inside
+                               "#6eb663" # Outside
+                               )) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold"),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.title.align = 0.5,
+    legend.position = "bottom",
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 12, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+  ) +
+  guides(fill = guide_legend(title = "Forest Type",
+                               title.position = "top"))
+
+sewer_forest_plot
+
+ggsave(here("Graphics", "4_sewer_forest_change.jpg"), sewer_forest_plot)
 
 ```
 
