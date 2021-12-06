@@ -28,11 +28,19 @@ lu_change_update <- read_excel(here("Data", "4_MD_Tech_Study_cz_2021_20210929.xl
   clean_names() %>% 
   mutate(cntyname = str_to_title(cntyname)) # change counties from all caps to sentence case
 
-# Read in zoning data
+# Read in zoning data and make title case
 zoning_raw <- read.csv(here("Data", "4_GenZoning_LC_Forest_Change.csv")) %>%
   clean_names() %>% 
   rename(genzone = i_genzone) %>% 
   mutate(genzone = str_to_title(genzone))
+
+# Read in sewer data
+sewer_service <- read.csv(here("Data", "4_SewerService.csv")) %>% 
+  clean_names() %>% 
+  mutate(genz_swr = str_to_title(genz_swr))
+
+# Set blanks to NA
+sewer_service[sewer_service == c(" ", "")] <- NA
 
 # Land Use Pallette
 lc_pallette <- c("#B0A4CC", # Light purple
@@ -46,6 +54,16 @@ lc_pallette <- c("#B0A4CC", # Light purple
                  "#046865", # Dark Teal
                  "#E1BC29", # Dark Yellow
                  "#FFEE88") # Light Yellow
+
+lu_pallette <- c("#F9DB6D", # Barren, light yellow
+                 "#D9682A", # Buildings, brick
+                 "#F08701", # Impervious, orange 
+                 "#8DBE87", # Low veg, light green
+                 "#F9A620", # Roads, light orange
+                 "#57AF94", # Shrub, green-blue
+                 "#6eb663", # Tree Canopy, light green
+                 "#4059AD", # Water, royal blue
+                 "#21A0A0") # Wetland, Blue-green
 
 # Zoning Palette
 zone_palette <- c("#5cb652", # Cropland, light green
@@ -100,6 +118,7 @@ lu_update <- lu_change_update %>%
 lu_update$full_name = stwr(lu_update$full_name)
 
 # Plot
+#---------------------------------------
 lu_update_plot <- ggplot(lu_update, aes(x = cntyname, y = acres)) +
   geom_col(aes(fill = cntyname)) +
   scale_fill_manual(values = county_pallette) +
@@ -277,6 +296,7 @@ in_out_forest_change <- zoning_raw %>%
 # in_out_forest_change$genzone = stwr(in_out_forest_change$genzone)
 
 # Plot
+#---------------------------------------
 in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = tc_acres)) +
   geom_col(position = "dodge", 
            aes(fill = in_or_out)) +
@@ -337,6 +357,7 @@ zone_change$full_name = stwr(zone_change$full_name)
   
 
 # Facet by land cover
+#---------------------------------------
 zone_change_all <- ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
   geom_col(aes(fill = genzone)) +
   facet_wrap(~full_name, scales = "free") +
@@ -365,6 +386,77 @@ zone_change_all
 ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all, width = 8, height = 7)
 
 ```
+
+### Sewer Service
+
+Acres
+```{r}
+#---------------------------------------
+# Sewer Service Area Change in Acres
+#---------------------------------------
+
+sewer_acres <- sewer_service %>% 
+  select(genz_swr, tc_change_acres:impervious_change_acres) %>% 
+  pivot_longer(!genz_swr, names_to = "type", values_to = "acres") %>% 
+  group_by(genz_swr, type) %>% 
+  summarize(acres_change = sum(acres)) %>% 
+  drop_na() %>%  # Drop blank genz_swr (check eith Emma)
+      mutate(type = case_when(
+    type == "low_veg_change_acres" ~ "Low Vegetation",
+    type == "barren_change_acres" ~ "Barren",
+    type == "water_change_acres" ~ "Water",
+    type == "buildings_change_acres" ~ "Buildings",
+    type == "road_change_acres" ~ "Roads",
+    type == "shrub_change_acres" ~ "Shrub",
+    type == "wetlands_change_acres" ~ "Wetland",
+    type == "impervious_change_acres" ~ "Impervious",
+    type == "forest_change_acres" ~ "Forest",
+    type == "tc_change_acres" ~ "Tree Canopy"))
+
+# Use stringr function
+sewer_acres$genz_swr = stwr(sewer_acres$genz_swr)
+  
+# Plot
+#---------------------------------------
+sewer_acres_plot <- ggplot(data = sewer_acres, aes(x = type, y = acres_change)) +
+  geom_col(aes(fill = type)) +
+  labs(title = "Land Cover Change 2013 to 2018 by Sewer Service Type",
+       x = "Land Cover Type",
+       y = "Change in Area (Acres)") +
+  facet_wrap(~ genz_swr, scales = "free_y") +
+  scale_fill_manual(values = lu_pallette) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+  plot.title = element_text(size = 16, face = "bold"),
+  legend.position = "bottom",
+  legend.title.align = 0.5,
+  legend.title = element_text(size = 14, face = "bold"),
+#   text = element_text(family = "Times"),
+   axis.text.x = element_blank(),
+   axis.title.x = element_blank(),
+   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+strip.background = element_rect(color = "grey40", fill = "grey30"),
+strip.text = element_text(size = 10, color = "white", face = "bold"),
+panel.border = element_rect(color = "grey40", fill = NA),
+  ) +
+  guides(fill = guide_legend(title = "Land Cover Type",
+                             title.position = "top"))
+
+sewer_acres_plot
+
+ggsave(here("Graphics", "4_sewer_service_acres.jpg"), sewer_acres_plot)
+
+```
+Percent
+```{r}
+
+sewer_percent <- sewer_service %>% 
+  select(genz_swr, tc_percent_change:imperv_percent_change)%>% 
+  pivot_longer(!genz_swr, names_to = "type", values_to = "percent")
+
+```
+
 
 ### Loop Attempt
 

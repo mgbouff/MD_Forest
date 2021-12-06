@@ -20,6 +20,9 @@ library(kableExtra)
 urban_change <- read.csv(here("Data", "3_UrbanAreas_Change.csv")) %>% 
   clean_names()
 
+# Read in riparian data
+riparian_county <- read.csv((here("Data", "3_riparian_county_2018.csv")))
+
 ```
 
 Overview Stats
