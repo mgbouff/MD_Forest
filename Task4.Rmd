@@ -119,7 +119,7 @@ lu_update$full_name = stwr(lu_update$full_name)
 
 # Plot
 #---------------------------------------
-lu_update_plot <- ggplot(lu_update, aes(x = cntyname, y = acres)) +
+lu_update_plot <- ggplot(lu_update, aes(x = fct_rev(cntyname), y = acres)) +
   geom_col(aes(fill = cntyname)) +
   scale_fill_manual(values = county_pallette) +
   facet_wrap(~full_name, scales = "free_y") +
@@ -207,7 +207,8 @@ lu_change <- LU_change_raw %>%
     land_use == "mo_25_55" ~ "Mixed Open",
     land_use == "crp_25_55" ~ "Cropland",
     land_use == "pas_25_55" ~ "Pasture",
-  ))
+  )) %>% 
+  mutate(ounty = as.factor(county))
 
 # Use stringr::str_wrap() to create breaks in long facet titles
 stwr <- function(string, nwrap = 20){
@@ -220,7 +221,7 @@ lu_change$full_name = stwr(lu_change$full_name)
 
 # Plot
 
-lu_change_plot <- ggplot(lu_change, aes(x = county, y = acres)) +
+lu_change_plot <- ggplot(lu_change, aes(x = fct_rev(county), y = acres)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
   facet_wrap(~full_name, scales = "free_y") +
@@ -245,29 +246,6 @@ lu_change_plot <- ggplot(lu_change, aes(x = county, y = acres)) +
 lu_change_plot
 
 # ggsave(here("Graphics", "4_lu_change.jpg"), lu_change_plot, width = 7, height = 7, dpi = "print")
-
-# Cheating to unsquish graph by taking out legend and putting a screenshot of it with unsquished graph
-
-lu_change_plot_unsquish <- ggplot(lu_change, aes(x = county, y = acres)) +
-  geom_col(aes(fill = county)) +
-  scale_fill_manual(values = county_pallette) +
-  facet_wrap(~full_name, scales = "free_y") +
-  labs(x = "County", y = "Acres") +
-  theme_minimal() +
-   geom_hline(aes(yintercept=0)) +
-  theme(
-    text = element_text(family = "Times"),
-    strip.background = element_rect(color = "grey40", fill = "grey30"),
-    strip.text = element_text(color = "white", face = "bold"),
-    panel.border = element_rect(color = "grey40", fill = NA),
-    axis.title.y = element_text(size = 18, family = "Times"),
-    axis.title.x = element_blank(),
-    axis.text.x = element_blank(),
-    legend.position = "none")
-
-lu_change_plot_unsquish
-
-# ggsave(here("Graphics", "4_lu_change_unsquish.jpg"), lu_change_plot_unsquish)
 
 ```
 
@@ -301,7 +279,7 @@ in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = t
   geom_col(position = "dodge", 
            aes(fill = in_or_out)) +
   labs(
-    title = "Change in Tree Canopy Are by Zone Type",
+    title = "Change in Tree Canopy Area by Zone Type",
 #    x = "Zone Type",
     y = "Change in Area (Acres)") +
   scale_fill_manual(values = c("#24693d", # Inside
@@ -499,6 +477,7 @@ sewer_forest_plot <- ggplot(data = sewer_forest_change, aes(x = forest_type, y =
                                title.position = "top"))
 
 sewer_forest_plot
+
 
 ggsave(here("Graphics", "4_sewer_forest_change.jpg"), sewer_forest_plot)
 

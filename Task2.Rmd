@@ -19,6 +19,13 @@ library(janitor)
 state_frag <- read.csv(here("Data", "2_frag_statestats.csv")) %>% 
   clean_names()
 
+# Fragmentation Color Scheme
+frag_pallete <- c("#035339", # Large core, dark green
+                  "#00734C", # Medium core, green
+                  "#3B9E70", # Small core, lighter green
+                  "#D4F0D1", # Edge, white-green
+                  "#EE4266")  # Patches, pink 
+
 ```
 
 ### State Forest Fragmentation
@@ -43,7 +50,8 @@ state_frag_change <- state_frag %>%
                               "Small Core",
                               "Edge",
                               "Patch"))
-
+# Plot
+#---------------------------------------
 state_frag_plot <- ggplot(data = state_frag_change, aes(x = metric, y = acres_change)) +
   geom_col(fill = "seagreen4") +
   labs(x = "Forest Type", 
@@ -65,6 +73,38 @@ state_frag_plot <- ggplot(data = state_frag_change, aes(x = metric, y = acres_ch
 state_frag_plot
 
 ggsave(here("Graphics", "2_state_frag_change.jpg"), state_frag_plot)
+
+# Color Coded
+#---------------------------------------
+state_frag_color_plot <- ggplot(data = state_frag_change, aes(x = metric, y = acres_change)) +
+  geom_col(aes(fill = metric)) +
+  labs(x = "Forest Type", 
+       y = "Total Area Change (Acres)",
+       title = "Total Area Change 2013 to 2018") +
+    scale_y_continuous(breaks = c(-15000, -10000, -5000, 0, 5000, 10000),
+                     labels = c("-15,000", "-10,000", "-5,000", "0", "5,000", "10,000")) +
+  scale_fill_manual(values = frag_pallete)+
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+    text = element_text(family = "Times"),
+    axis.text = element_text(size = 12),
+    axis.title.y = element_text(size = 14, 
+                                face = "bold", 
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    plot.title = element_text(size = 16, family = "Times", face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    ) +
+  guides(fill = guide_legend(title = "Forest Type", 
+                             title.position = "top"))
+
+state_frag_color_plot
+
+ggsave(here("Graphics", "2_state_frag_change_color.jpg"), state_frag_color_plot)
 
 ```
 2018 Totals
@@ -90,7 +130,8 @@ state_frag_2018 <- state_frag %>%
                               "Small Core",
                               "Edge",
                               "Patch"))
-
+# Plot
+#---------------------------------------
 state_2018_plot <- ggplot(data = state_frag_2018, aes(x = metric, y = acres)) +
   geom_col(fill = "seagreen4") +
   labs(x = "Forest Type", 
@@ -112,6 +153,38 @@ state_2018_plot <- ggplot(data = state_frag_2018, aes(x = metric, y = acres)) +
 state_2018_plot
 
 ggsave(here("Graphics", "2_state_frag_2018.jpg"), state_2018_plot)
+
+# Color Coded
+#---------------------------------------
+state_2018_color_plot <- ggplot(data = state_frag_2018, aes(x = metric, y = acres)) +
+  geom_col(aes(fill = metric)) +
+  labs(x = "Forest Type", 
+       y = "Total Area (Acres)",
+       title = "Forest Type 2018") +
+  scale_y_continuous(breaks = c(300000, 600000, 900000),
+                     labels = c("300,000", "600,000", "900,000")) +
+  scale_fill_manual(values = frag_pallete)+
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+    text = element_text(family = "Times"),
+    axis.text = element_text(size = 12),
+    axis.title.y = element_text(size = 14, 
+                                face = "bold", 
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    plot.title = element_text(size = 16, family = "Times", face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    ) +
+  guides(fill = guide_legend(title = "Forest Type", 
+                             title.position = "top"))
+
+state_2018_color_plot
+
+ggsave(here("Graphics", "2_state_frag_color_2018.jpg"), state_2018_color_plot)
 
 ```
 2013 totals

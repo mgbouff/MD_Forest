@@ -21,13 +21,6 @@ state_tab <- read_excel(here("Data", "tabulated_forest.xlsx"), sheet = "state")
 
 # Read in County data
 county_tab <- read_excel(here("Data","tabulated_forest.xlsx"), sheet = "county")
-
-# Read in Land Use data
-# land_use <- read.csv(here("Data", "5_LandUse.csv")) %>% 
-#   clean_names()
-# 
-# # Set Blanks to NA
-#   land_use[land_use == " "] <- NA
   
 # Land Use Update
 land_use_update <- read.csv(here("Data", "5_LandUse_update.csv")) %>% 
@@ -35,6 +28,10 @@ land_use_update <- read.csv(here("Data", "5_LandUse_update.csv")) %>%
   select(i_desclu, tc_change_acres:outside_forest_change_acres)
 
 land_use_update[land_use_update == " "] <- NA
+
+# PFA data
+pfa_data <- read.csv(here("Data", "5_PFA.csv")) %>% 
+  clean_names()
 
 # Categorical County Color Pallette
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
@@ -87,8 +84,10 @@ state_clean <- state_tab %>%
 # Plot totals over time
 plot_totals_state <- ggplot(data = state_clean, aes(x = year, y = acres))+
   geom_line(color = "seagreen4", size = 2)+
-    labs(x = "Year",
-       y = "Acres of Forest") +
+    labs(
+      title = "State Forested Area 2000 to 2020",
+      x = "Year",
+      y = "Forest Area (Acres)") +
     scale_y_continuous(breaks = c(3300000, 3325000, 3350000),
     labels = c("3,300,000","3,325,000","3,350,000"))+
   theme_minimal() +
@@ -97,7 +96,7 @@ plot_totals_state <- ggplot(data = state_clean, aes(x = year, y = acres))+
         axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)))
 
-# ggsave(here("Graphics", "totals_state.jpg"),plot_totals_state)
+ggsave(here("Graphics", "totals_state.jpg"),plot_totals_state)
 
 plot_totals_state
 
@@ -117,7 +116,7 @@ plot_change_state <- ggplot(data = state_change, aes(x = year, y = year_diff))+
     scale_y_continuous(breaks = c(0, 10000, 20000),
     labels = c("0","10,000","20,000"))+
     labs(x = "Time Period",
-       y = "Change in Total Acreage") +
+       y = "Change in Total Area (Acres)") +
   # scale_y_continuous(limits=c(-30000,1000))+
   # geom_hline(aes(yintercept=0))+
   #   geom_vline(aes(xintercept=1997))+
@@ -129,7 +128,7 @@ plot_change_state <- ggplot(data = state_change, aes(x = year, y = year_diff))+
 
 plot_change_state
 
-# ggsave(here("Graphics", "change_state.jpg"),plot_change_state)
+ggsave(here("Graphics", "change_state.jpg"),plot_change_state)
 
 ```
 
@@ -165,7 +164,7 @@ plot_totals_county_all <- ggplot(data = county_clean, aes(x = year, y = acres)) 
     axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
     axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"))
 
-# ggsave(here("Graphics", "totals_county_all.jpg"),plot_totals_county_all, width=7, height=7)
+ggsave(here("Graphics", "totals_county_all.jpg"),plot_totals_county_all, width=7, height=7)
 
 plot_totals_county_all
 
@@ -187,7 +186,7 @@ plot_totals_county_cp <- ggplot(data = county_clean, aes(x = year, y = acres)) +
     axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
     axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"))
 
-# ggsave(here("Graphics", "totals_county_all_cp.jpg"),plot_totals_county_cp, width=7, height=7)
+ggsave(here("Graphics", "totals_county_all_cp.jpg"),plot_totals_county_cp, width=7, height=7)
 
 plot_totals_county_cp
 
@@ -206,7 +205,7 @@ plot_change_county_all <- ggplot(data = county_change, aes(x = year, y = year_di
   scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
     labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
     labs(x = "Time Period",
-       y = "Total Change in Acreage") +
+       y = "Total Change in Area (Acres)") +
     geom_hline(aes(yintercept=0))+
     geom_vline(aes(xintercept=2002))+
   facet_wrap(~county, ncol = 4, scales = "free_y")+
@@ -232,7 +231,7 @@ plot_change_county_cp <- ggplot(data = county_change, aes(x = year, y = year_dif
   scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
     labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
     labs(x = "Time Period",
-       y = "Total Change in Acreage") +
+       y = "Total Change in Area (Acres)") +
     geom_hline(aes(yintercept=0))+
     geom_vline(aes(xintercept=2002))+
   facet_wrap(~county, ncol = 4, scales = "free_y")+
@@ -248,7 +247,7 @@ plot_change_county_cp <- ggplot(data = county_change, aes(x = year, y = year_dif
     legend.position = "none"
     )
 
-# ggsave(here("Graphics", "change_county_cp.jpg"),plot_change_county_cp, width=7, height=7)
+ggsave(here("Graphics", "change_county_cp.jpg"),plot_change_county_cp, width=7, height=7)
 
 plot_change_county_cp
 
@@ -261,7 +260,6 @@ Change by time periods faceted by time period
 #---------------------------------------
 
 # Wrangle for time period categories
-
 county_change_period <- county_change %>%
   filter(year %in% c(2005,2010,2015,2020)) %>% 
   mutate(time_period = case_when(
@@ -391,7 +389,9 @@ land_use_tc <- land_use_update %>%
     forest_type == "forest_change_acres" ~ "Forest",
     forest_type == "outside_forest_change_acres" ~ "Tree Canopy Outside Forest")) %>% 
     mutate(i_desclu = case_when(
-    i_desclu == "Agriculture" ~ "Agriculture",
+    i_desclu == "Agricultural" ~ "Agricultural",
+    i_desclu == "Apartments" ~ "Apartments",
+    i_desclu == "Commercial" ~ "Commercial",
     i_desclu == "Commercial / Residential" ~ "Commercial / Residential",
     i_desclu == "Commercial Condominium" ~ "Commercial Condominium",
     i_desclu == "Country Club" ~ "Country Club",
@@ -410,6 +410,7 @@ land_use_tc <- land_use_update %>%
 land_use_tc$i_desclu = stwr(land_use_tc$i_desclu)
 
 # Plot
+#---------------------------------------
 ggplot(data = land_use_tc, aes(x = i_desclu, y = acres)) +
   geom_col(position = "dodge",
            aes(fill = forest_type)) +
@@ -423,10 +424,11 @@ ggplot(data = land_use_tc, aes(x = i_desclu, y = acres)) +
   # geom_hline(aes(yintercept=0))
 
 # Facet
+#---------------------------------------
 lu_tc_plot <- ggplot(data = land_use_tc, aes(x = forest_type, y = acres)) +
   geom_col(position = "dodge",
            aes(fill = forest_type)) +
-  labs(title = "Tree Canopy Change By Land Use",
+  labs(title = "Tree Canopy Change By Land Use Within and Outside Forests",
        y = "Change in Area (Acres)") +
   facet_wrap(~i_desclu, scales = "free_y") +
     scale_fill_manual(values = c("#24693d", # Inside
@@ -456,13 +458,15 @@ ggsave(here("Graphics", "5_lu_forest_tc.jpg"), lu_tc_plot, width = 7.29, height 
 ```
 
 ```{r}
-
+#---------------------------------------
+# County Change by Period
+#---------------------------------------
 county_change_by_period_v2 <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
   geom_col(aes(fill = county))+
   facet_wrap(~time_period) +
   scale_fill_manual(values = county_pallette) +
   labs(x = " ",
-       y = "Total Change in Acreage")+
+       y = "Total Change in Area (Acres)")+
   theme_minimal()+
   geom_hline(aes(yintercept=0))+
   geom_vline(aes(xintercept=0))+
@@ -483,7 +487,7 @@ county_change_by_period_v2 <- ggplot(data = county_change_period, aes(x = county
 # )
 county_change_by_period_v2
 
-#ggsave(here("Graphics", "county_change_by_period_v2.jpg"), county_change_by_period_v2)
+ggsave(here("Graphics", "county_change_by_period_v2.jpg"), county_change_by_period_v2)
 
 # County Change by Period With Lables for Jarlath
 # county_change_demo <- ggplot(data = county_change_period, aes(x = county, y = year_diff))+
@@ -507,6 +511,165 @@ county_change_by_period_v2
 #   )
 
 # ggsave(here("Graphics", "county_change_labled.jpg"), county_change_demo)
+
+```
+### PFA
+
+Acres
+```{r}
+#---------------------------------------
+# PFA land use change by county
+#---------------------------------------
+pfa_acres <- pfa_data %>% 
+  select(jurscode, tc_change_acres:impervious_change_acres) %>% 
+  pivot_longer(!jurscode, names_to = "type", values_to = "acres") %>% 
+  drop_na() %>% 
+  mutate(type = case_when(
+    type == "low_veg_change_acres" ~ "Low Vegetation",
+    type == "barren_change_acres" ~ "Barren",
+    type == "water_change_acres" ~ "Water",
+    type == "buildings_change_acres" ~ "Buildings",
+    type == "road_change_acres" ~ "Roads",
+    type == "shrub_change_acres" ~ "Shrub",
+    type == "wetlands_change_acres" ~ "Wetland",
+    type == "impervious_change_acres" ~ "Impervious",
+    type == "forest_change_acres" ~ "Forest",
+    type == "tc_change_acres" ~ "Tree Canopy")) %>% 
+  mutate(jurscode = case_when(
+    jurscode == "PRIN" ~ "Prince George's",
+    jurscode == "SOME" ~ "Somerset",
+    jurscode == "KENT" ~ "Kent",
+    jurscode == "CARO" ~ "Caroline",
+    jurscode == "HARF" ~ "Harford",
+    jurscode == "WORC" ~ "Worcester",
+    jurscode == "CALV" ~ "Calvert",
+    jurscode == "BACI" ~ "Baltimore City",
+    jurscode == "GARR" ~ "Garrett",
+    jurscode == "CHAR" ~ "Charles",
+    jurscode == "STMA" ~ "St. Mary's",
+    jurscode == "ANNE" ~ "Anne Arundel",
+    jurscode == "CARR" ~ "Carroll",
+    jurscode == "TALB" ~ "Talbot",
+    jurscode == "QUEE" ~ "Queen Anne's",
+    jurscode == "FRED" ~ "Frederick",
+    jurscode == "CECI" ~ "Cecil",
+    jurscode == "WICO" ~ "Wicomico",
+    jurscode == "DORC" ~ "Dorchester",
+    jurscode == "ALLE" ~ "Allegany",
+    jurscode == "MONT" ~ "Montgomery",
+    jurscode == "WASH" ~ "Washington",
+    jurscode == "HOWA" ~ "Howard",
+    jurscode == "BACO" ~ "Baltimore")) %>% 
+  group_by(jurscode, type) %>% 
+  summarize(acres_change = sum(acres)) %>% 
+  mutate(acres_change = as.numeric(acres_change))
+
+# Plot
+#---------------------------------------
+pfa_acres_plot <- ggplot(data = pfa_acres, aes(x = type, y = acres_change)) +
+  geom_col(aes(fill = type)) +
+  labs(y = "Area Change (Acres)") +
+  facet_wrap(~jurscode, ncol = 4, scales = "free_y")+
+  scale_fill_manual(values = lu_tc_pallette) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+  plot.title = element_text(size = 16, face = "bold"),
+  legend.position = "bottom",
+  legend.title.align = 0.5,
+  legend.title = element_text(size = 14, face = "bold"),
+   axis.text.x = element_blank(),
+   axis.title.x = element_blank(),
+   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+strip.background = element_rect(color = "grey40", fill = "grey30"),
+strip.text = element_text(size = 10, color = "white", face = "bold"),
+panel.border = element_rect(color = "grey40", fill = NA),
+  ) +
+  guides(fill = guide_legend(title = "Land Cover Type",
+                             title.position = "top"))
+
+pfa_acres_plot
+
+ggsave(here("Graphics", "5_pfa_acres.jpg"), pfa_acres_plot)
+
+```
+
+Percent
+```{r}
+#---------------------------------------
+# PFA percent change by county and land use
+#---------------------------------------
+pfa_percent <- pfa_data %>% 
+  select(jurscode, tc_percent_change:imperv_percent_change) %>% 
+  pivot_longer(!jurscode, names_to = "type", values_to = "percent") %>% 
+  drop_na() %>% 
+  group_by(jurscode, type) %>% 
+  summarize(percent_change = sum(percent)) %>% 
+  mutate(type = case_when(
+    type == "low_veg_percent_change" ~ "Low Vegetation",
+    type == "barren_percent_change" ~ "Barren",
+    type == "water_percent_change" ~ "Water",
+    type == "building_percent_change" ~ "Buildings",
+    type == "road_percent_change" ~ "Roads",
+    type == "shrub_percent_change" ~ "Shrub",
+    type == "wetlands_percent_change" ~ "Wetland",
+    type == "imperv_percent_change" ~ "Impervious",
+    type == "tc_percent_change" ~ "Tree Canopy")) %>% 
+  mutate(jurscode = case_when(
+    jurscode == "PRIN" ~ "Prince George's",
+    jurscode == "SOME" ~ "Somerset",
+    jurscode == "KENT" ~ "Kent",
+    jurscode == "CARO" ~ "Caroline",
+    jurscode == "HARF" ~ "Harford",
+    jurscode == "WORC" ~ "Worcester",
+    jurscode == "CALV" ~ "Calvert",
+    jurscode == "BACI" ~ "Baltimore City",
+    jurscode == "GARR" ~ "Garrett",
+    jurscode == "CHAR" ~ "Charles",
+    jurscode == "STMA" ~ "St. Mary's",
+    jurscode == "ANNE" ~ "Anne Arundel",
+    jurscode == "CARR" ~ "Carroll",
+    jurscode == "TALB" ~ "Talbot",
+    jurscode == "QUEE" ~ "Queen Anne's",
+    jurscode == "FRED" ~ "Frederick",
+    jurscode == "CECI" ~ "Cecil",
+    jurscode == "WICO" ~ "Wicomico",
+    jurscode == "DORC" ~ "Dorchester",
+    jurscode == "ALLE" ~ "Allegany",
+    jurscode == "MONT" ~ "Montgomery",
+    jurscode == "WASH" ~ "Washington",
+    jurscode == "HOWA" ~ "Howard",
+    jurscode == "BACO" ~ "Baltimore")) 
+
+# Plot
+#---------------------------------------
+pfa_percent_plot <- ggplot(data = pfa_percent, aes(x = type, y = percent_change)) +
+  geom_col(aes(fill = type)) +
+  labs(y = "Percent Change") +
+  facet_wrap(~jurscode, ncol = 4, scales = "free_y")+
+  scale_fill_manual(values = lu_tc_pallette) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+  plot.title = element_text(size = 16, face = "bold"),
+  legend.position = "bottom",
+  legend.title.align = 0.5,
+  legend.title = element_text(size = 14, face = "bold"),
+   axis.text.x = element_blank(),
+   axis.title.x = element_blank(),
+   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+strip.background = element_rect(color = "grey40", fill = "grey30"),
+strip.text = element_text(size = 10, color = "white", face = "bold"),
+panel.border = element_rect(color = "grey40", fill = NA),
+  ) +
+  guides(fill = guide_legend(title = "Land Cover Type",
+                             title.position = "top"))
+
+pfa_percent_plot
+
+ggsave(here("Graphics", "5_pfa_percent.jpg"), pfa_percent_plot, height = 7)
+
+
 
 ```
 

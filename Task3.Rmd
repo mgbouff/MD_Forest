@@ -21,9 +21,47 @@ urban_change <- read.csv(here("Data", "3_UrbanAreas_Change.csv")) %>%
   clean_names()
 
 # Read in riparian data
-riparian_county <- read.csv((here("Data", "3_riparian_county_2018.csv")))
+riparian_county <- read.csv((here("Data", "3_riparian_county_2018.csv"))) %>% 
+  clean_names() %>% 
+   mutate(i_county = as.factor(i_county))
+
+# County Pallet
+county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
 
 ```
+
+Riparian Buffer Percent Tree Canopy over land area
+```{r}
+#---------------------------------------
+# Percent Tree Canopy over land area
+#---------------------------------------
+
+riparian_buffer_plot <- ggplot(data = riparian_county, aes(x = fct_rev(i_county), y = can_p_land)) +
+  geom_col(aes(fill = i_county), alpha = 0.8) +
+  labs(title = "Riparian Buffer Percent Tree Canopy",
+       x = "Jurisdiction",
+       y = "Percent Tree Canopy over Land Area") +
+  scale_fill_manual(values = county_pallette) +
+  geom_hline(aes(yintercept = 70), linetype = "dashed",
+            color = "red",
+            size = 1) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+    legend.position = "none"
+  )
+
+riparian_buffer_plot
+
+ggsave(here("Graphics", "3_riparian_percent.jpg"), riparian_buffer_plot)
+  
+
+```
+
 
 Overview Stats
 ```{r}
@@ -46,8 +84,8 @@ kable(tc_stats,
       col.names = c("Total Change",
                     "2013 Change",
                     "2018 Change")) %>%
-  kable_paper(html_font = "Times")%>% 
-  save_kable(file = here("Graphics","3_TC_stats.png"), tc_stats) # Don't know what this isn't exporting an image
+  kable_paper(html_font = "Times")
+#  save_kable(file = here("Graphics","3_TC_stats.png"), tc_stats) # Don't know what this isn't exporting an image
 
 ```
 
@@ -70,7 +108,7 @@ uatyp10_plot <- ggplot(urban_type, aes(x = uatyp10, y = tc_all)) +
 geom_col(aes(fill = uatyp10)) +
   scale_fill_manual(values = c("#FF6B6B", "#7D82B8")) +
   labs(x = "Urban Area Type",
-       y = "Acres",
+       y = "Change in Area (Acres)",
        title = "Total Change by Urban Area Type and Time Period") +
   scale_y_continuous(breaks = c(-10000, -5000, 0),
                      labels = c("-10,000", "-5,000", "0")) +
@@ -88,28 +126,6 @@ geom_col(aes(fill = uatyp10)) +
 uatyp10_plot
 
 ggsave(here("Graphics", "3_uatyp10.jpg"))
-
-```
-
-### NAME10
-```{r}
-
-# Graph all Name10 acres...
-
-name10 <- urban_change %>% 
-  select(name10, tc_change_acres)
-
-name10_plot <- ggplot(data = name10, aes(x = name10, y = tc_change_acres)) +
-  geom_col(fill = "seagreen4") +
-  coord_flip() +
-  theme_minimal() +
-  geom_vline(aes(xintercept=0))
-
-name10_plot
-
-ggsave(here("Graphics", "3_name10.jpg"))
-
-# Holding off on this one
 
 ```
 
