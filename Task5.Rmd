@@ -515,10 +515,10 @@ ggsave(here("Graphics", "county_change_by_period_v2.jpg"), county_change_by_peri
 ```
 ### PFA
 
-Acres
+Acres Land Cover
 ```{r}
 #---------------------------------------
-# PFA land use change by county
+# Priority Funding Area land use change by county
 #---------------------------------------
 pfa_acres <- pfa_data %>% 
   select(jurscode, tc_change_acres:impervious_change_acres) %>% 
@@ -561,14 +561,14 @@ pfa_acres <- pfa_data %>%
     jurscode == "HOWA" ~ "Howard",
     jurscode == "BACO" ~ "Baltimore")) %>% 
   group_by(jurscode, type) %>% 
-  summarize(acres_change = sum(acres)) %>% 
-  mutate(acres_change = as.numeric(acres_change))
+  summarize(acres_change = sum(acres))
 
 # Plot
 #---------------------------------------
 pfa_acres_plot <- ggplot(data = pfa_acres, aes(x = type, y = acres_change)) +
   geom_col(aes(fill = type)) +
-  labs(y = "Area Change (Acres)") +
+  labs(title = "Priority Funding Area Change",
+    y = "Area Change (Acres)") +
   facet_wrap(~jurscode, ncol = 4, scales = "free_y")+
   scale_fill_manual(values = lu_tc_pallette) +
   theme_minimal() +
@@ -593,11 +593,83 @@ pfa_acres_plot
 ggsave(here("Graphics", "5_pfa_acres.jpg"), pfa_acres_plot)
 
 ```
+Acres Inside/Outside
+```{r}
+#---------------------------------------
+# Priority Funding Area Tree Canopy Inside/Outside Forest Change
+#---------------------------------------
+pfa_in_out <- pfa_data %>% 
+  select(jurscode, forest_change_acres:non_forest_change_acres) %>% 
+  pivot_longer(!jurscode, names_to = "forest_type", values_to = "acres") %>% 
+  drop_na() %>% 
+    mutate(forest_type = case_when(
+    forest_type == "forest_change_acres" ~ "Forest",
+    forest_type == "non_forest_change_acres" ~ "Tree Canopy Outside Forest")) %>% 
+  mutate(jurscode = case_when(
+    jurscode == "PRIN" ~ "Prince George's",
+    jurscode == "SOME" ~ "Somerset",
+    jurscode == "KENT" ~ "Kent",
+    jurscode == "CARO" ~ "Caroline",
+    jurscode == "HARF" ~ "Harford",
+    jurscode == "WORC" ~ "Worcester",
+    jurscode == "CALV" ~ "Calvert",
+    jurscode == "BACI" ~ "Baltimore City",
+    jurscode == "GARR" ~ "Garrett",
+    jurscode == "CHAR" ~ "Charles",
+    jurscode == "STMA" ~ "St. Mary's",
+    jurscode == "ANNE" ~ "Anne Arundel",
+    jurscode == "CARR" ~ "Carroll",
+    jurscode == "TALB" ~ "Talbot",
+    jurscode == "QUEE" ~ "Queen Anne's",
+    jurscode == "FRED" ~ "Frederick",
+    jurscode == "CECI" ~ "Cecil",
+    jurscode == "WICO" ~ "Wicomico",
+    jurscode == "DORC" ~ "Dorchester",
+    jurscode == "ALLE" ~ "Allegany",
+    jurscode == "MONT" ~ "Montgomery",
+    jurscode == "WASH" ~ "Washington",
+    jurscode == "HOWA" ~ "Howard",
+    jurscode == "BACO" ~ "Baltimore")) %>% 
+  group_by(jurscode, forest_type) %>% 
+  summarize(acres_change = sum(acres))
+
+# Plot
+#---------------------------------------
+pfa_in_out_plot <- ggplot(data = pfa_in_out, aes(x = forest_type, y = acres_change)) +
+  geom_col(aes(fill = forest_type)) +
+  labs(title = "Priority Funding Area Change",
+    y = "Area Change (Acres)") +
+  facet_wrap(~jurscode, ncol = 4, scales = "free_y")+
+  scale_fill_manual(values = c("#24693d", # Inside
+                              "#6eb663" # Outside
+                    )) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+  plot.title = element_text(size = 16, face = "bold"),
+  legend.position = "bottom",
+  legend.title.align = 0.5,
+  legend.title = element_text(size = 14, face = "bold"),
+   axis.text.x = element_blank(),
+   axis.title.x = element_blank(),
+   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+strip.background = element_rect(color = "grey40", fill = "grey30"),
+strip.text = element_text(size = 10, color = "white", face = "bold"),
+panel.border = element_rect(color = "grey40", fill = NA),
+  ) +
+  guides(fill = guide_legend(title = "Forest Type",
+                             title.position = "top"))
+
+pfa_in_out_plot
+
+ggsave(here("Graphics", "5_pfa_acres_tc.jpg"), pfa_in_out_plot, height = 7)
+```
+
 
 Percent
 ```{r}
 #---------------------------------------
-# PFA percent change by county and land use
+# Priority Funding Area percent change by county and land use
 #---------------------------------------
 pfa_percent <- pfa_data %>% 
   select(jurscode, tc_percent_change:imperv_percent_change) %>% 
