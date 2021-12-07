@@ -79,7 +79,13 @@ state_in_out <- state_forest %>%
 # Plot
 state_in_out_plot <- ggplot(data = state_in_out, aes(x = type, y = acres)) +
   geom_col(aes(fill = type)) +
+  geom_text(aes(label = round(acres, digits = 1),
+                color = type),
+            vjust = -0.5) +
   scale_fill_manual(values = c("#24693d", "#6eb663")) +
+  scale_color_manual(values = c("#24693d", "#6eb663")) +
+  # geom_hline(aes(yintercept=0)) +
+  # geom_vline(aes(xintercept=0)) +
   labs(title = "2018 Tree Canopy Inside and Outside Forests",
        y = "Tree Canopy Area (Acres)") +
   scale_y_continuous(breaks = c(0, 500000, 1000000, 1500000),
@@ -104,7 +110,6 @@ Other land use change
 #---------------------------------------
 # 2018 statewide land cover change
 #---------------------------------------
-
 # Get percents 
 state_lc_percent <- state_forest %>% 
   select(i_total_a_acres:imperv_a_acres) %>% 

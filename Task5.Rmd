@@ -19,6 +19,10 @@ library(here)
 # Read in State data
 state_tab <- read_excel(here("Data", "tabulated_forest.xlsx"), sheet = "state")
 
+# State land cover data
+state_lc <- read.csv(here("Data", "5_state_physical_LCForest_2013_2018.csv")) %>% 
+  clean_names()
+
 # Read in County data
 county_tab <- read_excel(here("Data","tabulated_forest.xlsx"), sheet = "county")
   
@@ -47,15 +51,15 @@ lu_pallette <- c("#F9DB6D", # Barren, light yellow
                  "#4059AD", # Water, royal blue
                  "#21A0A0") # Wetland, Blue-green
 
-lu_tc_pallette <- c("#F9DB6D", # Barren, light yellow
-                 "#D9682A", # Buildings, brick
-                 "#F08701", # Impervious, orange 
-                 "#8DBE87", # Low veg, light green
-                 "#F9A620", # Roads, light orange
-                 "#57AF94", # Shrub, green-blue
-                 "#6eb663", # Tree Canopy, green
-                 "#4059AD", # Water, royal blue
-                 "#21A0A0") # Wetland, Blue-green
+lu_tc_pallette <- c("#F08701", # Impervious, orange
+                    "#D9682A", # Buildings, brick
+                    "#F9DB6D", # Barren, light yellow 
+                    "#4059AD", # Water, royal blue
+                    "#F9A620", # Roads, light orange
+                    "#21A0A0", # Wetland, Blue-green
+                    "#57AF94", # Shrub, green-blue
+                    "#8DBE87", # Low veg, light green
+                    "#6eb663") # Tree Canopy, green)  
 
 # County Pallet
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
@@ -131,8 +135,6 @@ plot_change_state
 ggsave(here("Graphics", "change_state.jpg"),plot_change_state)
 
 ```
-
-
 ### Forested Area at the County Level
 ```{r}
 #---------------------------------------
@@ -302,8 +304,99 @@ county_change_period <- county_change %>%
 
 ```
 
-### Land Use
+### Land Cover Area Change
+State
+```{r}
+#---------------------------------------
+# Land Cover Area Change State Level (acres)
+#---------------------------------------
+state_lc_acres <- state_lc %>% 
+  select(tc_area_acres_change:impervious_area_acres_change) %>% 
+  pivot_longer(tc_area_acres_change:impervious_area_acres_change, names_to = "lc", values_to = "acres") %>% 
+    mutate(lc = case_when(
+    lc == "low_veg_area_acres_change" ~ "Low Vegetation",
+    lc == "barren_area_acres_change" ~ "Barren",
+    lc == "water_area_acres_change" ~ "Water",
+    lc == "buildings_area_acres_change" ~ "Buildings",
+    lc == "road_area_acres_change" ~ "Roads",
+    lc == "shrub_area_acres_change" ~ "Shrub",
+    lc == "wetlands_area_acres_change" ~ "Wetland",
+    lc == "impervious_area_acres_change" ~ "Impervious",
+    lc == "tc_area_acres_change" ~ "Tree Canopy")) %>% 
+  mutate(lc = fct_reorder(lc, desc(acres)))
 
+# Plot
+#---------------------------------------
+state_lc_plot <- ggplot(data = state_lc_acres, aes(x = lc, y = acres)) +
+  geom_col(aes(fill = lc)) +
+  labs(title = "Land Cover Area Change",
+       x = "Land Cover",
+       y = "Area Change (Acres)") +
+  scale_y_continuous(breaks = c(-10000, -5000, 0, 5000, 10000),
+                     labels = c("-10,000", "-5,000", "0", "5,000", "10,000")) +
+  scale_fill_manual(values = lu_tc_pallette) +
+  geom_hline(aes(yintercept=0)) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+       axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+       axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+  )
+
+state_lc_plot
+
+ggsave(here("Graphics", "5_state_lc.jpg"), state_lc_plot)
+
+```
+Tree Canopy Change
+```{r}
+#---------------------------------------
+# Tree Canopy Change in/out of Forest State Level (acres)
+#---------------------------------------
+state_tc <- state_lc %>% 
+  select(tc_outside_forest_change_acres:tc_inside_forest_change_acres) %>% 
+  pivot_longer(tc_outside_forest_change_acres:tc_inside_forest_change_acres, 
+               names_to = "forest_type", 
+               values_to = "acres") %>% 
+    mutate(forest_type = case_when(
+    forest_type == "tc_inside_forest_change_acres" ~ "Forest",
+    forest_type == "tc_outside_forest_change_acres" ~ "Tree Canopy Outside Forest"))
+
+# Plot
+#---------------------------------------
+state_tc_plot <- ggplot(data = state_tc, aes(x = forest_type, y = acres)) +
+  geom_col(aes(fill = forest_type)) +
+    scale_fill_manual(values = c("#24693d", # Inside
+                               "#6eb663" # Outside
+                               )) +
+  geom_text(aes(label = round(acres, digits = 1),
+                color = forest_type),
+            vjust = 1) +
+  scale_color_manual(values = c("#24693d", # Inside
+                               "#6eb663" # Outside
+                               )) +
+  geom_hline(aes(yintercept=0)) +
+  labs(title = "Tree Canopy Change Within and Outside Forests",
+       x = "Forest Type",
+       y = "Area Change (Acres)") +
+  scale_y_continuous(breaks = c(0, -2500, -5000, -7500, -10000, -12500),
+                     labels = c("0", "-2,500","-5,000", "-7,500", "10,000", "-12,500")) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+ axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+       axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+state_tc_plot
+
+ggsave(here("Graphics", "5_state_tc.jpg"), state_tc_plot, height = 5)
+
+```
+
+### Land Use
 Acres
 ```{r}
 #---------------------------------------
