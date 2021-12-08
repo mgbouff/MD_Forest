@@ -23,7 +23,7 @@ state_forest <- read.csv(here("Data", "1a_state_short_2018.csv")) %>%
 
 # Read in 2018 county data
 county_forest <- read.csv(here("Data", "1a_County_short_2018.csv")) %>% 
-  clean_names()
+  clean_names() # Blank row added for proportion plots
 
 # 1b.
 # Read in Plantable Area data
@@ -56,6 +56,8 @@ lc_county_pallette <- c(
   "#57AF94" # Shrub, green-blue
 )
 
+# Categorical County Color Pallette
+county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
 
 ```
 
@@ -102,7 +104,7 @@ state_in_out_plot <- ggplot(data = state_in_out, aes(x = type, y = acres)) +
 
 state_in_out_plot
 
-ggsave(here("Graphics", "1a_state_in_out_forest_2018.jpg"), state_in_out_plot)
+ggsave(here("Graphics", "1a_state_in_out_forest_2018.jpg"), state_in_out_plot, height = 6)
 
 ```
 Other land use change
@@ -196,7 +198,6 @@ Tree canopy inside vs. outside forests
 #---------------------------------------
 # 2018 tree canopy inside vs. outside forest by county
 #---------------------------------------
-
 county_in_out <- county_forest %>% 
   select(county, tc_a_acres_inside_forest, tc_a_acres_outside_forest) %>% 
   pivot_longer(!county, names_to = "type", values_to = "acres") %>% 
@@ -230,6 +231,51 @@ county_in_out_plot
 ggsave(here("Graphics", "1a_county_in_out_forest_2018.jpg"), county_in_out_plot, height = 4.5, width = 8)
 
 ```
+Tree Canopy Percent
+```{r}
+#---------------------------------------
+# 2018 Percent Tree Canopy by County
+#---------------------------------------
+county_clean <- county_forest
+
+county_clean[county_clean == c(" ", 0)] <- NA
+
+county_canopy_percent <- county_clean %>% 
+  select(county, can_p) %>% 
+  mutate(county = as.factor(county)) %>% 
+  drop_na()
+
+# Plot
+#---------------------------------------
+county_canopy_plot <- ggplot(data = county_canopy_percent, aes(x = fct_rev(county), y = can_p)) +
+  geom_col(aes(fill = county)) +
+  geom_text(aes(label = round(can_p, digits = 1),
+                color = county,
+                hjust = -0.1),
+            size = 3) +
+  scale_fill_manual(values = county_pallette) +
+  scale_color_manual(values = county_pallette) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(
+    title = "Percent Tree Canopy 2018",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+county_canopy_plot
+
+ggsave(here("Graphics", "1a_county_canopy.jpg"), county_canopy_plot)
+
+```
+
 Other land use change by county
 ```{r}
 #---------------------------------------
