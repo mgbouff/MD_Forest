@@ -43,6 +43,11 @@ sewer_service <- read.csv(here("Data", "4_SewerService.csv")) %>%
 protected_lands <- read.csv(here("Data", "4_ProtectedLands_Forest_2013_2018.csv")) %>% 
   clean_names()
 
+# Read in Timber data
+timber_county <- read.csv(here("Data", "4_MD_TimberHarvest_20132021_county.csv")) %>% 
+  clean_names() %>% 
+  mutate(i_county, as.factor(i_county))
+
 # Set blanks to NA
 sewer_service[sewer_service == c(" ", "")] <- NA
 
@@ -99,7 +104,6 @@ stwr = Vectorize(stwr)
 #---------------------------------------
 # Forest change in proteted vs. unprotected lands
 #---------------------------------------
-
 protected_lands_plot <- ggplot(data = protected_lands, aes(x = i_protected, y = forest_acres_change)) +
   geom_col(aes(fill = i_protected)) +
   geom_text(aes(label = round(forest_acres_change, digits = 2),
@@ -127,7 +131,6 @@ protected_lands_plot
 ggsave(here("Graphics", "4_protected_lands.jpg"), protected_lands_plot)
 
 ```
-
 
 ### New Projected Land Use change
 ```{r}
@@ -345,8 +348,8 @@ ggsave(here("Graphics","4_in_out_forest_change.jpg"), in_out_forest_plot, width 
 
 ```
 
-### General Zoning
 
+### General Zoning
 ```{r}
 #---------------------------------------
 # Forest change by general zoning
@@ -410,7 +413,6 @@ ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all, width = 8, he
 ```
 
 ### Sewer Service
-
 Acres
 ```{r}
 #---------------------------------------
@@ -520,6 +522,35 @@ sewer_forest_plot
 
 ggsave(here("Graphics", "4_sewer_forest_change.jpg"), sewer_forest_plot)
 
+```
+
+
+
+### Timber Harvest
+County
+```{r}
+#---------------------------------------
+# Timber Harvest by County Plot
+#---------------------------------------
+timber_county_plot <- ggplot(data = timber_county, aes(x = fct_rev(i_county), y = forest_harvest)) +
+  geom_col(fill = "seagreen4") +
+  labs(title = "Total Timber Harvest by Jurisdiction \n between 2013 and 2021",
+       x = "Jurisdiction", y = "Forest Harvested") +
+  scale_y_continuous(breaks = c(0, 10000, 20000),
+                     labels = c("0", "10,000", "20,000")) +
+  coord_flip() +
+  theme_minimal() +
+    theme(
+    text = element_text(family = "Times", size = 12),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))
+  )
+
+timber_county_plot
+
+ggsave(here("Graphics", "4_timber_county.jpg"), timber_county_plot)
 ```
 
 
