@@ -77,8 +77,24 @@ ggsave(here("Graphics", "2_state_frag_change.jpg"), state_frag_plot)
 #---------------------------------------
 state_frag_color_plot <- ggplot(data = state_frag_change, aes(x = metric, y = acres_change)) +
   geom_col(aes(fill = metric)) +
-#  geom_text(aes(label = round(acres_change, digits = 2)),
-#            vjust = 1) +
+ # geom_text(aes(label = round(acres_change, digits = 0)),
+ #           vjust = 1) +
+    annotate("text", # Large Core
+           x = 1, y = -2700,
+           label = "-1,938", color = "#035339") +
+  annotate("text", # Medium Core
+           x = 2, y = -1300,
+           label = "-482", color = "#00734C") +
+  annotate("text", # Small Core
+           x = 3, y = -8000,
+           label = "-7,240", color = "#3B9E70") +
+  annotate("text", # Edge
+           x = 4, y = -16000,
+           label = "-15,329", color = "#8CD784") +
+    annotate("text", # Patch
+           x = 5, y = 14300,
+           label = "13,067", color = "#EE4266") +
+  coord_cartesian(clip = "off") +
   scale_fill_manual(values = frag_pallete) +
   scale_color_manual(values = frag_pallete) +
   labs(x = "Forest Type", 
@@ -106,7 +122,7 @@ state_frag_color_plot <- ggplot(data = state_frag_change, aes(x = metric, y = ac
 
 state_frag_color_plot
 
-# ggsave(here("Graphics", "2_state_frag_change_color.jpg"), state_frag_color_plot)
+ggsave(here("Graphics", "2_state_frag_change_color.jpg"), state_frag_color_plot)
 
 ```
 2018 Totals
@@ -160,9 +176,25 @@ ggsave(here("Graphics", "2_state_frag_2018.jpg"), state_2018_plot)
 #---------------------------------------
 state_2018_color_plot <- ggplot(data = state_frag_2018, aes(x = metric, y = acres)) +
   geom_col(aes(fill = metric)) +
+  annotate("text", # Large Core
+           x = 1, y = 120000,
+           label = "66,810", color = "#035339") +
+  annotate("text", # Medium Core
+           x = 2, y = 85000,
+           label = "35,411", color = "#00734C") +
+  annotate("text", # Small Core
+           x = 3, y = 210000,
+           label = "106,246", color = "#3B9E70") +
+  annotate("text", # Edge
+           x = 4, y = 1150000,
+           label = "1,102,331", color = "#8CD784") +
+    annotate("text", # Patch
+           x = 5, y = 360000,
+           label = "310,392", color = "#EE4266") +
   # geom_text(aes(label = round(acres, digits = 2),
   #              color = metric),
   #          vjust = -0.3) +
+  coord_cartesian(clip = "off") +
   scale_fill_manual(values = frag_pallete) +
   scale_color_manual(values = frag_pallete) +
   labs(x = "Forest Type", 

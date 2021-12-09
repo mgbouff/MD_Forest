@@ -263,7 +263,6 @@ plot_change_county_cp
 ```
 
 Change by time periods faceted by time period
-
 ```{r}
 # Try faceting by time period instead of county
 #---------------------------------------
@@ -379,7 +378,7 @@ state_tc_plot <- ggplot(data = state_tc, aes(x = forest_type, y = acres)) +
     scale_fill_manual(values = c("#24693d", # Inside
                                "#6eb663" # Outside
                                )) +
-  geom_text(aes(label = round(acres, digits = 1),
+  geom_text(aes(label = round(acres, digits = 0),
                 color = forest_type),
             vjust = 1.15) +
   scale_color_manual(values = c("#24693d", # Inside
@@ -426,7 +425,7 @@ county_tc_change_plot <- ggplot(data = county_tc, aes(x = i_county, y = acres)) 
                                )) +
   scale_y_continuous(breaks = c(-4000, -2000, 0, 2000),
                      labels = c("-4,000", "-2,000", "0", "2,000")) +
-  labs(title = "Tree Canopy Chance Within and Outside Forests",
+  labs(title = "Tree Canopy Change Within and Outside Forests",
        x = "Jurisdiction",
        y = "Area Change (Acres)") +
   coord_flip() +
