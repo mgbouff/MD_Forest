@@ -33,7 +33,6 @@ frag_pallete <- c("#035339", # Large core, dark green
 #---------------------------------------
 # Fragmentation Metrics Change 2013-2018
 #---------------------------------------
-
 state_frag_change <- state_frag %>% 
   select(patch_change:lcore_change) %>% 
   pivot_longer(patch_change:lcore_change, names_to = "metric", values_to = "acres_change") %>% 
@@ -78,12 +77,15 @@ ggsave(here("Graphics", "2_state_frag_change.jpg"), state_frag_plot)
 #---------------------------------------
 state_frag_color_plot <- ggplot(data = state_frag_change, aes(x = metric, y = acres_change)) +
   geom_col(aes(fill = metric)) +
+#  geom_text(aes(label = round(acres_change, digits = 2)),
+#            vjust = 1) +
+  scale_fill_manual(values = frag_pallete) +
+  scale_color_manual(values = frag_pallete) +
   labs(x = "Forest Type", 
        y = "Total Area Change (Acres)",
        title = "Total Area Change 2013 to 2018") +
     scale_y_continuous(breaks = c(-15000, -10000, -5000, 0, 5000, 10000),
                      labels = c("-15,000", "-10,000", "-5,000", "0", "5,000", "10,000")) +
-  scale_fill_manual(values = frag_pallete)+
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
     theme(
@@ -104,7 +106,7 @@ state_frag_color_plot <- ggplot(data = state_frag_change, aes(x = metric, y = ac
 
 state_frag_color_plot
 
-ggsave(here("Graphics", "2_state_frag_change_color.jpg"), state_frag_color_plot)
+# ggsave(here("Graphics", "2_state_frag_change_color.jpg"), state_frag_color_plot)
 
 ```
 2018 Totals
@@ -158,12 +160,16 @@ ggsave(here("Graphics", "2_state_frag_2018.jpg"), state_2018_plot)
 #---------------------------------------
 state_2018_color_plot <- ggplot(data = state_frag_2018, aes(x = metric, y = acres)) +
   geom_col(aes(fill = metric)) +
+  # geom_text(aes(label = round(acres, digits = 2),
+  #              color = metric),
+  #          vjust = -0.3) +
+  scale_fill_manual(values = frag_pallete) +
+  scale_color_manual(values = frag_pallete) +
   labs(x = "Forest Type", 
        y = "Total Area (Acres)",
        title = "Forest Type 2018") +
   scale_y_continuous(breaks = c(300000, 600000, 900000),
                      labels = c("300,000", "600,000", "900,000")) +
-  scale_fill_manual(values = frag_pallete)+
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
     theme(

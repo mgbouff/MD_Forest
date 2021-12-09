@@ -25,6 +25,10 @@ state_lc <- read.csv(here("Data", "5_state_physical_LCForest_2013_2018.csv")) %>
 
 # Read in County data
 county_tab <- read_excel(here("Data","tabulated_forest.xlsx"), sheet = "county")
+
+# Read in County Land Cover Data
+county_lc <- read.csv(here("Data", "5_county_physical_LCForest_2013_2018.csv")) %>% 
+  clean_names()
   
 # Land Use Update
 land_use_update <- read.csv(here("Data", "5_LandUse_update.csv")) %>% 
@@ -345,6 +349,7 @@ state_lc_plot <- ggplot(data = state_lc_acres, aes(x = lc, y = acres)) +
     legend.position = "none",
        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
   )
 
 state_lc_plot
@@ -352,7 +357,8 @@ state_lc_plot
 ggsave(here("Graphics", "5_state_lc.jpg"), state_lc_plot)
 
 ```
-Tree Canopy Change
+### Tree Canopy Change
+State
 ```{r}
 #---------------------------------------
 # Tree Canopy Change in/out of Forest State Level (acres)
@@ -375,7 +381,7 @@ state_tc_plot <- ggplot(data = state_tc, aes(x = forest_type, y = acres)) +
                                )) +
   geom_text(aes(label = round(acres, digits = 1),
                 color = forest_type),
-            vjust = 1) +
+            vjust = 1.15) +
   scale_color_manual(values = c("#24693d", # Inside
                                "#6eb663" # Outside
                                )) +
@@ -398,6 +404,50 @@ state_tc_plot
 ggsave(here("Graphics", "5_state_tc.jpg"), state_tc_plot, height = 5)
 
 ```
+County
+```{r}
+#---------------------------------------
+# Tree Canopy Change in/out of Forest County Level (acres)
+#---------------------------------------
+county_tc <- county_lc %>% 
+  select(i_county, tc_outside_forest_change_acres, tc_inside_forest_change_acres) %>% 
+  pivot_longer(!i_county, names_to = "forest_type", values_to = "acres") %>%
+  mutate(forest_type = case_when(
+    forest_type == "tc_inside_forest_change_acres" ~ "Forest",
+    forest_type == "tc_outside_forest_change_acres" ~ "Tree Canopy Outside Forest"))
+
+# Plot
+#---------------------------------------
+county_tc_change_plot <- ggplot(data = county_tc, aes(x = i_county, y = acres)) +
+  geom_col(position = "dodge",
+           aes(fill = forest_type)) +
+  scale_fill_manual(values = c("#24693d", # Inside
+                               "#6eb663" # Outside
+                               )) +
+  scale_y_continuous(breaks = c(-4000, -2000, 0, 2000),
+                     labels = c("-4,000", "-2,000", "0", "2,000")) +
+  labs(title = "Tree Canopy Chance Within and Outside Forests",
+       x = "Jurisdiction",
+       y = "Area Change (Acres)") +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.title.align = 0.5,
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  ) +
+  guides(fill = guide_legend(title = "Forest Type",
+                            title.position = "top"))
+
+county_tc_change_plot
+
+ggsave(here("Graphics", "5_county_tc_change.jpg"), county_tc_change_plot)
+
+```
+
 
 ### Land Use
 Acres

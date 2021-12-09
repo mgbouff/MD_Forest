@@ -38,16 +38,22 @@ Riparian Buffer Percent Tree Canopy over land area
 
 riparian_buffer_plot <- ggplot(data = riparian_county, aes(x = fct_rev(i_county), y = can_p_land)) +
   geom_col(aes(fill = i_county), alpha = 0.8) +
-  labs(title = "Riparian Buffer Percent Tree Canopy",
-       x = "Jurisdiction",
-       y = "Percent Tree Canopy over Land Area") +
+  labs(
+    title = "Riparian Buffer Percent Tree Canopy",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy over Land Area") +
   scale_fill_manual(values = county_pallette) +
+  geom_text(label = "70%",
+            color = "red",
+            face = "bold",
+            vjust = 12.85,
+            aes(x = "Montgomery",y = 70)) +
   geom_hline(aes(yintercept = 70), linetype = "dashed",
             color = "red",
             size = 1) +
   scale_y_continuous(breaks = c(0, 20, 40, 60, 80),
                      labels = c("0%", "20%", "40%", "60%", "80%")) +
-  coord_flip() +
+  coord_flip(clip = "off") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 16, face = "bold"),

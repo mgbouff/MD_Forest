@@ -223,12 +223,13 @@ county_in_out_plot <- ggplot(data = county_in_out, aes(x = fct_rev(county), y = 
     axis.title = element_text(size = 14, face = "bold"),
     axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
     axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
-    legend.title = element_blank()
+    legend.title = element_blank(),
+    legend.position = "bottom"
   )
 
 county_in_out_plot
 
-ggsave(here("Graphics", "1a_county_in_out_forest_2018.jpg"), county_in_out_plot, height = 4.5, width = 8)
+ggsave(here("Graphics", "1a_county_in_out_forest_2018.jpg"), county_in_out_plot, width = 7, height = 4.5)
 
 ```
 Tree Canopy Percent
@@ -312,7 +313,9 @@ county_lc_percent_stack <- ggplot(data = county_lc_2018, aes(fill = type, x = fc
   theme(
     plot.title = element_text(size = 16, face = "bold"),
     axis.title = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
-    legend.title = element_text(size = 14)
+    legend.title = element_text(size = 14),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
   )+
   guides(fill = guide_legend(title = "Land Cover Type"))
 
@@ -380,15 +383,17 @@ ggsave(here("Graphics", "1a_county_state_lu_change.jpg"), county_state_merge_plo
 #---------------------------------------
 
 plantable_county_plot <- ggplot(data = plantable_county, aes(x = fct_rev(county), y = area_acres)) +
-  geom_col(fill = "seagreen4") +
+  geom_col(aes(fill = county)) +
   labs(x = "Jurisdiction", 
        y = "Total Area (Acres)",
        title = "Plantable Area by Jurisdction") +
+  scale_fill_manual(values = county_pallette) +
   scale_y_continuous(breaks = c(0, 25000, 50000, 75000),
                      labels = c("0", "25,000", "50,000", "75,000")) +
   coord_flip() +
   theme_minimal() +
   theme(
+    legend.position = "none",
     text = element_text(family = "Times"),
     axis.text = element_text(size = 12),
     axis.title = element_text(size = 14, family = "Times", face = "bold"),

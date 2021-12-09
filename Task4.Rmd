@@ -39,6 +39,10 @@ sewer_service <- read.csv(here("Data", "4_SewerService.csv")) %>%
   clean_names() %>% 
   mutate(genz_swr = str_to_title(genz_swr))
 
+# Read in Protected Lands Data
+protected_lands <- read.csv(here("Data", "4_ProtectedLands_Forest_2013_2018.csv")) %>% 
+  clean_names()
+
 # Set blanks to NA
 sewer_service[sewer_service == c(" ", "")] <- NA
 
@@ -89,6 +93,41 @@ stwr <- function(string, nwrap = 20){
 stwr = Vectorize(stwr)
 
 ```
+
+### Protected Lands
+```{r}
+#---------------------------------------
+# Forest change in proteted vs. unprotected lands
+#---------------------------------------
+
+protected_lands_plot <- ggplot(data = protected_lands, aes(x = i_protected, y = forest_acres_change)) +
+  geom_col(aes(fill = i_protected)) +
+  geom_text(aes(label = round(forest_acres_change, digits = 2),
+                color = i_protected),
+            vjust = 1.1) +
+  scale_fill_manual(values = c("#FF6B6B", "#8FB339")) +
+  scale_color_manual(values = c("#FF6B6B", "#8FB339")) +
+  scale_y_continuous(breaks = c(-9000, -6000, -3000, 0 ),
+                     labels = c("-9,000", "-6,000", "-3,000", "0")) +
+  labs(title = "Forest Loss in Protected and Unprotected Lands \n from 2013 to 2018",
+       x = "Protection Status",
+       y = "Area Change (Acres)") +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))
+  )
+
+protected_lands_plot 
+
+ggsave(here("Graphics", "4_protected_lands.jpg"), protected_lands_plot)
+
+```
+
 
 ### New Projected Land Use change
 ```{r}
