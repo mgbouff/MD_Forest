@@ -357,7 +357,7 @@ ggsave(here("Graphics", "5_state_lc.jpg"), state_lc_plot)
 
 ```
 ### Tree Canopy Change
-State
+State Acres
 ```{r}
 #---------------------------------------
 # Tree Canopy Change in/out of Forest State Level (acres)
@@ -385,7 +385,7 @@ state_tc_plot <- ggplot(data = state_tc, aes(x = forest_type, y = acres)) +
                                "#6eb663" # Outside
                                )) +
   geom_hline(aes(yintercept=0)) +
-  labs(title = "Tree Canopy Change Within and Outside Forests",
+  labs(title = "Tree Canopy Change Within and Outside Forests \n between 2013 and 2018",
        x = "Forest Type",
        y = "Area Change (Acres)") +
   scale_y_continuous(breaks = c(0, -2500, -5000, -7500, -10000, -12500),
@@ -403,6 +403,58 @@ state_tc_plot
 ggsave(here("Graphics", "5_state_tc.jpg"), state_tc_plot, height = 5)
 
 ```
+State Percent
+```{r}
+#---------------------------------------
+# Tree Canopy Change in/out of Forest State Level (percent)
+#---------------------------------------
+state_tc_percent <- state_lc %>%
+  select(inside_pchange:outside_pchange) %>%
+  pivot_longer(inside_pchange:outside_pchange,
+               names_to = "forest_type",
+               values_to = "decimal") %>%
+    mutate(forest_type = case_when(
+    forest_type == "inside_pchange" ~ "Forest",
+    forest_type == "outside_pchange" ~ "Tree Canopy Outside Forest")) %>% 
+  mutate(percent = decimal*100)
+
+# Plot
+#---------------------------------------
+state_tc_percent_plot <- ggplot(data = state_tc_percent, aes(x = forest_type, y = percent)) +
+  geom_col(aes(fill = forest_type)) +
+    scale_fill_manual(values = c("#24693d", # Inside
+                               "#6eb663" # Outside
+                               )) +
+  # geom_text(aes(label = round(percent, digits = 0),
+  #               color = forest_type),
+  #          vjust = 1.15) +
+  scale_color_manual(values = c("#24693d", # Inside
+                               "#6eb663" # Outside
+                               )) +
+  annotate("text",
+           x = 1, y = -73,
+           label = "-71%", color = "#24693d") +
+  annotate("text",
+           x = 2, y = -7,
+           label = "-5%", color = "#6eb663") +
+ geom_hline(aes(yintercept=0)) +
+  labs(title = "Tree Canopy Percent Change Within and Outside Forests \n between 2013 and 2018",
+       x = "Forest Type",
+       y = "Percent Area Change") +
+  scale_y_continuous(breaks = c(0, -20, -40, -60),
+                     labels = c("0", "-20%","-40%", "-60%")) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+ axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+       axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+ggsave(here("Graphics", "5_state_tc_percent.jpg"), state_tc_percent_plot, height = 5)
+
+```
+
 County
 ```{r}
 #---------------------------------------
