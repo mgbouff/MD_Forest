@@ -27,7 +27,7 @@ county_forest <- read.csv(here("Data", "1a_County_short_2018.csv")) %>%
 
 # 1b.
 # Read in Plantable Area data
-plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>% 
+plantable_county <- read.csv(here("Data", "1b_plantableareas_2018_county.csv")) %>% 
   clean_names() %>% 
   rename(county = i_county) %>% 
   mutate(county = as.factor(county))
@@ -81,7 +81,7 @@ state_in_out <- state_forest %>%
 # Plot
 state_in_out_plot <- ggplot(data = state_in_out, aes(x = type, y = acres)) +
   geom_col(aes(fill = type)) +
-  geom_text(aes(label = round(acres, digits = 1),
+  geom_text(aes(label = round(acres, digits = 0),
                 color = type),
             vjust = -0.5) +
   scale_fill_manual(values = c("#24693d", "#6eb663")) +
@@ -207,6 +207,7 @@ county_in_out <- county_forest %>%
   mutate(county = as.factor(county))
 
 # Plot
+#---------------------------------------
 county_in_out_plot <- ggplot(data = county_in_out, aes(x = fct_rev(county), y = acres))+
   geom_col(aes(fill = type), position = "dodge") +
   scale_fill_manual(values = c("#24693d", "#6eb663")) +
@@ -230,6 +231,32 @@ county_in_out_plot <- ggplot(data = county_in_out, aes(x = fct_rev(county), y = 
 county_in_out_plot
 
 ggsave(here("Graphics", "1a_county_in_out_forest_2018.jpg"), county_in_out_plot, width = 7, height = 4.5)
+
+# Stack Plot for Susan
+#---------------------------------------
+county_in_out_stack <- ggplot(data = county_in_out, aes(x = fct_rev(county), y = acres))+
+  geom_col(aes(fill = type)) +
+  scale_fill_manual(values = c("#24693d", "#6eb663")) +
+  scale_y_continuous(breaks = c(0, 100000, 200000, 300000),
+                     labels = c("0", "100,000", "200,000", "300,000")) +
+  labs(title = "2018 Tree Canopy Inside and Outside Forests",
+       x = "Jurisdiction",
+       y = "Tree Canopy Area (Acres)") +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "Times", size = 12),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.title = element_blank(),
+    legend.position = "bottom"
+  )
+
+county_in_out_stack
+
+ggsave(here("Graphics", "1a_county_in_out_stack.jpg"), county_in_out_stack, width = 7, height = 4.5)
 
 ```
 Tree Canopy Percent
@@ -379,7 +406,7 @@ ggsave(here("Graphics", "1a_county_state_lu_change.jpg"), county_state_merge_plo
 ```{r}
 
 #---------------------------------------
-# Plantable Area by county
+# Plantable Area by county (Acres)
 #---------------------------------------
 
 plantable_county_plot <- ggplot(data = plantable_county, aes(x = fct_rev(county), y = area_acres)) +
@@ -403,6 +430,36 @@ plantable_county_plot <- ggplot(data = plantable_county, aes(x = fct_rev(county)
 plantable_county_plot
 
 ggsave(here("Graphics", "1b_plantable_county.jpg"), plantable_county_plot, height = 4.5, width = 7)
+
+```
+```{r}
+#---------------------------------------
+# Plantable Area by county (Percent)
+#---------------------------------------
+
+
+
+plantable_percent_plot <- ggplot(data = plantable_county, 
+                                 aes(x = fct_rev(county), y = p_area)) +
+  geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
+  labs(title = "Percent Plantable Area by Jurisdiction",
+       x = "Jurisdiction",
+       y = "Percent of Land Area") +
+  scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 25),
+                     labels = c("0%", "5%", "10%", "15%", "20%", "25%")) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+  
+plantable_percent_plot
+
+ggsave(here("Graphics", "plantable_percent.jpg"), plantable_percent_plot)
 
 ```
 

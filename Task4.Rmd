@@ -327,6 +327,8 @@ in_out_forest_plot <- ggplot(data = in_out_forest_change, aes(x = genzone, y = t
   scale_fill_manual(values = c("#24693d", # Inside
                                "#6eb663" # Outside
                                )) +
+  scale_y_continuous(breaks = c(-2000, 0, 2000, 4000),
+                     labels = c("-2,000", "0", "2,000", "4,000")) +
   coord_flip() +
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
@@ -408,7 +410,7 @@ panel.border = element_rect(color = "grey40", fill = NA),
 
 zone_change_all
 
-ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all, width = 8, height = 5.5)
+ggsave(here("Graphics","4_zone_change_panel.jpg"),zone_change_all, width = 8, height = 4.5)
 
 ```
 
@@ -535,7 +537,7 @@ County
 timber_county_plot <- ggplot(data = timber_county, aes(x = fct_rev(i_county), y = forest_harvest)) +
   geom_col(fill = "seagreen4") +
   labs(title = "Total Timber Harvest by Jurisdiction \n between 2013 and 2021",
-       x = "Jurisdiction", y = "Forest Harvested") +
+       x = "Jurisdiction", y = "Forest Harvested (Acres)") +
   scale_y_continuous(breaks = c(0, 10000, 20000),
                      labels = c("0", "10,000", "20,000")) +
   coord_flip() +
