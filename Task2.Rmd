@@ -42,6 +42,9 @@ frag_pallete_stack <- c("#D4F0D1", # Edge, white-green
                         "#3B9E70", # Small core, lighter green
                         "#00734C", # Medium core, green
                         "#035339") # Large core, dark green
+
+# Categorical County Color Pallette
+county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
                          
 
 ```
@@ -395,7 +398,7 @@ county_percent_change <- county_frag_percent %>%
 
 # Plot
 #---------------------------------------
-ggplot(data = county_percent_change, aes(x = frag_type, y = percent_change)) +
+county_frag_percent <- ggplot(data = county_percent_change, aes(x = frag_type, y = percent_change)) +
   geom_col(aes(fill = frag_type)) +
   scale_fill_manual(values = frag_pallete2) +
   labs(title = "Fragment Type Percent Change 2013-2018",
@@ -419,7 +422,39 @@ ggplot(data = county_percent_change, aes(x = frag_type, y = percent_change)) +
     guides(fill = guide_legend(title = "Forest Fragment Type",
                                title.position = "top"))
 
+county_frag_percent
+
+ggsave(here("Graphics", "2_county_frag_change_percent.jpg"), county_frag_percent, height = 7)
+
 # Facet by frag type instead of county
+#---------------------------------------
+county_fragtype_percent <- ggplot(data = county_percent_change, aes(x = county, y = percent_change)) +
+  geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
+  labs(title = "Forest Fragment Percent Change \n Between 2013 and 2018 by County",
+       y = "Percent Change") +
+  facet_wrap(~frag_type, scale = "free_y") +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+      theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 9, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+   ) +
+    guides(fill = guide_legend(title = "Forest Fragment Type",
+                               title.position = "top",
+                               nrow = 4))
+
+county_fragtype_percent
+
+ggsave(here("Graphics", "2_county_fragtype_percent.jpg"), county_fragtype_percent, height = 7)
 
 ```
 
