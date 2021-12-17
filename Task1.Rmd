@@ -27,7 +27,7 @@ county_forest <- read.csv(here("Data", "1a_County_short_2018.csv")) %>%
 
 # 1b.
 # Read in Plantable Area data
-plantable_county <- read.csv(here("Data", "1b_plantableareas_2018_county.csv")) %>% 
+plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>% 
   clean_names() %>% 
   rename(county = i_county) %>% 
   mutate(county = as.factor(county))
@@ -114,7 +114,7 @@ Other land use change
 #---------------------------------------
 # Get percents 
 state_lc_percent <- state_forest %>% 
-  select(i_total_a_acres:imperv_a_acres) %>% 
+  select(i_land_a:imperv_a_acres) %>% 
   pivot_longer(can_a_acres:imperv_a_acres, names_to = "lc", values_to = "acres") %>%
   mutate(lc = case_when(
 #    lc == "i_total_a_acres" ~ "Total Acres",
@@ -432,13 +432,13 @@ plantable_county_plot
 ggsave(here("Graphics", "1b_plantable_county.jpg"), plantable_county_plot, height = 4.5, width = 7)
 
 ```
+
 ```{r}
 #---------------------------------------
 # Plantable Area by county (Percent)
 #---------------------------------------
 
-
-
+# Need total acres in each county
 plantable_percent_plot <- ggplot(data = plantable_county, 
                                  aes(x = fct_rev(county), y = p_area)) +
   geom_col(aes(fill = county)) +

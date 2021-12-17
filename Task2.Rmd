@@ -355,6 +355,35 @@ county_frag_acres
 
 ggsave(here("Graphics", "2_county_frag_change_acres.jpg"), county_frag_acres, height = 7)
 
+# Facet by Frag Type
+county_frag_facet_acres <- ggplot(county_change, aes(x = county, y = acres_change)) +
+  geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
+  labs(title = "Forest Fragment Type Area Change \n from 2013 to 2018",
+       y = "Area (acres)") +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  facet_wrap(~frag_type, scale = "free_y") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 12, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+   ) +
+    guides(fill = guide_legend(title = "Jurisdiction",
+                               title.position = "top",
+                               nrow = 4))
+
+county_frag_facet_acres
+
+ggsave(here("Graphics", "2_county_fragtype_facet_change.jpg"), county_frag_facet_acres, height = 6)
+
 ```
 County Change Percent
 ```{r}
@@ -401,7 +430,7 @@ county_percent_change <- county_frag_percent %>%
 county_frag_percent <- ggplot(data = county_percent_change, aes(x = frag_type, y = percent_change)) +
   geom_col(aes(fill = frag_type)) +
   scale_fill_manual(values = frag_pallete2) +
-  labs(title = "Fragment Type Percent Change 2013-2018",
+  labs(title = "Fragment Type Percent Change Between 2013 and 2018",
        x = "Jurisdiction",
        y = "Percent of Forested Area") +
   theme_minimal() +
@@ -431,7 +460,7 @@ ggsave(here("Graphics", "2_county_frag_change_percent.jpg"), county_frag_percent
 county_fragtype_percent <- ggplot(data = county_percent_change, aes(x = county, y = percent_change)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
-  labs(title = "Forest Fragment Percent Change \n Between 2013 and 2018 by County",
+  labs(title = "Forest Fragment Percent Change Between 2013 and 2018",
        y = "Percent Change") +
   facet_wrap(~frag_type, scale = "free_y") +
   theme_minimal() +
@@ -445,7 +474,7 @@ county_fragtype_percent <- ggplot(data = county_percent_change, aes(x = county, 
     legend.position = "bottom",
     legend.title.align = 0.5,
     strip.background = element_rect(color = "grey40", fill = "grey30"),
-    strip.text = element_text(size = 9, color = "white", face = "bold"),
+    strip.text = element_text(size = 12, color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA)
    ) +
     guides(fill = guide_legend(title = "Forest Fragment Type",
@@ -502,7 +531,7 @@ county_frag_2018_plot <- ggplot(county_2018_acres, aes(x = frag_type, y = acres)
     legend.position = "bottom",
     legend.title.align = 0.5,
     strip.background = element_rect(color = "grey40", fill = "grey30"),
-    strip.text = element_text(size = 9, color = "white", face = "bold"),
+    strip.text = element_text(size = 7.5, color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA)
    ) +
     guides(fill = guide_legend(title = "Forest Fragment Type",
@@ -584,7 +613,7 @@ county_2013_acres <- county_frag %>%
                               "Patch"))
 
 # Plot just for funzies
-ggplot(county_2013_acres, aes(x = frag_type, y = acres)) +
+county_frag_2013_plot <- ggplot(county_2013_acres, aes(x = frag_type, y = acres)) +
   geom_col(aes(fill = frag_type)) +
   scale_fill_manual(values = frag_pallete) +
   labs(title = "Forest Fragment Type Area 2013",
@@ -601,11 +630,14 @@ ggplot(county_2013_acres, aes(x = frag_type, y = acres)) +
     legend.position = "bottom",
     legend.title.align = 0.5,
     strip.background = element_rect(color = "grey40", fill = "grey30"),
-    strip.text = element_text(size = 9, color = "white", face = "bold"),
+    strip.text = element_text(size = 7.5, color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA)
    ) +
     guides(fill = guide_legend(title = "Forest Fragment Type",
                                title.position = "top"))
+
+
+ggsave(here("Graphics", "2_county_frag_acres_2013.jpg"), county_frag_2013_plot, width = 7, height = 5.6)
 
 #---------------------------------------
 # Fragmentation Percent 2013
@@ -623,10 +655,10 @@ county_2013_percent <- county_2013_acres %>%
   mutate(frag_type = fct_reorder(frag_type, desc(percent)))
 
 # Plot
-ggplot(data = county_2013_percent, aes(x = fct_rev(county), y = percent)) +
+county_2013_percent_stack <- ggplot(data = county_2013_percent, aes(x = fct_rev(county), y = percent)) +
   geom_col(aes(fill = frag_type)) +
   scale_fill_manual(values = frag_pallete_stack) +
-  labs(title = "Forest Proportion by Fragment Type 2018",
+  labs(title = "Forest Proportion by Fragment Type 2013",
        x = "Jurisdiction",
        y = "Percent of Forested Area") +
   scale_y_continuous(breaks = c(0, 10, 25, 50, 75, 100),
@@ -642,6 +674,10 @@ ggplot(data = county_2013_percent, aes(x = fct_rev(county), y = percent)) +
     panel.grid.minor = element_blank()
   ) +
   guides(fill = guide_legend(title = "Forest Fragment Type"))
+
+county_2013_percent_stack
+
+ggsave(here("Graphics", "2_county_frag_percent_2013.jpg"), county_2013_percent_stack, width = 7)
 
 ```
 

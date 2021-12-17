@@ -165,11 +165,14 @@ lu_update_plot <- ggplot(lu_update, aes(x = fct_rev(cntyname), y = acres)) +
   geom_col(aes(fill = cntyname)) +
   scale_fill_manual(values = county_pallette) +
   facet_wrap(~full_name, scales = "free_y") +
-  labs(x = "County", y = "Change in Area (Acres)") +
+  labs(
+    title = "Projected Land Use Change Between 2025 and 2055",
+    x = "County", 
+    y = "Change in Area (Acres)") +
   theme_minimal() +
    geom_hline(aes(yintercept=0)) +
   theme(
-    text = element_text(family = "Times"),
+    plot.title = element_text(size = 16, face = "bold"),
     strip.background = element_rect(color = "grey40", fill = "grey30"),
     strip.text = element_text(color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA),
@@ -186,7 +189,9 @@ lu_update_plot <- ggplot(lu_update, aes(x = fct_rev(cntyname), y = acres)) +
 
 lu_update_plot
 
-ggsave(here("Graphics", "4_lu_update_legend.jpg"), lu_update_plot, width = 8.5, height = 7)
+ggsave(here("Graphics", "4_lu_update_legend.jpg"), lu_update_plot, height = 6)
+
+# , width = 8.5, height = 7
 
 ```
 
@@ -200,7 +205,10 @@ lu_county_plot <- ggplot(lu_update, aes(x = full_name, y = acres)) +
   geom_col(aes(fill = full_name)) +
   scale_fill_manual(values = zone_palette) +
   facet_wrap(~cntyname, scales = "free_y") +
-  labs(x = "Land Use", y = "Change in Area (Acres)") +
+  labs(
+    title = "Land Use Area Change Between 2013 and 2018",
+    x = "Land Use", 
+    y = "Change in Area (Acres)") +
   theme_minimal() +
    geom_hline(aes(yintercept=0)) +
   theme(
@@ -226,7 +234,6 @@ lu_county_plot
 
 
 ### Projected Land Use change
-
 ```{r}
 #---------------------------------------
 # Projected Land use by land use type and county
@@ -389,7 +396,7 @@ zone_change_all <- ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
   geom_col(aes(fill = genzone)) +
   facet_wrap(~full_name, scales = "free") +
   labs(
-#    title = "Total Area Change",
+    title = "Land Cover Class Area Change Between 2013 and 2018 \n by Generalized Zone",
     x = "Zone",
     y = "Change in Area (Acres)") +
   scale_fill_manual(values = lc_pallette) +
@@ -403,7 +410,7 @@ zone_change_all <- ggplot(data = zone_change, aes(x = genzone, y = tc_acres)) +
    axis.title.x = element_blank(),
    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 13, face = "bold"),
 strip.background = element_rect(color = "grey40", fill = "grey30"),
-strip.text = element_text(size = 8.5, color = "white", face = "bold"),
+strip.text = element_text(size = 8.7, color = "white", face = "bold"),
 panel.border = element_rect(color = "grey40", fill = NA),
   ) +
   guides(fill = guide_legend(title = "Zone Type"))
@@ -446,7 +453,7 @@ sewer_acres$genz_swr = stwr(sewer_acres$genz_swr)
 #---------------------------------------
 sewer_acres_plot <- ggplot(data = sewer_acres, aes(x = type, y = acres_change)) +
   geom_col(aes(fill = type)) +
-  labs(title = "Land Cover Change 2013 to 2018 by Sewer Service Type",
+  labs(title = "Land Cover Change between 2013 and 2018 \n by Sewer Service Type",
        x = "Land Cover Type",
        y = "Change in Area (Acres)") +
   facet_wrap(~ genz_swr, scales = "free_y") +

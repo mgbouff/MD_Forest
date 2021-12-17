@@ -58,12 +58,22 @@ lu_pallette <- c("#F9DB6D", # Barren, light yellow
 lu_tc_pallette <- c("#F08701", # Impervious, orange
                     "#D9682A", # Buildings, brick
                     "#F9DB6D", # Barren, light yellow 
+                    "#8DBE87", # Low veg, light green
+                    "#F9A620", # Roads, light orange
+                    "#57AF94", # Shrub, green-blue
+                    "#6eb663", # Tree Canopy, green
+                    "#4059AD", # Water, royal blue
+                    "#21A0A0") # Wetland, Blue-green
+
+lu_tc_pallette2 <- c("#F08701", # Impervious, orange
+                    "#D9682A", # Buildings, brick
+                    "#F9DB6D", # Barren, light yellow 
                     "#4059AD", # Water, royal blue
                     "#F9A620", # Roads, light orange
                     "#21A0A0", # Wetland, Blue-green
                     "#57AF94", # Shrub, green-blue
                     "#8DBE87", # Low veg, light green
-                    "#6eb663") # Tree Canopy, green)  
+                    "#6eb663") # Tree Canopy, green)
 
 # County Pallet
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
@@ -239,8 +249,9 @@ plot_change_county_cp <- ggplot(data = county_change, aes(x = year, y = year_dif
   scale_fill_manual(values = county_pallette) +
   scale_x_continuous(breaks = c(2005, 2010, 2015, 2020),
     labels = c("2000-2005","2005-2010","2010-2015","2015-2020"))+
-    labs(x = "Time Period",
-       y = "Total Change in Area (Acres)") +
+    labs(title = "Total Area Change Between Time Periods (2000 to 2020)",
+      x = "Time Period",
+       y = "Area Change (Acres)") +
     geom_hline(aes(yintercept=0))+
     geom_vline(aes(xintercept=2002))+
   facet_wrap(~county, ncol = 4, scales = "free_y")+
@@ -251,6 +262,7 @@ plot_change_county_cp <- ggplot(data = county_change, aes(x = year, y = year_dif
     axis.text = element_text(size = 10, family = "Times"),
     axis.text.x = element_text(angle = 90),
     panel.spacing = unit(1, "lines"),
+    plot.title = element_text(size = 16, face = "bold"),
     axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
     axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
     legend.position = "none"
@@ -335,12 +347,12 @@ state_lc_acres <- state_lc %>%
 #---------------------------------------
 state_lc_plot <- ggplot(data = state_lc_acres, aes(x = lc, y = acres)) +
   geom_col(aes(fill = lc)) +
-  labs(title = "Land Cover Area Change",
+  labs(title = "Land Cover Area Change Between 2013 and 2018",
        x = "Land Cover",
        y = "Area Change (Acres)") +
   scale_y_continuous(breaks = c(-10000, -5000, 0, 5000, 10000),
                      labels = c("-10,000", "-5,000", "0", "5,000", "10,000")) +
-  scale_fill_manual(values = lu_tc_pallette) +
+  scale_fill_manual(values = lu_tc_pallette2) +
   geom_hline(aes(yintercept=0)) +
   coord_flip() +
   theme_minimal() +
@@ -453,6 +465,8 @@ state_tc_percent_plot <- ggplot(data = state_tc_percent, aes(x = forest_type, y 
 
 ggsave(here("Graphics", "5_state_tc_percent.jpg"), state_tc_percent_plot, height = 5)
 
+state_tc_percent_plot
+
 ```
 
 County
@@ -545,7 +559,7 @@ land_use_acres_update$i_desclu = stwr(land_use_acres_update$i_desclu)
 lu_update_plot <- ggplot(data = land_use_acres_update, aes(x = land_use, y = acres)) +
   geom_col(aes(fill = land_use)) +
   facet_wrap(~i_desclu, scales = "free_y") +
-  labs(title = "Land Use Change",
+  labs(title = "Land Use Change Between 2013 and 2018",
        y = "Change in Area (Acres)") +
   theme_minimal() +
   geom_hline(aes(yintercept=0)) +
@@ -764,7 +778,7 @@ pfa_acres <- pfa_data %>%
 #---------------------------------------
 pfa_acres_plot <- ggplot(data = pfa_acres, aes(x = type, y = acres_change)) +
   geom_col(aes(fill = type)) +
-  labs(title = "Priority Funding Area Change",
+  labs(title = "Priority Funding Area Change Between 2013 and 2018",
     y = "Area Change (Acres)") +
   facet_wrap(~jurscode, ncol = 4, scales = "free_y")+
   scale_fill_manual(values = lu_tc_pallette) +
@@ -787,7 +801,7 @@ panel.border = element_rect(color = "grey40", fill = NA),
 
 pfa_acres_plot
 
-ggsave(here("Graphics", "5_pfa_acres.jpg"), pfa_acres_plot)
+ggsave(here("Graphics", "5_pfa_acres.jpg"), pfa_acres_plot, height = 7)
 
 ```
 Acres Inside/Outside
@@ -914,7 +928,8 @@ pfa_percent <- pfa_data %>%
 #---------------------------------------
 pfa_percent_plot <- ggplot(data = pfa_percent, aes(x = type, y = percent_change)) +
   geom_col(aes(fill = type)) +
-  labs(y = "Percent Change") +
+  labs(title = "Percent Area Change Between 2013 and 2018",
+    y = "Percent Change") +
   facet_wrap(~jurscode, ncol = 4, scales = "free_y")+
   scale_fill_manual(values = lu_tc_pallette) +
   theme_minimal() +
