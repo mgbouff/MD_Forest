@@ -1,0 +1,160 @@
+---
+title: "Percent Plots"
+author: "Marie Bouffard"
+date: "12/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+
+# Attach Packages
+library(tidyverse)
+library(here)
+library(janitor)
+
+# Data
+#---------------------------------------
+# State Percent Change
+state_data <- read.csv(here("Data", "PercentChange", "state_percentchange.csv")) %>% 
+  clean_names()
+
+# County Percent Change
+county_data <- read.csv(here("Data", "PercentChange", "county_percentchange.csv")) %>%
+  clean_names()
+
+# Land Use Percent Change
+landuse_data <- read.csv(here("Data", "PercentChange", "landuse_percentchange.csv")) %>% 
+  clean_names()
+
+# Gen Zoning Percent Change
+genzone_data <- read.csv(here("Data", "PercentChange", "genzoning_percentchange.csv")) %>% 
+  clean_names()
+
+# Priority Funding Area Percent Change
+pfa_data <- read.csv(here("Data", "PercentChange", "PFA_percentchange.csv")) %>% 
+  clean_names()
+
+# Sewer Service Area
+sewer_data <- read.csv(here("Data", "PercentChange", "sewerservice_percentchange.csv")) %>%
+  clean_names()
+
+# TEA Percent Change
+tea_data <- read.csv(here("Data", "PercentChange", "TEA_percentchange.csv")) %>%
+  clean_names()
+
+# TEA Sum Percent Change
+tea_sum_data <- read.csv(here("Data", "PercentChange", "TEA_SUM_percentchange.csv")) %>% 
+  clean_names()
+
+# Pallets
+#---------------------------------------
+# Categorical County Color Pallette
+county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
+
+lu_pallette <- c("#F9DB6D", # Barren, light yellow
+                 "#D9682A", # Buildings, brick
+                 "#F08701", # Impervious, orange 
+                 "#8DBE87", # Low veg, light green
+                 "#F9A620", # Roads, light orange
+                 "#57AF94", # Shrub, green-blue
+                 "#6eb663", # Tree Canopy, green
+                 "#4059AD", # Water, royal blue
+                 "#21A0A0") # Wetland, Blue-green
+
+```
+
+State Percent Change
+```{r}
+#---------------------------------------
+# County Percent Change 7 Land Cover Classes
+#---------------------------------------
+
+```
+
+
+County Percent Change
+```{r}
+#---------------------------------------
+# County Percent Change 7 Land Cover Classes
+#---------------------------------------
+county_percent_change <- county_data %>% 
+  select(i_county, can_p_change:imperv_pchange) %>% 
+  pivot_longer(!i_county, names_to = "class", values_to = "percent_change") %>% 
+    mutate(class = case_when(
+    class == "low_veg_pchange" ~ "Low Vegetation",
+    class == "barren_pchange" ~ "Barren",
+    class == "water_pchange" ~ "Water",
+    class == "build_pchange" ~ "Buildings",
+    class == "road_pchange" ~ "Roads",
+    class == "shrub_pchange" ~ "Shrub",
+    class == "wetlands_pchange" ~ "Wetland",
+    class == "imperv_pchange" ~ "Impervious",
+    class == "can_p_change" ~ "Tree Canopy"))
+
+# plot Faceted by County
+percent_plot_county <- ggplot(data = county_percent_change, aes(x = class, y = percent_change)) +
+  geom_col(aes(fill = class)) +
+  scale_fill_manual(values = lu_pallette) +
+  labs(
+    title = "Land Use Percent Change Between 2013 and 2018",
+    y = "Percent Change"
+  ) +
+  facet_wrap(~i_county, scales = "free_y") +
+  geom_hline(aes(yintercept=0)) +
+  theme_minimal() +
+    theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.title.align = 0.5,
+     strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 9, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+   ) +
+    guides(fill = guide_legend(title = "Land Use Category",
+                               title.position = "top",
+                               nrow = 2))
+percent_plot_county
+
+ggsave(here("Graphics", "percent_plot_county_change.jpg"), percent_plot_county, height = 7)
+
+# Plot faceted by land use
+percent_plot_county_class <- ggplot(data = county_percent_change, aes(x = i_county, y = percent_change)) +
+  geom_col(aes(fill = i_county)) +
+  scale_fill_manual(values = county_pallette) +
+  labs(
+    title = "Land Use Percent Change Between 2013 and 2018",
+    y = "Percent Change"
+  ) +
+  facet_wrap(~class, scales = "free_y") +
+  geom_hline(aes(yintercept=0)) +
+  theme_minimal() +
+    theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.title.align = 0.5,
+     strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 12, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+   ) +
+    guides(fill = guide_legend(title = "Jurisdiction",
+                               title.position = "top",
+                               nrow = 4))
+
+percent_plot_county_class
+
+ggsave(here("Graphics", "percent_plot_county_class.jpg"), percent_plot_county_class, height = 7)
+
+```
+
