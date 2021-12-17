@@ -30,9 +30,13 @@ county_data <- read.csv(here("Data", "PercentChange", "county_percentchange.csv"
 landuse_data <- read.csv(here("Data", "PercentChange", "landuse_percentchange.csv")) %>% 
   clean_names()
 
+# Set blanks to NA
+landuse_data[landuse_data == c(" ", "")] <- NA
+
 # Gen Zoning Percent Change
-genzone_data <- read.csv(here("Data", "PercentChange", "genzoning_percentchange.csv")) %>% 
-  clean_names()
+genzone_data <- read.csv(here("Data", "PercentChange", "genzoning_percentchange.csv")) %>%
+  clean_names() %>% 
+  mutate(i_gen_zone = str_to_title(i_gen_zone))
 
 # Priority Funding Area Percent Change
 pfa_data <- read.csv(here("Data", "PercentChange", "PFA_percentchange.csv")) %>% 
@@ -40,7 +44,8 @@ pfa_data <- read.csv(here("Data", "PercentChange", "PFA_percentchange.csv")) %>%
 
 # Sewer Service Area
 sewer_data <- read.csv(here("Data", "PercentChange", "sewerservice_percentchange.csv")) %>%
-  clean_names()
+  clean_names() %>% 
+  mutate(genz_swr = str_to_title(genz_swr))
 
 # TEA Percent Change
 tea_data <- read.csv(here("Data", "PercentChange", "TEA_percentchange.csv")) %>%
@@ -55,6 +60,16 @@ tea_sum_data <- read.csv(here("Data", "PercentChange", "TEA_SUM_percentchange.cs
 # Categorical County Color Pallette
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
 
+lu_pallette_state <- c("#F9DB6D", # Barren, light yellow
+                 "#D9682A", # Buildings, brick
+                 "#F08701", # Impervious, orange 
+                 "#4059AD", # Water, royal blue
+                 "#F9A620", # Roads, light orange
+                 "#21A0A0", # Wetland, Blue-green
+                 "#8DBE87", # Low veg, light green
+                 "#6eb663", # Tree Canopy, green
+                 "#57AF94") # Shrub, green-blue
+
 lu_pallette <- c("#F9DB6D", # Barren, light yellow
                  "#D9682A", # Buildings, brick
                  "#F08701", # Impervious, orange 
@@ -65,6 +80,26 @@ lu_pallette <- c("#F9DB6D", # Barren, light yellow
                  "#4059AD", # Water, royal blue
                  "#21A0A0") # Wetland, Blue-green
 
+zone_pallette <- c("#B0A4CC", # Light purple
+                 "#8F7CB6", # Medium purple
+                 "#665191", # Dark Purple
+                 "#41335B", # Darkest Purple 
+                 "#F6833C", # Light Orange
+                 "#E45D0B", # Medium Orange
+                 "#C35009", # Dark Orange
+                 "#02c39a", # Teal
+                 "#046865", # Dark Teal
+                 "#E1BC29", # Dark Yellow
+                 "#FFEE88") # Light Yellow
+
+# Use stringr::str_wrap() to create breaks in long facet titles
+#---------------------------------------
+stwr <- function(string, nwrap = 20){
+  paste(strwrap(string, width = nwrap), collapse = "\n")
+}
+
+stwr = Vectorize(stwr)
+
 ```
 
 State Percent Change
@@ -72,6 +107,44 @@ State Percent Change
 #---------------------------------------
 # County Percent Change 7 Land Cover Classes
 #---------------------------------------
+state_percent_chance <- state_data %>% 
+  select(can_pchange:imperv_pchange) %>% 
+  pivot_longer(can_pchange:imperv_pchange, names_to = "class", values_to = "percent_change") %>% 
+    mutate(class = case_when(
+    class == "low_veg_pchange" ~ "Low Vegetation",
+    class == "barren_pchange" ~ "Barren",
+    class == "water_pchange" ~ "Water",
+    class == "build_pchange" ~ "Buildings",
+    class == "road_pchange" ~ "Roads",
+    class == "shrub_pchange" ~ "Shrub",
+    class == "wetlands_pchange" ~ "Wetland",
+    class == "imperv_pchange" ~ "Impervious",
+    class == "can_pchange" ~ "Tree Canopy")) %>% 
+  mutate(class = fct_reorder(class, desc(percent_change)))
+
+# Plot
+#---------------------------------------
+state_percent_change <- ggplot(data = state_percent_chance, aes(x = class, y = percent_change)) +
+  geom_col(aes(fill = class)) +
+  scale_fill_manual(values = lu_pallette_state) +
+  labs(title = "Land Cover Percent Change Between 2013 and 2018",
+       x = "Land Cover Category",
+       y = "Percent Change") +
+  scale_y_continuous(breaks = c(-5, 0, 5, 10, 15),
+                     labels = c("-5%", "0%", "5%", "10%", "15%")) +
+  theme_minimal() +
+  coord_flip() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+    legend.position = "none",
+       axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+       axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+state_percent_change
+
+ggsave(here("Graphics", "percent_plot_state.jpg"), state_percent_change)
 
 ```
 
@@ -96,6 +169,7 @@ county_percent_change <- county_data %>%
     class == "can_p_change" ~ "Tree Canopy"))
 
 # plot Faceted by County
+#---------------------------------------
 percent_plot_county <- ggplot(data = county_percent_change, aes(x = class, y = percent_change)) +
   geom_col(aes(fill = class)) +
   scale_fill_manual(values = lu_pallette) +
@@ -126,6 +200,7 @@ percent_plot_county
 ggsave(here("Graphics", "percent_plot_county_change.jpg"), percent_plot_county, height = 7)
 
 # Plot faceted by land use
+#---------------------------------------
 percent_plot_county_class <- ggplot(data = county_percent_change, aes(x = i_county, y = percent_change)) +
   geom_col(aes(fill = i_county)) +
   scale_fill_manual(values = county_pallette) +
@@ -155,6 +230,271 @@ percent_plot_county_class <- ggplot(data = county_percent_change, aes(x = i_coun
 percent_plot_county_class
 
 ggsave(here("Graphics", "percent_plot_county_class.jpg"), percent_plot_county_class, height = 7)
+
+```
+
+Land Use Percent Change
+```{r}
+#---------------------------------------
+# Land Use Percent Change
+#---------------------------------------
+landuse_percent <- landuse_data %>% 
+    select(desclu, can_p_change:imperv_pchange) %>% 
+  pivot_longer(!desclu, 
+               names_to = "class", 
+               values_to = "percent_change") %>% 
+    mutate(class = case_when(
+    class == "low_veg_pchange" ~ "Low Vegetation",
+    class == "barren_pchange" ~ "Barren",
+    class == "water_pchange" ~ "Water",
+    class == "build_pchange" ~ "Buildings",
+    class == "road_pchange" ~ "Roads",
+    class == "shrub_pchange" ~ "Shrub",
+    class == "wetlands_pchange" ~ "Wetland",
+    class == "imperv_pchange" ~ "Impervious",
+    class == "can_p_change" ~ "Tree Canopy")) %>% 
+    mutate(desclu = case_when(
+    desclu == "Agricultural" ~ "Agricultural",
+    desclu == "Apartments" ~ "Apartments",
+    desclu == "Commercial" ~ "Commercial",
+    desclu == "Commercial / Residentia" ~ "Commercial / Residential",
+    desclu == "Commercial Condominium" ~ "Commercial Condominium",
+    desclu == "Country Club" ~ "Country Club",
+    desclu == "Exempt" ~ "Exempt",
+    desclu == "Exempt Commercial" ~ "Exempt Commercial",
+    desclu == "Industrial" ~ "Industrial",
+    desclu == "Marsh Land" ~ "Marsh Land",
+    desclu == "Residential / Commercia" ~ "Residential / Commercial",
+    desclu == "Residential Condominium" ~ "Residential Condominium",
+    desclu == "Town House" ~ "Town House",
+    desclu == "Residential" ~ "Residential"
+  )) %>% 
+  drop_na()
+
+# String Wrap Function
+landuse_percent$desclu = stwr(landuse_percent$desclu)
+
+# Plot
+#---------------------------------------
+landuse_percent_plot <- ggplot(data = landuse_percent, aes(x = class, y = percent_change)) +
+  geom_col(aes(fill = class)) +
+  scale_fill_manual(values = lu_pallette) +
+  facet_wrap(~desclu, scales = "free_y") +
+  labs(title = "Land Use Percent Change Between 2013 and 2018",
+       y = "Percent Change") +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+      plot.title = element_text(size = 16, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+#    text = element_text(family = "Times", size = 14),
+#    axis.text = element_text(size = 14),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), 
+                              size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.title.align = 0.5,
+     strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 12, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+   ) +
+    guides(fill = guide_legend(title = "Land Use",
+                               title.position = "top",
+                               nrow = 2))
+
+landuse_percent_plot
+
+ggsave(here("Graphics", "percent_change_landuse.jpg"), landuse_percent_plot, height = 7)
+
+```
+
+
+Gen Zone Percent Change
+```{r}
+#---------------------------------------
+# Genzone Percent Change
+#---------------------------------------
+genzone_percent <- genzone_data %>% 
+  select(i_gen_zone, can_pchange:imperv_pchange) %>% 
+  pivot_longer(!i_gen_zone, names_to = "class", values_to = "percent_change") %>%
+  mutate(class = case_when(
+    class == "can_pchange" ~ "Tree Canopy",
+    class == "low_veg_pchange" ~ "Low Vegetation",
+    class == "barren_pchange" ~ "Barren",
+    class == "water_pchange" ~ "Water",
+    class == "build_pchange" ~ "Buildings",
+    class == "road_pchange" ~ "Roads",
+    class == "shrub_pchange" ~ "Shrub",
+    class == "wetlands_pchange" ~ "Wetland",
+    class == "imperv_pchange" ~ "Impervious",
+  )) %>% 
+  mutate(class = as.factor(class)) %>% 
+  mutate(class = fct_relevel(class, "Total Change", "Barren Areas", "Building Areas", "Impervious Areas", "Low Vegetation Areas", "Road Areas", "Shrub Areas", "Water Areas", "Wetland Areas")) %>%
+  mutate(i_gen_zone = as.factor(i_gen_zone)) %>%
+  mutate(i_gen_zone = fct_relevel(i_gen_zone,
+            "Very Low Density Residential", "Low Density Residential", "Medium Density Residential", "High Density Residential", "Rural Low Density Residential", "Rural Medium Density Residential", "Rural High Density Residential", "Industrial", "Commercial", "Mixed Use", "Other"))
+
+genzone_percent$class = stwr(genzone_percent$class)
+
+# Plot
+#---------------------------------------
+percent_change_genzone <- ggplot(data = genzone_percent, aes(x = i_gen_zone, y = percent_change)) +
+  geom_col(aes(fill = i_gen_zone)) +
+  facet_wrap(~class, scales = "free") +
+  labs(
+    title = "Land Cover Percent Change Between 2013 and 2018 \n by Generalized Zone",
+    x = "Zone",
+    y = "Percent Change") +
+  scale_fill_manual(values = zone_pallette) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+#  legend.position = "none",
+  legend.title = element_text(size = 16, face = "bold"),
+   text = element_text(family = "Times"),
+   axis.text.x = element_blank(),
+   axis.title.x = element_blank(),
+   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 13, face = "bold"),
+strip.background = element_rect(color = "grey40", fill = "grey30"),
+strip.text = element_text(size = 8.7, color = "white", face = "bold"),
+panel.border = element_rect(color = "grey40", fill = NA),
+  ) +
+  guides(fill = guide_legend(title = "Zone Type"))
+
+percent_change_genzone
+
+ggsave(here("Graphics", "percent_change_genzone.jpg"), percent_change_genzone)
+
+```
+Priority Funding Area Percent Change
+```{r}
+#---------------------------------------
+# PFA Percent Change by County
+#---------------------------------------
+pfa_percent <- pfa_data %>% 
+  select(jurscode, can_pchange:imperv_pchange) %>% 
+  pivot_longer(!jurscode, names_to = "class", values_to = "percent_change") %>%
+  mutate(class = case_when(
+    class == "can_pchange" ~ "Tree Canopy",
+    class == "low_veg_pchange" ~ "Low Vegetation",
+    class == "barren_pchange" ~ "Barren",
+    class == "water_pchange" ~ "Water",
+    class == "build_pchange" ~ "Buildings",
+    class == "road_pchange" ~ "Roads",
+    class == "shrub_pchange" ~ "Shrub",
+    class == "wetlands_pchange" ~ "Wetland",
+    class == "imperv_pchange" ~ "Impervious",
+  )) %>% 
+    mutate(jurscode = case_when(
+    jurscode == "PRIN" ~ "Prince George's",
+    jurscode == "SOME" ~ "Somerset",
+    jurscode == "KENT" ~ "Kent",
+    jurscode == "CARO" ~ "Caroline",
+    jurscode == "HARF" ~ "Harford",
+    jurscode == "WORC" ~ "Worcester",
+    jurscode == "CALV" ~ "Calvert",
+    jurscode == "BACI" ~ "Baltimore City",
+    jurscode == "GARR" ~ "Garrett",
+    jurscode == "CHAR" ~ "Charles",
+    jurscode == "STMA" ~ "St. Mary's",
+    jurscode == "ANNE" ~ "Anne Arundel",
+    jurscode == "CARR" ~ "Carroll",
+    jurscode == "TALB" ~ "Talbot",
+    jurscode == "QUEE" ~ "Queen Anne's",
+    jurscode == "FRED" ~ "Frederick",
+    jurscode == "CECI" ~ "Cecil",
+    jurscode == "WICO" ~ "Wicomico",
+    jurscode == "DORC" ~ "Dorchester",
+    jurscode == "ALLE" ~ "Allegany",
+    jurscode == "MONT" ~ "Montgomery",
+    jurscode == "WASH" ~ "Washington",
+    jurscode == "HOWA" ~ "Howard",
+    jurscode == "BACO" ~ "Baltimore"))
+
+# Plot
+#---------------------------------------
+pfa_percent_plot <- ggplot(data = pfa_percent, aes(x = class, y = percent_change)) +
+  geom_col(aes(fill = class)) +
+  labs(title = "Priority Funding Percent Change Between 2013 and 2018",
+    y = "Percent Change") +
+  facet_wrap(~jurscode, ncol = 4, scales = "free_y")+
+  scale_fill_manual(values = lu_pallette) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+  plot.title = element_text(size = 16, face = "bold"),
+  legend.position = "bottom",
+  legend.title.align = 0.5,
+  legend.title = element_text(size = 14, face = "bold"),
+   axis.text.x = element_blank(),
+   axis.title.x = element_blank(),
+   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+strip.background = element_rect(color = "grey40", fill = "grey30"),
+strip.text = element_text(size = 10, color = "white", face = "bold"),
+panel.border = element_rect(color = "grey40", fill = NA),
+  ) +
+  guides(fill = guide_legend(title = "Land Cover Type",
+                             title.position = "top"))
+
+pfa_percent_plot
+
+ggsave(here("Graphics", "percent_change_pfa.jpg"), pfa_percent_plot, height = 7)
+
+```
+
+Sewer Service Area Percent Change
+```{r}
+#---------------------------------------
+# Sewer Sercive Area Percent Change
+#---------------------------------------
+sewer_percent <- sewer_data %>% 
+  select(genz_swr, can_pchange:imperv_pchange) %>% 
+  pivot_longer(!genz_swr, names_to = "class", values_to = "percent_change") %>%
+  mutate(class = case_when(
+    class == "can_pchange" ~ "Tree Canopy",
+    class == "low_veg_pchange" ~ "Low Vegetation",
+    class == "barren_pchange" ~ "Barren",
+    class == "water_pchange" ~ "Water",
+    class == "build_pchange" ~ "Buildings",
+    class == "road_pchange" ~ "Roads",
+    class == "shrub_pchange" ~ "Shrub",
+    class == "wetlands_pchange" ~ "Wetland",
+    class == "imperv_pchange" ~ "Impervious",
+  ))
+
+# Use stringr function
+sewer_percent$genz_swr = stwr(sewer_percent$genz_swr)
+  
+# Plot
+#---------------------------------------
+sewer_percent_plot <- ggplot(data = sewer_percent, aes(x = class, y = percent_change)) +
+  geom_col(aes(fill = class)) +
+  labs(title = "Land Cover Percent Change between 2013 and 2018 \n by Sewer Service Type",
+       x = "Land Cover Type",
+       y = "Percent Change") +
+  facet_wrap(~ genz_swr, scales = "free_y") +
+  scale_fill_manual(values = lu_pallette) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+  plot.title = element_text(size = 16, face = "bold"),
+  legend.position = "bottom",
+  legend.title.align = 0.5,
+  legend.title = element_text(size = 14, face = "bold"),
+   axis.text.x = element_blank(),
+   axis.title.x = element_blank(),
+   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+strip.background = element_rect(color = "grey40", fill = "grey30"),
+strip.text = element_text(size = 12, color = "white", face = "bold"),
+panel.border = element_rect(color = "grey40", fill = NA),
+  ) +
+  guides(fill = guide_legend(title = "Land Cover Type",
+                             title.position = "top"))
+
+sewer_percent_plot
+
+ggsave(here("Graphics", "percent_change_sewer.jpg"), sewer_percent_plot, height = 6)
 
 ```
 
