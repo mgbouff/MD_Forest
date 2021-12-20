@@ -43,6 +43,12 @@ frag_pallete_stack <- c("#D4F0D1", # Edge, white-green
                         "#00734C", # Medium core, green
                         "#035339") # Large core, dark green
 
+frag_pallete_stack_merge <- c("#D4F0D1", # Edge, white-green
+                              "#EE4266", # Patches, pink
+                        "#3B9E70", # Small core, lighter green
+                        "#00734C", # Medium core, green
+                        "#035339") # Large core, dark green
+
 # Categorical County Color Pallette
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
                          
@@ -247,6 +253,24 @@ state_2018_color_plot
 ggsave(here("Graphics", "2_state_frag_color_2018.jpg"), state_2018_color_plot)
 
 ```
+2018 State Percent
+```{r}
+
+state_frag_2018_percent <- state_frag %>% 
+  select(patch_acres_2018:lcore_acres_2018) %>% 
+  pivot_longer(patch_acres_2018:lcore_acres_2018, names_to = "frag_type", values_to = "acres") %>% 
+  mutate(frag_type = case_when(
+    frag_type == "patch_acres_2018" ~ "Patch",
+    frag_type == "edge_acres_2018" ~ "Edge",
+    frag_type == "s_core_acres_2018" ~ "Small Core",
+    frag_type == "m_core_acres_2018" ~ "Medium Core",
+    frag_type == "lcore_acres_2018" ~ "Large Core")) %>% 
+    mutate(percent = acres/sum(acres)*100
+        # label = scales::percent(percent)
+         )
+
+```
+
 2013 totals
 ```{r}
 
@@ -588,6 +612,77 @@ county_2018_percent_stack
 ggsave(here("Graphics", "2_county_frag_percent.jpg"), county_2018_percent_stack)
   
 ```
+County Proportions with State
+```{r}
+#---------------------------------------
+# Fragmentation Percent 2018 State + County Merge
+#---------------------------------------
+
+# Wrangle
+#---------------------------------------
+# Add county column with "statewide"
+state_frag_2018_percent$county <- "Statewide"
+
+# Put columns in matching order
+state_merge <- state_frag_2018_percent[,c("county", "frag_type", "acres", "percent")] 
+
+# Remove total area column from county percents
+county_merge <- county_2018_percent %>% 
+  select(county, frag_type, acres, percent)
+
+# Create Blank dummy row for and bind to county for separation purposes
+dummy_row <- data.frame(
+  county = " ",
+frag_type = c("Large Core", "Medium Core", "Small Core", "Edge", "Patch"),
+acres = 0,
+percent = 0
+)
+
+county_merge_dummy <- rbind(county_merge, dummy_row)
+
+# merge state and conty
+state_county_merge <- rbind(state_merge, county_merge_dummy) %>% 
+  mutate(county = as.factor(county)) %>%
+  mutate(county = fct_relevel(county, "Statewide", " ", "")) %>% 
+    mutate(frag_type = as.factor(frag_type)) %>% 
+  mutate(frag_type = fct_relevel(frag_type,
+                              "Large Core",
+                              "Medium Core",
+                              "Small Core",
+                              "Edge",
+                              "Patch")) %>%
+  mutate(county = as.factor(county)) %>% 
+  mutate(frag_type = fct_reorder(frag_type, desc(percent)))
+
+
+# Plot
+#---------------------------------------
+county_2018_percent_merge <- ggplot(data = state_county_merge, aes(x = fct_rev(county), y = percent)) +
+  geom_col(aes(fill = frag_type)) +
+  scale_fill_manual(values = frag_pallete_stack) +
+  labs(title = "Forest Proportion by Fragment Type 2018",
+       x = "Jurisdiction",
+       y = "Percent of Forested Area") +
+  scale_y_continuous(breaks = c(0, 10, 25, 50, 75, 100),
+                     labels = c("0%", "10%", "25%", "50%", "75%", "100%")) +
+  theme_minimal() +
+  coord_flip() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+    legend.title = element_text(size = 14, face = "bold"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  guides(fill = guide_legend(title = "Forest Fragment Type"))
+
+county_2018_percent_merge
+
+ggsave(here("Graphics", "2_county_frag_percent_merge.jpg"), county_2018_percent_merge)
+
+```
+
 County 2013 Frag Calculations
 ```{r}
 #---------------------------------------
