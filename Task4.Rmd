@@ -468,7 +468,7 @@ sewer_acres$genz_swr = stwr(sewer_acres$genz_swr)
 #---------------------------------------
 sewer_acres_plot <- ggplot(data = sewer_acres, aes(x = type, y = acres_change)) +
   geom_col(aes(fill = type)) +
-  labs(title = "Land Cover Change between 2013 and 2018 \n by Sewer Service Type",
+  labs(title = "Land Cover Area Change between 2013 and 2018 \n by Sewer Service Type",
        x = "Land Cover Type",
        y = "Change in Area (Acres)") +
   facet_wrap(~ genz_swr, scales = "free_y") +
@@ -493,7 +493,7 @@ panel.border = element_rect(color = "grey40", fill = NA),
 
 sewer_acres_plot
 
-ggsave(here("Graphics", "4_sewer_service_acres.jpg"), sewer_acres_plot)
+ggsave(here("Graphics", "4_sewer_service_acres.jpg"), sewer_acres_plot, width = 7.29, height = 6)
 
 ```
 Sewer Service Area Forest Change

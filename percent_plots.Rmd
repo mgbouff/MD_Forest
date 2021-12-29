@@ -80,6 +80,16 @@ lu_pallette <- c("#F9DB6D", # Barren, light yellow
                  "#4059AD", # Water, royal blue
                  "#21A0A0") # Wetland, Blue-green
 
+lu_pallette_tea <- c("#F9DB6D", # Barren, light yellow
+                 "#D9682A", # Buildings, brick
+                 "#F08701", # Impervious, orange 
+                 "#F9A620", # Roads, light orange
+                 "#4059AD", # Water, royal blue
+                 "#6eb663", # Tree Canopy, green
+                 "#8DBE87", # Low veg, light green
+                 "#21A0A0", # Wetland, Blue-green
+                 "#57AF94") # Shrub, green-blue
+
 zone_pallette <- c("#B0A4CC", # Light purple
                  "#8F7CB6", # Medium purple
                  "#665191", # Dark Purple
@@ -288,8 +298,7 @@ landuse_percent_plot <- ggplot(data = landuse_percent, aes(x = class, y = percen
       plot.title = element_text(size = 16, face = "bold"),
     axis.title.x = element_blank(),
     axis.text.x = element_blank(),
-#    text = element_text(family = "Times", size = 14),
-#    axis.text = element_text(size = 14),
+    axis.text.y = element_text(size = 13),
     axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), 
                               size = 14, face = "bold"),
     legend.position = "bottom",
@@ -305,7 +314,7 @@ landuse_percent_plot <- ggplot(data = landuse_percent, aes(x = class, y = percen
 
 landuse_percent_plot
 
-ggsave(here("Graphics", "percent_change_landuse.jpg"), landuse_percent_plot, height = 7)
+ggsave(here("Graphics", "percent_change_landuse.jpg"), landuse_percent_plot, width = 9, height = 7)
 
 ```
 
@@ -494,7 +503,54 @@ panel.border = element_rect(color = "grey40", fill = NA),
 
 sewer_percent_plot
 
-ggsave(here("Graphics", "percent_change_sewer.jpg"), sewer_percent_plot, height = 6)
+ggsave(here("Graphics", "percent_change_sewer.jpg"), sewer_percent_plot, width = 7.29, height = 6)
+
+```
+TEA SUM % Land Cover Change
+```{r}
+#---------------------------------------
+# LC Percent Change TEA
+#---------------------------------------
+tea_percent <- tea_sum_data %>% 
+  select(can_p_change:imperv_pchange) %>% 
+  pivot_longer(can_p_change:imperv_pchange, names_to = "class", values_to = "percent_change") %>% 
+    mutate(class = case_when(
+    class == "can_p_change" ~ "Tree Canopy",
+    class == "low_veg_pchange" ~ "Low Vegetation",
+    class == "barren_pchange" ~ "Barren",
+    class == "water_pchange" ~ "Water",
+    class == "build_pchange" ~ "Buildings",
+    class == "road_pchange" ~ "Roads",
+    class == "shrub_pchange" ~ "Shrub",
+    class == "wetlands_pchange" ~ "Wetland",
+    class == "imperv_pchange" ~ "Impervious",
+  )) %>% 
+  mutate(class = as.factor(class)) %>% 
+  mutate(class = fct_reorder(class, desc(percent_change)))
+
+# Plot
+#---------------------------------------
+tea_percent_plot <- ggplot(data = tea_percent, aes(x = class, y = percent_change)) +
+  geom_col(aes(fill = class)) +
+  scale_fill_manual(values = lu_pallette_tea) +
+  scale_y_continuous(breaks = c(-10, 0, 10, 20),
+                     labels = c("-10%", "0%", "10%", "20%")) +
+    labs(title = "Land Cover Percent Change in Target Ecological Areas \n Between 2013 and 2018",
+       x = "Land Cover Category",
+       y = "Percent Change") +
+  theme_minimal() +
+  coord_flip() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+    legend.position = "none",
+       axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+       axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 15, face = "bold")
+  )
+
+tea_percent_plot
+
+ggsave(here("Graphics", "percent_change_tea.jpg"), tea_percent_plot)
 
 ```
 
