@@ -32,6 +32,12 @@ plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>%
   rename(county = i_county) %>% 
   mutate(county = as.factor(county))
 
+# Old csv with percent data
+plantable_percent <- read.csv(here("Data", "1b_plantableareas_2018_county_full.csv")) %>% 
+  clean_names() %>% 
+  rename(county = i_county) %>% 
+  mutate(county = as.factor(county))
+
 lc_pallette <- c("#6eb663", # Forest Canopy, light green
                  "#8DBE87", # Low veg, light green
                  "#F08701", # Impervious, orange 
@@ -273,6 +279,13 @@ county_canopy_percent <- county_clean %>%
   mutate(county = as.factor(county)) %>% 
   drop_na()
 
+# Percent Calculated for Labels
+county_canopy_pecent_calc <- county_clean %>% 
+  select(county, total_a_acres, can_a_acres) %>% 
+  mutate(p_calc = can_a_acres/total_a_acres) %>% 
+  mutate(county = as.factor(county)) %>% 
+  drop_na()
+
 # Plot
 #---------------------------------------
 county_canopy_plot <- ggplot(data = county_canopy_percent, aes(x = fct_rev(county), y = can_p)) +
@@ -301,6 +314,34 @@ county_canopy_plot <- ggplot(data = county_canopy_percent, aes(x = fct_rev(count
 county_canopy_plot
 
 ggsave(here("Graphics", "1a_county_canopy.jpg"), county_canopy_plot)
+
+# With Percent Labels
+county_canopy_plot <- ggplot(data = county_canopy_pecent_calc, aes(x = fct_rev(county), y = p_calc)) +
+  geom_col(aes(fill = county)) +
+  geom_text(aes(label = percent(p_calc, accuracy = 1),
+                color = county,
+                hjust = -0.1),
+            size = 3) +
+  scale_fill_manual(values = county_pallette) +
+  scale_color_manual(values = county_pallette) +
+  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(
+    title = "Percent Tree Canopy 2018",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy"
+  ) +
+  coord_flip(clip = "off") +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+county_canopy_plot
+
+ggsave(here("Graphics", "1a_county_canopy_lab.jpg"), county_canopy_plot)
 
 ```
 
@@ -413,7 +454,7 @@ plantable_county_plot <- ggplot(data = plantable_county, aes(x = fct_rev(county)
   geom_col(aes(fill = county)) +
   labs(x = "Jurisdiction", 
        y = "Total Area (Acres)",
-       title = "Plantable Area by Jurisdction") +
+       title = "Plantable Area by Jurisdction 2018") +
   scale_fill_manual(values = county_pallette) +
   scale_y_continuous(breaks = c(0, 25000, 50000, 75000),
                      labels = c("0", "25,000", "50,000", "75,000")) +
@@ -438,17 +479,27 @@ ggsave(here("Graphics", "1b_plantable_county.jpg"), plantable_county_plot, heigh
 # Plantable Area by county (Percent)
 #---------------------------------------
 
-# Need total acres in each county
-plantable_percent_plot <- ggplot(data = plantable_county, 
-                                 aes(x = fct_rev(county), y = p_area)) +
+# Calculate percent so labels will have % symbol
+plantable_percent_calc <- plantable_percent %>% 
+  select(county, area_acres, land_area_acres) %>% 
+  mutate(p_land = area_acres/land_area_acres)
+
+# Plot
+plantable_percent_plot <- ggplot(data = plantable_percent_calc, 
+                                 aes(x = fct_rev(county), y = p_land)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
-  labs(title = "Percent Plantable Area by Jurisdiction",
+  geom_text(aes(label =  percent(p_land, accuracy = 1),
+                color = county,
+                hjust = -0.1),
+            size = 3) +
+  scale_color_manual(values = county_pallette) +
+  labs(title = "Percent Plantable Area by Jurisdiction 2018",
        x = "Jurisdiction",
        y = "Percent of Land Area") +
-  scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 25),
+  scale_y_continuous(breaks = c(0, 0.05, 0.1, 0.15, 0.2, 0.25),
                      labels = c("0%", "5%", "10%", "15%", "20%", "25%")) +
-  coord_flip() +
+  coord_flip(clip = "off") +
   theme_minimal() +
   theme(
     legend.position = "none",
@@ -459,7 +510,7 @@ plantable_percent_plot <- ggplot(data = plantable_county,
   
 plantable_percent_plot
 
-ggsave(here("Graphics", "plantable_percent.jpg"), plantable_percent_plot)
+ggsave(here("Graphics", "plantable_percent_lab.jpg"), plantable_percent_plot)
 
 ```
 

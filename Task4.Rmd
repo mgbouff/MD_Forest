@@ -39,6 +39,14 @@ sewer_service <- read.csv(here("Data", "4_SewerService.csv")) %>%
   clean_names() %>% 
   mutate(genz_swr = str_to_title(genz_swr))
 
+# Set blanks to NA
+sewer_service[sewer_service == c(" ", "")] <- NA
+
+# New Sewer Service Percent Data
+sewer_data <- read.csv(here("Data", "PercentChange", "sewerservice_percentchange.csv")) %>%
+  clean_names() %>% 
+  mutate(genz_swr = str_to_title(genz_swr))
+
 # Read in Protected Lands Data
 protected_lands <- read.csv(here("Data", "4_ProtectedLands_Forest_2013_2018.csv")) %>% 
   clean_names()
@@ -51,9 +59,6 @@ tea_data <- read.csv(here("Data", "PercentChange", "TEA_SUM_percentchange.csv"))
 timber_county <- read.csv(here("Data", "4_MD_TimberHarvest_20132021_county.csv")) %>% 
   clean_names() %>% 
   mutate(i_county, as.factor(i_county))
-
-# Set blanks to NA
-sewer_service[sewer_service == c(" ", "")] <- NA
 
 # Land Use Pallette
 lc_pallette <- c("#B0A4CC", # Light purple
@@ -442,10 +447,17 @@ Acres
 #---------------------------------------
 # Sewer Service Area Change in Acres
 #---------------------------------------
-
 sewer_acres <- sewer_service %>% 
   select(genz_swr, tc_change_acres:impervious_change_acres) %>% 
   pivot_longer(!genz_swr, names_to = "type", values_to = "acres") %>% 
+  mutate(genz_swr = case_when(
+    genz_swr == "Multi-Use Sewerage System" ~ "Existing", # Combine Multi-way into Existing
+    genz_swr == "Programmed Service" ~ "Planned Service", # Combine Programmed into Planned
+    genz_swr == "Existing" ~ "Existing",
+    genz_swr == "Planned Service" ~ "Planned Service",
+    genz_swr == "Future Service" ~ "Future Service",
+    genz_swr == "No Planned Service" ~ "No Planned Service"
+  ) ) %>% 
   group_by(genz_swr, type) %>% 
   summarize(acres_change = sum(acres)) %>% 
   drop_na() %>%  # Drop blank genz_swr (check eith Emma)
@@ -485,7 +497,7 @@ sewer_acres_plot <- ggplot(data = sewer_acres, aes(x = type, y = acres_change)) 
    axis.title.x = element_blank(),
    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
 strip.background = element_rect(color = "grey40", fill = "grey30"),
-strip.text = element_text(size = 10, color = "white", face = "bold"),
+strip.text = element_text(size = 12, color = "white", face = "bold"),
 panel.border = element_rect(color = "grey40", fill = NA),
   ) +
   guides(fill = guide_legend(title = "Land Cover Type",
@@ -545,6 +557,64 @@ sewer_forest_plot
 
 
 ggsave(here("Graphics", "4_sewer_forest_change.jpg"), sewer_forest_plot)
+
+```
+
+Sewer Service Area Percent Change
+```{r}
+#---------------------------------------
+# Sewer Sercive Area Percent Change
+#---------------------------------------
+
+# Try adding all the rows from the combined classes together to get percent change
+
+sewer_percent <- sewer_data %>% 
+  select(genz_swr, can_pchange:imperv_pchange) %>% 
+  pivot_longer(!genz_swr, names_to = "class", values_to = "percent_change") %>%
+  mutate(class = case_when(
+    class == "can_pchange" ~ "Tree Canopy",
+    class == "low_veg_pchange" ~ "Low Vegetation",
+    class == "barren_pchange" ~ "Barren",
+    class == "water_pchange" ~ "Water",
+    class == "build_pchange" ~ "Buildings",
+    class == "road_pchange" ~ "Roads",
+    class == "shrub_pchange" ~ "Shrub",
+    class == "wetlands_pchange" ~ "Wetland",
+    class == "imperv_pchange" ~ "Impervious",
+  ))
+
+# Use stringr function
+sewer_percent$genz_swr = stwr(sewer_percent$genz_swr)
+  
+# Plot
+#---------------------------------------
+sewer_percent_plot <- ggplot(data = sewer_percent, aes(x = class, y = percent_change)) +
+  geom_col(aes(fill = class)) +
+  labs(title = "Land Cover Percent Change between 2013 and 2018 \n by Sewer Service Type",
+       x = "Land Cover Type",
+       y = "Percent Change") +
+  facet_wrap(~ genz_swr, scales = "free_y") +
+  scale_fill_manual(values = lu_pallette) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+    theme(
+  plot.title = element_text(size = 16, face = "bold"),
+  legend.position = "bottom",
+  legend.title.align = 0.5,
+  legend.title = element_text(size = 14, face = "bold"),
+   axis.text.x = element_blank(),
+   axis.title.x = element_blank(),
+   axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+strip.background = element_rect(color = "grey40", fill = "grey30"),
+strip.text = element_text(size = 12, color = "white", face = "bold"),
+panel.border = element_rect(color = "grey40", fill = NA),
+  ) +
+  guides(fill = guide_legend(title = "Land Cover Type",
+                             title.position = "top"))
+
+sewer_percent_plot
+
+ggsave(here("Graphics", "percent_change_sewer.jpg"), sewer_percent_plot, width = 7.29, height = 6)
 
 ```
 
