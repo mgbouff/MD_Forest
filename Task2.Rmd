@@ -679,7 +679,7 @@ county_2018_percent_merge <- ggplot(data = state_county_merge, aes(x = fct_rev(c
 
 county_2018_percent_merge
 
-ggsave(here("Graphics", "2_county_frag_percent_merge.jpg"), county_2018_percent_merge)
+# ggsave(here("Graphics", "2_county_frag_percent_merge.jpg"), county_2018_percent_merge)
 
 ```
 
