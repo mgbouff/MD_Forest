@@ -454,7 +454,7 @@ plantable_county_plot <- ggplot(data = plantable_county, aes(x = fct_rev(county)
   geom_col(aes(fill = county)) +
   labs(x = "Jurisdiction", 
        y = "Total Area (Acres)",
-       title = "Plantable Area by Jurisdction 2018") +
+       title = "Plantable Area by Jurisdiction 2018") +
   scale_fill_manual(values = county_pallette) +
   scale_y_continuous(breaks = c(0, 25000, 50000, 75000),
                      labels = c("0", "25,000", "50,000", "75,000")) +
