@@ -579,7 +579,7 @@ lu_update_plot <- ggplot(data = land_use_acres_update, aes(x = land_use, y = acr
     strip.text = element_text(size = 12, color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA)
    ) +
-    guides(fill = guide_legend(title = "Land Use",
+    guides(fill = guide_legend(title = "Land Cover",
                                title.position = "top",
                                nrow = 2))
 lu_update_plot

@@ -303,7 +303,7 @@ landuse_percent_plot <- ggplot(data = landuse_percent, aes(x = class, y = percen
     strip.text = element_text(size = 12, color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA)
    ) +
-    guides(fill = guide_legend(title = "Land Use",
+    guides(fill = guide_legend(title = "Land Cover",
                                title.position = "top",
                                nrow = 2))
 
@@ -312,8 +312,6 @@ landuse_percent_plot
 ggsave(here("Graphics", "percent_change_landuse.jpg"), landuse_percent_plot, width = 9, height = 7)
 
 ```
-
-
 Gen Zone Percent Change
 ```{r}
 #---------------------------------------
