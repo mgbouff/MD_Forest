@@ -318,6 +318,43 @@ state_2013_plot
 ggsave(here("Graphics", "2_state_frag_2013.jpg"), state_2013_plot)
 
 ```
+
+State Frag 2013 and 2018 combined
+```{r}
+
+# Add year column to both dfs
+state_frag_2018$year <- c("2018")
+
+state_frag_2013$year <- c("2013")
+
+# Merge and wrangle
+state_frag_13_18 <- rbind(state_frag_2013, state_frag_2018)
+
+# Plot
+state_frag_merge_plot <- ggplot(data = state_frag_13_18, aes(x = metric, y = acres)) +
+  geom_col(aes(fill = year), position = "dodge") +
+  scale_fill_manual(values = c("#6eb663", "#24693d")) +
+  labs(title = "Forest Fragment Type Area in 2013 and 2018",
+       x = "Forest Fragment Type",
+       y = "Total Area (Acres)") +
+  scale_y_continuous(breaks = c(0, 300000, 600000, 900000),
+                     labels = c("0", "300,000", "600,000", "900,000")) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold", margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    legend.title = element_text(size = 14, face = "bold")
+  ) +
+  guides(fill = guide_legend(title = "Year", 
+                             title.position = "top"))
+ggsave(here("Graphics", "2_state_frag_merge.jpg"), state_frag_merge_plot)
+
+```
+
+
 County Change Acres
 ```{r}                                                               
 #---------------------------------------
