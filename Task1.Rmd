@@ -355,31 +355,6 @@ county_canopy_plot
 ggsave(here("Graphics", "1a_county_canopy_lab.jpg"), county_canopy_plot)
 
 ```
-Plantable stack by land cover
-```{r}
-
-plantable_stack_percent <- plantable_stack %>% 
-  mutate(shrub_p = shrub_a_acres/land_area_acres) %>% 
-  mutate(low_veg_p = low_veg_a_acres/land_area_acres) %>% 
-  mutate(barren_p = barren_a_acres/land_area_acres) %>% 
-  select(i_county, shrub_p, low_veg_p, barren_p) %>% 
-  pivot_longer(!i_county, names_to = "lc", values_to = "percent_plantable") %>% 
-  mutate(icounty = as.factor(i_county)) %>% 
-  mutate(lc = fct_reorder(lc, desc(percent_plantable)))
-
-ggplot(data = plantable_stack_percent, aes(x = fct_rev(i_county), y = percent_plantable)) +
-         geom_col(aes(fill = lc)) +
-  # geom_text(aes(label = percent(percent_plantable, accuracy = 1),
-  #               hjust = -0.1),
-            # size = 3) +
-  scale_fill_manual(values = plantable_pallete) +
-  coord_flip() +
-  theme_minimal()
-
-ggsave(here("Graphics", "plantable_stack.jpg"))
-  
-
-```
 
 
 Other land use change by county
@@ -550,4 +525,39 @@ plantable_percent_plot
 ggsave(here("Graphics", "plantable_percent_lab.jpg"), plantable_percent_plot)
 
 ```
+Plantable stack by land cover
+```{r}
 
+plantable_stack_percent <- plantable_stack %>% 
+  mutate(shrub_p = shrub_a_acres/land_area_acres) %>% 
+  mutate(low_veg_p = low_veg_a_acres/land_area_acres) %>% 
+  mutate(barren_p = barren_a_acres/land_area_acres) %>% 
+  select(i_county, shrub_p, low_veg_p, barren_p) %>% 
+  pivot_longer(!i_county, names_to = "lc", values_to = "percent_plantable") %>% 
+  mutate(i_county = as.factor(i_county)) %>% 
+  mutate(lc = fct_reorder(lc, desc(percent_plantable)))
+
+ggplot(data = plantable_stack_percent, aes(x = fct_rev(i_county), y = percent_plantable)) +
+         geom_col(aes(fill = lc)) +
+  geom_text(aes(label = percent(percent_plantable, accuracy = 1),
+                hjust = -0.1),
+  size = 3) +
+  scale_fill_manual(values = plantable_pallete) +
+  coord_flip() +
+  theme_minimal()
+
+# ggsave(here("Graphics", "plantable_stack.jpg"))
+
+emma_stack <- plantable_stack %>% 
+  select(i_county, p_area, p_lc_area) %>% 
+  pivot_longer(!i_county, names_to = "type", values_to = "percent") %>% 
+  mutate(i_county = as.factor(i_county))
+
+ggplot(data = emma_stack, aes(x = fct_rev(i_county), y = percent)) +
+  geom_col(aes(fill = type), position = "dodge") +
+  coord_flip() +
+  theme_minimal()
+
+ggsave(here("Graphics", "plantable_stack.jpg"))
+  
+```
