@@ -42,6 +42,10 @@ plantable_percent <- read.csv(here("Data", "1b_plantableareas_2018_county_full.c
 plantable_stack <- read.csv(here("Data", "1b_plantableareas_2018_county_stack.csv")) %>% 
   clean_names()
 
+# Plantable dummy data
+dummy_data <- read.csv(here("Data", "DummyData_populated.csv")) %>% 
+  clean_names()
+
 lc_pallette <- c("#6eb663", # Forest Canopy, light green
                  "#8DBE87", # Low veg, light green
                  "#F08701", # Impervious, orange 
@@ -561,3 +565,50 @@ ggplot(data = emma_stack, aes(x = fct_rev(i_county), y = percent)) +
 ggsave(here("Graphics", "plantable_stack.jpg"))
   
 ```
+
+Dummy Data Stack
+```{r}
+#---------------------------------------
+# Prepare dummy data for stack plot of total potential area and plantable area after exclusion
+#---------------------------------------
+# Plantable are for all counties except hartford taken from old dataset
+# Potential plantable area created using random number generator to make percent of total land between 35 and 70%
+
+dummy_percent_stack <- dummy_data %>% 
+  mutate(lc_a = lc_class_5_6*0.000247105) %>% # Convert LC to acres
+  mutate(lc_p = lc_a/land_area) %>% # Get LC percent of total land
+  mutate(lulc_a = plantable_area_lulc*0.000247105) %>% # Convert LULC to acres
+  mutate(lulc_p = lulc_a/land_area) %>% 
+  mutate(plantable_a = plantable*0.000247105) %>% # Convert plantable to acres
+  mutate(plantable_p = plantable_a/land_area) %>%  # Get percent plantable of total land
+  mutate(lc_stack = lc_p - lulc_p - plantable_p) %>%  # Subtract exclusion area from total so stack = total
+  mutate(lulc_stack = lulc_p - plantable_p) %>% 
+  select(i_county, plantable_p, lulc_stack, lc_stack) %>% 
+  pivot_longer(!i_county, names_to = "type", values_to = "percent") %>% 
+  mutate(type = case_when(
+    type == "lc_stack" ~ "LC",
+    type == "lulc_stack" ~ "LULC",
+    type == "plantable_p" ~ "Plantable Area")) %>% 
+  mutate(type = as.factor(type)) %>% 
+  mutate(type = fct_relevel(type, "LC", "LULC", "Plantable Area")) %>% 
+  mutate(i_county = as.factor(i_county))
+
+# Plot Dummy Plantable Stack Plot
+#---------------------------------------
+ggplot(data = dummy_percent_stack, aes(x = fct_rev(i_county), y = percent)) +
+  geom_col(aes(fill = type)) +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Percent Potential Plantable Land with and without Exclusion Areas \n (Dummy Data)",
+    x = "Jurisdiction",
+    y = "Percent of Jurisdiction Land Area"
+  ) +
+    scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6),
+                     labels = c("0%", "20%", "40%", "60%"))
+
+ggsave(here("Graphics", "1b_plantable_dummy.jpg"))
+
+
+```
+
