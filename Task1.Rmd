@@ -703,28 +703,39 @@ dummy_percent_stack <- dummy_data %>%
   select(i_county, plantable_p, lulc_stack, lc_stack) %>% 
   pivot_longer(!i_county, names_to = "type", values_to = "percent") %>% 
   mutate(type = case_when(
-    type == "lc_stack" ~ "LC",
-    type == "lulc_stack" ~ "LULC",
+    type == "lc_stack" ~ "Land Cover",
+    type == "lulc_stack" ~ "Land Use and Land Cover",
     type == "plantable_p" ~ "Plantable Area")) %>% 
   mutate(type = as.factor(type)) %>% 
-  mutate(type = fct_relevel(type, "LC", "LULC", "Plantable Area")) %>% 
+  mutate(type = fct_relevel(type, "Land Cover", "Land Use and Land Cover", "Plantable Area")) %>% 
   mutate(i_county = as.factor(i_county))
 
 # Plot Dummy Plantable Stack Plot
 #---------------------------------------
 ggplot(data = dummy_percent_stack, aes(x = fct_rev(i_county), y = percent)) +
   geom_col(aes(fill = type)) +
+  scale_fill_manual(values = c("#85D5A3", # Lightest Green
+                               "#3EB66A", # Lighter Green
+                               "#24693d")) + # Dark Green
+                               
   coord_flip() +
   theme_minimal() +
   labs(
-    title = "Percent Potential Plantable Land with and without Exclusion Areas \n (Dummy Data)",
+    title = "Percent Potential Plantable Land with and without \n Exclusion Areas (Dummy Data)",
     x = "Jurisdiction",
     y = "Percent of Jurisdiction Land Area"
   ) +
     scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6),
-                     labels = c("0%", "20%", "40%", "60%"))
+                     labels = c("0%", "20%", "40%", "60%")) +
+    theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
 
-ggsave(here("Graphics", "1b_plantable_dummy.jpg"))
+# ggsave(here("Graphics", "1b_plantable_dummy.jpg"))
 
 
 ```
