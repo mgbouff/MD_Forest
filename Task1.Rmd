@@ -23,7 +23,7 @@ state_forest <- read.csv(here("Data", "1a_state_short_2018.csv")) %>%
 
 # Read in 2018 county data
 county_forest <- read.csv(here("Data", "1a_County_short_2018.csv")) %>% 
-  clean_names() # Blank row added for proportion plots
+  clean_names()
 
 # 1b.
 # Read in Plantable Area data
@@ -357,6 +357,123 @@ county_canopy_plot <- ggplot(data = county_canopy_pecent_calc, aes(x = fct_rev(c
 county_canopy_plot
 
 ggsave(here("Graphics", "1a_county_canopy_lab.jpg"), county_canopy_plot)
+
+```
+Ordered Percent Canopy Plot
+```{r}
+#---------------------------------------
+# Ordered by Percent
+#---------------------------------------
+county_ordered_p <- county_forest %>% 
+  mutate(p_calc = can_a_acres/total_a_acres) %>% 
+  select(county, land_a_acres, can_p, p_calc, x2020_pop) %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, desc(p_calc)))
+
+# Plot
+#---------------------------------------
+ordered_p <- ggplot(data = county_ordered_p, aes(x = county, y = p_calc)) +
+  geom_col(aes(fill = county)) +
+  geom_text(aes(label = percent(p_calc, accuracy = 1),
+                color = county,
+                hjust = -0.1),
+            size = 3) +
+  scale_fill_manual(values = county_pallette) +
+  scale_color_manual(values = county_pallette) +
+  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(
+    title = "Percent Tree Canopy 2018",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+ordered_p 
+
+ggsave(here("Graphics", "1a_county_ordered_p.jpg"), ordered_p)
+
+#---------------------------------------
+# Ordered by County Size
+#---------------------------------------
+county_ordered_size <- county_forest %>% 
+  mutate(p_calc = can_a_acres/total_a_acres) %>% 
+  select(county, land_a_acres, can_p, p_calc, x2020_pop) %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, desc(land_a_acres)))
+
+# Plot
+#---------------------------------------
+ordered_size <- ggplot(data = county_ordered_size, aes(x = county, y = p_calc)) +
+  geom_col(aes(fill = county)) +
+  geom_text(aes(label = percent(p_calc, accuracy = 1),
+                color = county,
+                hjust = -0.1),
+            size = 3) +
+  scale_fill_manual(values = county_pallette) +
+  scale_color_manual(values = county_pallette) +
+  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(
+    title = "Percent Tree Canopy 2018 Ordered by Jurisdiction \n Size (Smallest Area to Largest Area)",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+ordered_size
+
+ggsave(here("Graphics", "1a_county_ordered_size.jpg"), ordered_size)
+
+#---------------------------------------
+# Ordered by Population
+#---------------------------------------
+county_ordered_pop <- county_forest %>% 
+  mutate(p_calc = can_a_acres/total_a_acres) %>% 
+  select(county, land_a_acres, can_p, p_calc, x2020_pop) %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, desc(x2020_pop)))
+
+# Plot
+#---------------------------------------
+ordered_pop <- ggplot(data = county_ordered_pop, aes(x = fct_rev(county), y = p_calc)) +
+  geom_col(aes(fill = county)) +
+  geom_text(aes(label = percent(p_calc, accuracy = 1),
+                color = county,
+                hjust = -0.1),
+            size = 3) +
+  scale_fill_manual(values = county_pallette) +
+  scale_color_manual(values = county_pallette) +
+  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(
+    title = "Percent Tree Canopy 2018 Ordered by Jurisdiction \n Population (Smallest to Largest)",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+ordered_pop 
+
+ggsave(here("Graphics", "1a_county_ordered_pop.jpg"), ordered_pop)
 
 ```
 
