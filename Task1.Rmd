@@ -492,13 +492,23 @@ county_pop_stack <- county_forest %>%
 
 # Plot
 #---------------------------------------
-ggplot(data = county_pop_stack, aes(x = fct_rev(county), y = percent)) +
+ggplot(data = county_pop_stack, aes(x = county, y = percent)) +
   geom_bar(stat = "identity", position = position_stack(reverse = TRUE), aes(fill = type)) + # identityto make geom_bar work, position to switch stack
   scale_fill_manual(values = c("#24693d", "#6eb663")) +
   scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8),
                      labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(title = "Percent Tree Canopy Cover by Jurisdiction \n Sorted by Population (Highest to Lowest)",
+       x = "Jurisdiction",
+       y = "Percent Tree Canopy Cover") +
   coord_flip() +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold")
+  )
 
 ```
 
