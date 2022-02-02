@@ -475,8 +475,31 @@ ordered_pop
 
 ggsave(here("Graphics", "1a_county_ordered_pop.jpg"), ordered_pop)
 
-```
+#---------------------------------------
+# Ordered by population, stacked by inside vs. outside forest
+#---------------------------------------
+county_pop_stack <- county_forest %>% 
+  mutate(p_calc_in = tc_a_acres_inside_forest/land_a_acres) %>%
+  mutate(p_calc_out = tc_a_acres_outside_forest/land_a_acres) %>% 
+  select(county, p_calc_in, p_calc_out, x2020_pop) %>% 
+  pivot_longer(!c(county, x2020_pop), names_to = "type", values_to = "percent") %>%
+      mutate(type = case_when(
+    type == "p_calc_in" ~ "Inside Forest",
+    type == "p_calc_out" ~ "Outside Forest")) %>% 
+  mutate(type = as.factor(type)) %>% 
+  mutate(type = fct_relevel(type, "Inside Forest", "Outside Forest")) %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, desc(x2020_pop)))
 
+# Plot
+#---------------------------------------
+ggplot(data = county_pop_stack, aes(x = fct_rev(county), y = percent)) +
+  geom_bar(stat = "identity", position = position_stack(reverse = TRUE), aes(fill = type)) + 
+  scale_fill_manual(values = c("#24693d", "#6eb663")) +
+  coord_flip() +
+  theme_minimal()
+
+```
 
 Other land use change by county
 ```{r}
@@ -703,8 +726,8 @@ dummy_percent_stack <- dummy_data %>%
   select(i_county, plantable_p, lulc_stack, lc_stack) %>% 
   pivot_longer(!i_county, names_to = "type", values_to = "percent") %>% 
   mutate(type = case_when(
-    type == "lc_stack" ~ "Land Cover",
-    type == "lulc_stack" ~ "Land Use and Land Cover",
+    type == "lc_stack" ~ "LC",
+    type == "lulc_stack" ~ "LU/LC",
     type == "plantable_p" ~ "Plantable Area")) %>% 
   mutate(type = as.factor(type)) %>% 
   mutate(type = fct_relevel(type, "Land Cover", "Land Use and Land Cover", "Plantable Area")) %>% 
