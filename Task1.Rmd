@@ -487,15 +487,16 @@ county_pop_stack <- county_forest %>%
     type == "p_calc_in" ~ "Inside Forest",
     type == "p_calc_out" ~ "Outside Forest")) %>% 
   mutate(type = as.factor(type)) %>% 
-  mutate(type = fct_relevel(type, "Inside Forest", "Outside Forest")) %>% 
   mutate(county = as.factor(county)) %>% 
   mutate(county = fct_reorder(county, desc(x2020_pop)))
 
 # Plot
 #---------------------------------------
 ggplot(data = county_pop_stack, aes(x = fct_rev(county), y = percent)) +
-  geom_bar(stat = "identity", position = position_stack(reverse = TRUE), aes(fill = type)) + 
+  geom_bar(stat = "identity", position = position_stack(reverse = TRUE), aes(fill = type)) + # identityto make geom_bar work, position to switch stack
   scale_fill_manual(values = c("#24693d", "#6eb663")) +
+  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
   coord_flip() +
   theme_minimal()
 
