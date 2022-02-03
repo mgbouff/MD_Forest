@@ -492,7 +492,7 @@ county_pop_stack <- county_forest %>%
 
 # Plot
 #---------------------------------------
-ggplot(data = county_pop_stack, aes(x = county, y = percent)) +
+ordered_pop_stack <- ggplot(data = county_pop_stack, aes(x = county, y = percent)) +
   geom_bar(stat = "identity", position = position_stack(reverse = TRUE), aes(fill = type)) + # identityto make geom_bar work, position to switch stack
   scale_fill_manual(values = c("#24693d", "#6eb663")) +
   scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8),
@@ -509,6 +509,10 @@ ggplot(data = county_pop_stack, aes(x = county, y = percent)) +
     axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
     plot.title = element_text(size = 16, face = "bold")
   )
+
+ordered_pop_stack
+
+ggsave(here("Graphics", "1a_county_ordered_pop_stack.jpg"), ordered_pop_stack)
 
 ```
 
