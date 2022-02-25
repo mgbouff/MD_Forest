@@ -473,7 +473,7 @@ tea_percent_plot <- ggplot(data = tea_percent, aes(x = class, y = percent_change
   scale_fill_manual(values = lu_pallette_tea) +
   scale_y_continuous(breaks = c(-10, 0, 10, 20),
                      labels = c("-10%", "0%", "10%", "20%")) +
-    labs(title = "Land Cover Percent Change in Target Ecological Areas \n Between 2013 and 2018",
+    labs(title = "Land Cover Percent Change in Targeted Ecological Areas \n Between 2013 and 2018",
        x = "Land Cover Category",
        y = "Percent Change") +
   theme_minimal() +
