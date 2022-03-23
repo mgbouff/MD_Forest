@@ -686,7 +686,7 @@ tea_acre_plot <- ggplot(data = tea_acres_change, aes(x = class, y = acres_change
   scale_y_continuous(breaks = c(-15000000, -10000000, -5000000, 0, 5000000, 10000000),
                      labels = c("-15,000,000", "-10,000,000", "-5,000,000", "0", "5,000,000", "10,000,000"),
                      limits = c(-15000000, 12000000)) +
-    labs(title = "Land Cover Area Change in Target Ecological Areas \n Between 2013 and 2018",
+    labs(title = "Land Cover Area Change in Targeted Ecological Areas \n Between 2013 and 2018",
        x = "Land Cover Category",
        y = "Area Change (Acres)") +
   theme_minimal() +
