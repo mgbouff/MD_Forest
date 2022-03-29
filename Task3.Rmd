@@ -69,28 +69,27 @@ ggsave(here("Graphics", "3_riparian_percent.jpg"), riparian_buffer_plot)
 ```
 
 ```{r}
+
 #---------------------------------------
 # Riparian buffer threshold alternate color schemes
 #---------------------------------------
 
-# transparent counties under threshold
-#---------------------------------------
+# Create new variable: above or below threshold
+riparian_threshold <- riparian_county %>% 
+  mutate(threshold = case_when(
+    can_p_land >= 70 ~ "Pass",
+    can_p_land < 70 ~ "Fail"
+  ))
 
 # Different colors for meet or do not meet threshold
 #---------------------------------------
-
-# idea, create new variable: above or below threshold
-riparian_threshold <- riparian_county %>% 
-  
-
-
-ggplot(data = riparian_county, aes(x = fct_rev(i_county), y = can_p_land)) +
-  geom_col(aes(fill = i_county), alpha = 0.8) +
+ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
+  geom_col(aes(fill = threshold), alpha = 0.8) +
   labs(
     title = "Riparian Buffer Percent Tree Canopy",
     x = "Jurisdiction",
     y = "Percent Tree Canopy over Land Area") +
-  scale_fill_manual(values = county_pallette) +
+#  scale_fill_manual(values = county_pallette) +
   geom_text(label = "70%",
             color = "red",
             face = "bold",
@@ -108,6 +107,10 @@ ggplot(data = riparian_county, aes(x = fct_rev(i_county), y = can_p_land)) +
     axis.title = element_text(size = 14, face = "bold"),
     legend.position = "none"
   )
+
+# transparent counties under threshold
+#---------------------------------------
+
 
 ```
 
