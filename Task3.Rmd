@@ -77,11 +77,11 @@ ggsave(here("Graphics", "3_riparian_percent.jpg"), riparian_buffer_plot)
 # Create new variable: above or below threshold
 riparian_threshold <- riparian_county %>% 
   mutate(threshold = case_when(
-    can_p_land >= 70 ~ "Pass",
-    can_p_land < 70 ~ "Fail"
+    can_p_land >= 70 ~ "Meets Goal",
+    can_p_land < 70 ~ "Does Not Meet Goal"
   ))
 
-# Different colors for meet or do not meet threshold
+# Different opacity and colors for meet or do not meet threshold
 #---------------------------------------
 ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
   geom_col(aes(alpha = threshold), fill = "seagreen4") +
@@ -110,7 +110,7 @@ ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
 
 # semi-transparent counties under threshold
 #---------------------------------------
-ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
+save_the_colors <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
   geom_col(aes(fill = i_county, color = i_county, alpha = threshold)) +
   scale_color_manual(values = county_pallette) +
   scale_fill_manual(values = county_pallette) +
@@ -137,12 +137,14 @@ ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
     legend.position = "none"
   )
 
-# Outline highlight around passing counties
+ggsave(here("Graphics", "save_the_colors.jpg"), save_the_colors)
+
+# highlight passing counties
 #---------------------------------------
 ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
   geom_col(aes(fill = i_county)) +
   scale_fill_manual(values = county_pallette) +
-  gghighlight::gghighlight(threshold == "Pass") +
+  gghighlight::gghighlight(threshold == "Meets Goal") +
   labs(
     title = "Riparian Buffer Percent Tree Canopy",
     x = "Jurisdiction",
@@ -164,6 +166,71 @@ ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
     axis.title = element_text(size = 14, face = "bold"),
     legend.position = "none"
   )
+
+# Option 1: Different colors
+#---------------------------------------
+new_riparian_1 <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
+  geom_col(aes(fill = threshold)) +
+  scale_fill_manual(values = c("#c3dbcb", "seagreen4")) +
+  labs(
+    title = "Riparian Buffer Percent Tree Canopy",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy \n over Land Area") +
+  geom_text(label = "70%",
+            color = "red",
+            face = "bold",
+            vjust = 12.85,
+            aes(x = "Harford",y = 70)) +
+  geom_hline(aes(yintercept = 70), linetype = "dashed",
+            color = "red",
+            size = 1) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  coord_flip(clip = "off") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+
+new_riparian_1
+
+ggsave(here("Graphics", "3_riparian_new_option1.jpg"), new_riparian_1)
+
+# Option 2: Grey out failed counties
+#---------------------------------------
+
+new_riparian_2 <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
+  geom_col(aes(fill = threshold)) +
+  scale_fill_manual(values = c("#d8d8d8", "seagreen4")) +
+  labs(
+    title = "Riparian Buffer Percent Tree Canopy",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy \n over Land Area") +
+  geom_text(label = "70%",
+            color = "red",
+            face = "bold",
+            vjust = 12.85,
+            aes(x = "Harford",y = 70)) +
+  geom_hline(aes(yintercept = 70), linetype = "dashed",
+            color = "red",
+            size = 1) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  coord_flip(clip = "off") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+
+new_riparian_2
+
+ggsave(here("Graphics", "3_riparian_new_option2.jpg"), new_riparian_2)
 
 ```
 
