@@ -74,12 +74,14 @@ ggsave(here("Graphics", "3_riparian_percent.jpg"), riparian_buffer_plot)
 # Riparian buffer threshold alternate color schemes
 #---------------------------------------
 
-# Create new variable: above or below threshold
+# Calc percent and Create new variable: above or below threshold
 riparian_threshold <- riparian_county %>% 
+  mutate(land_p_calc = can_a/land_a) %>% 
+  mutate(land_p_calc = round(land_p_calc, 2)) %>% 
   mutate(threshold = case_when(
-    can_p_land >= 70 ~ "Meets Goal",
-    can_p_land < 70 ~ "Does Not Meet Goal"
-  ))
+     land_p_calc >= 0.7 ~ "Meets Goal",
+     land_p_calc < 0.7 ~ "Does Not Meet Goal"
+   ))
 
 # Different opacity and colors for meet or do not meet threshold
 #---------------------------------------
@@ -195,42 +197,49 @@ new_riparian_1 <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y
     legend.title = element_blank()
   )
 
-new_riparian_1
+# new_riparian_1
 
-ggsave(here("Graphics", "3_riparian_new_option1.jpg"), new_riparian_1)
+# ggsave(here("Graphics", "3_riparian_new_option1.jpg"), new_riparian_1)
 
-# Option 2: Grey out failed counties
+
+
+#---------------------------------------
+# New Riparian buffer threshold plot
 #---------------------------------------
 
-new_riparian_2 <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = can_p_land)) +
+new_riparian_plot <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = land_p_calc)) +
   geom_col(aes(fill = threshold)) +
   scale_fill_manual(values = c("#d8d8d8", "seagreen4")) +
+  geom_text(aes(label = scales::percent(land_p_calc, accuracy = 1)),
+            hjust = -0.1,
+            size = 3) +
   labs(
     title = "Riparian Buffer Percent Tree Canopy",
     x = "Jurisdiction",
-    y = "Percent Tree Canopy \n over Land Area") +
+    y = "Percent Tree Canopy over Land Area") +
   geom_text(label = "70%",
             color = "red",
             face = "bold",
             vjust = 12.85,
-            aes(x = "Harford",y = 70)) +
-  geom_hline(aes(yintercept = 70), linetype = "dashed",
+            aes(x = "Harford",y = 0.70)) +
+  geom_hline(aes(yintercept = 0.70), linetype = "dashed",
             color = "red",
             size = 1) +
-  scale_y_continuous(breaks = c(0, 20, 40, 60, 80),
+  scale_y_continuous(breaks = c(0, 0.20, 0.40, 0.60, 0.80),
                      labels = c("0%", "20%", "40%", "60%", "80%")) +
   coord_flip(clip = "off") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 16, face = "bold"),
-    axis.title = element_text(size = 14, face = "bold"),
+        axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14, face = "bold"),
     legend.position = "bottom",
     legend.title = element_blank()
   )
 
-new_riparian_2
+new_riparian_plot
 
-ggsave(here("Graphics", "3_riparian_new_option2.jpg"), new_riparian_2)
+ggsave(here("Graphics", "3_riparian_new.jpg"), new_riparian_plot)
 
 ```
 
