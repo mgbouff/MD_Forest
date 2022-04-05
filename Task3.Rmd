@@ -139,6 +139,8 @@ save_the_colors <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), 
     legend.position = "none"
   )
 
+save_the_colors
+
 ggsave(here("Graphics", "save_the_colors.jpg"), save_the_colors)
 
 # highlight passing counties
@@ -210,9 +212,6 @@ new_riparian_1 <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y
 new_riparian_plot <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county), y = land_p_calc)) +
   geom_col(aes(fill = threshold)) +
   scale_fill_manual(values = c("#d8d8d8", "seagreen4")) +
-  geom_text(aes(label = scales::percent(land_p_calc, accuracy = 1)),
-            hjust = -0.1,
-            size = 3) +
   labs(
     title = "Riparian Buffer Percent Tree Canopy",
     x = "Jurisdiction",
@@ -221,10 +220,13 @@ new_riparian_plot <- ggplot(data = riparian_threshold, aes(x = fct_rev(i_county)
             color = "red",
             face = "bold",
             vjust = 12.85,
-            aes(x = "Harford",y = 0.70)) +
+            aes(x = "Somerset",y = 0.70)) +
   geom_hline(aes(yintercept = 0.70), linetype = "dashed",
             color = "red",
             size = 1) +
+    geom_text(aes(label = scales::percent(land_p_calc, accuracy = 1)),
+            hjust = -0.1,
+            size = 4) +
   scale_y_continuous(breaks = c(0, 0.20, 0.40, 0.60, 0.80),
                      labels = c("0%", "20%", "40%", "60%", "80%")) +
   coord_flip(clip = "off") +
