@@ -35,8 +35,10 @@ county_forest <- read.csv(here("Data", "New", "1a_County.csv")) %>%
 ### Task 1a. 2018 forest stats
 
 ```{r}
+#---------------------------------------
+# State level land use
+#---------------------------------------
 
-# State level
 # Get percents 
 state_lu_percent <- state_forest %>% 
   select(can_a_acres:apg_a_acres, total_a_acres) %>% 
@@ -58,7 +60,29 @@ state_lu_percent <- state_forest %>%
   mutate(lu = fct_reorder(lu, desc(percent))) %>% 
   select(lu:label)
 
-state_lu_percent$state <- "Maryland"
+state_lu_percent$name <- "Maryland"
+
+#---------------------------------------
+# County level land use
+#---------------------------------------
+
+# Get percents 
+county_lu_percent <- county_forest %>% 
+  select(name, can_a_acres:apg_a_acres) %>% 
+  pivot_longer(can_a_acres:apg_a_acres, names_to = "lu", values_to = "acres") %>% 
+    mutate(lu = case_when(
+    lu == "can_a_acres" ~ "Tree Canopy",
+    lu == "low_veg_a_acres" ~ "Low Vegetation",
+    lu == "shrub_a_acres" ~ "Shrub",
+    lu == "barren_a_acres" ~ "Barren",
+    lu == "water_a_acres" ~ "Water",
+    lu == "struc_a_acres" ~ "Structures",
+    lu == "road_a_acres" ~ "Road",
+    lu == "imperv_a_acres" ~ "Impervious",
+    lu == "apg_a_acres" ~ "Aberdeen Proving Ground")) %>% 
+  group_by(name) %>% 
+  mutate(percent = acres/sum(acres),
+         label = scales::percent(percent))
 
 ```
 
