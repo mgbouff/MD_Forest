@@ -30,6 +30,22 @@ state_forest <- read.csv(here("Data", "New", "1a_State.csv")) %>%
 county_forest <- read.csv(here("Data", "New", "1a_County.csv")) %>% 
   clean_names()
 
+#---------------------------------------
+# Color  Palettes
+#---------------------------------------
+
+lu_palette <- c(
+  "#6eb663", # Forest Canopy, light green
+  "#8DBE87", # Low veg, light green
+  "#F08701", # Impervious, orange 
+  "#21A0A0",  # Wetland, Blue-green
+  "#F9A620", # Roads, light orange
+  "#D9682A", # Buildings/Structures, brick
+  "#4059AD", # Water, royal blue
+  "#F9DB6D", # Barren, light yellow
+  "#57AF94" # Shrub, green-blue
+)
+
 ```
 
 ### Task 1a. 2018 forest stats
@@ -60,7 +76,7 @@ state_lu_percent <- state_forest %>%
   mutate(lu = fct_reorder(lu, desc(percent))) %>% 
   select(lu:label)
 
-state_lu_percent$name <- "Maryland"
+state_lu_percent$name <- "Statewide"
 
 #---------------------------------------
 # County level land use
@@ -83,6 +99,37 @@ county_lu_percent <- county_forest %>%
   group_by(name) %>% 
   mutate(percent = acres/sum(acres),
          label = scales::percent(percent))
+
+#---------------------------------------
+# Stacked bar plor lu percent area state and county
+#---------------------------------------
+
+# Merge state and county dfs
+state_county_merge <- rbind(state_lu_percent, county_lu_percent) %>% 
+  mutate(name = as.factor(name)) %>%  
+  mutate(name= fct_relevel(name, "Statewide", " ")) %>% 
+  select(name, everything())
+
+# Plot
+#---------------------------------------
+ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)) +
+  geom_bar(position = "fill", stat = "identity") +
+    labs(
+    title = "2018 Land Use Proportions by Jurisdiction",
+    x = "Jurisdiction",
+    y = "Percent Cover") +
+    scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
+                     labels = c("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%")) +
+    theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.title = element_text(size = 14),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  )+
+  guides(fill = guide_legend(title = "Land Use Type")) +
+  coord_flip()
 
 ```
 
