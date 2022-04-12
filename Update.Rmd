@@ -1,0 +1,64 @@
+---
+title: "Updated Data"
+author: "Marie Bouffard"
+date: '2022-04-12'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+# Attach packages
+library(tidyverse)
+library(janitor)
+library(here)
+library(scales)
+
+#---------------------------------------
+# Read in Data
+#---------------------------------------
+
+# Task 1 
+#---------------------------------------
+
+# 1a 
+# Read in 2018 state data
+state_forest <- read.csv(here("Data", "New", "1a_State.csv")) %>% 
+  clean_names()
+
+# Read in 2018 county data
+county_forest <- read.csv(here("Data", "New", "1a_County.csv")) %>% 
+  clean_names()
+
+```
+
+### Task 1a. 2018 forest stats
+
+```{r}
+
+# State level
+# Get percents 
+state_lu_percent <- state_forest %>% 
+  select(can_a_acres:apg_a_acres, total_a_acres) %>% 
+  pivot_longer(can_a_acres:apg_a_acres, names_to = "lu", values_to = "acres") %>% 
+  mutate(lu = case_when(
+    lu == "can_a_acres" ~ "Tree Canopy",
+    lu == "low_veg_a_acres" ~ "Low Vegetation",
+    lu == "shrub_a_acres" ~ "Shrub",
+    lu == "barren_a_acres" ~ "Barren",
+    lu == "water_a_acres" ~ "Water",
+    lu == "struc_a_acres" ~ "Structures",
+    lu == "road_a_acres" ~ "Road",
+    lu == "imperv_a_acres" ~ "Impervious",
+    lu == "apg_a_acres" ~ "Aberdeen Proving Ground")) %>% 
+    # lu == "total_a_acres" ~ "Total Area",
+    # lu == "land_a_acres" ~ "Land_Area"))
+  mutate(percent = acres/total_a_acres,
+         label = scales::percent(percent)) %>% 
+  mutate(lu = fct_reorder(lu, desc(percent))) %>% 
+  select(lu:label)
+
+state_lu_percent$state <- "Maryland"
+
+```
+
