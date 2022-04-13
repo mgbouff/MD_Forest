@@ -13,6 +13,7 @@ library(tidyverse)
 library(janitor)
 library(here)
 library(scales)
+library(stringr)
 
 #---------------------------------------
 # Read in Data
@@ -29,6 +30,15 @@ state_forest <- read.csv(here("Data", "New", "1a_State.csv")) %>%
 # Read in 2018 county data
 county_forest <- read.csv(here("Data", "New", "1a_County.csv")) %>% 
   clean_names()
+
+# Task 4
+#---------------------------------------
+
+# Recreate timber data from Iris's table
+md_timber_13_21 <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>% 
+  clean_names() %>% 
+  mutate(county = str_squish(county)) # remove white space
+
 
 #---------------------------------------
 # Color  Palettes
@@ -128,7 +138,12 @@ ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)
     theme_minimal() +
   theme(
     plot.title = element_text(size = 16, face = "bold"),
-    axis.title = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
     legend.title = element_text(size = 14),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank()
@@ -137,8 +152,17 @@ ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)
   coord_flip()
 
 ```
+Land use change at the state level
+```{r}
+#---------------------------------------
+# State Land Use Change 2013 to 2018
+#---------------------------------------
 
-Percent tree canopy
+# Acres Change
+
+```
+
+Percent tree canopy by county
 ```{r}
 #---------------------------------------
 # 2018 Percent Tree Canopy by County
@@ -170,12 +194,65 @@ fig_4 <- ggplot(data = county_tree_cover, aes(x = fct_rev(name), y = percent)) +
   theme(
     legend.position = "none",
     plot.title = element_text(size = 16, face = "bold"),
-    axis.title = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0))
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
   )
 
 fig_4
 
-ggsave(here("Graphics", "Fig4_county_tc_percent.jpg"), fig_4)
+ggsave(here("Graphics", "fig4_county_lu.jpg"), fig_4)
+```
+### Task 4
+
+Total timber harvest by county 2013 to 2021
+```{r}
+#---------------------------------------
+# Total timber harvest by county
+#---------------------------------------
+
+# Get total acres harvested between 2013 and 2021
+timber_total <- md_timber_13_21 %>% 
+  group_by(county) %>% 
+  summarise(tot_acres = sum(forest_harvest_acres))
+
+# Plot
+#---------------------------------------
+fig_21 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
+  geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
+  labs(
+    title = "Total Timber Harvest by Jurisdiction \n between 2013 and 2021",
+    x = "Jurisdiction",
+    y = "Forest Harvested (Acres)"
+  ) +
+    scale_y_continuous(breaks = c(0, 10000, 20000),
+                     labels = c("0", "10,000", "20,000")) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+fig_21
+
+ggsave(here("Graphics", "fig21_timber.jpg"), fig_21)
 
 ```
 
