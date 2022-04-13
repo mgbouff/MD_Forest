@@ -46,10 +46,14 @@ lu_palette <- c(
   "#57AF94" # Shrub, green-blue
 )
 
+# Categorical County Color Pallette
+county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
+
 ```
 
 ### Task 1a. 2018 forest stats
 
+Land use proportion
 ```{r}
 #---------------------------------------
 # State level land use
@@ -97,8 +101,9 @@ county_lu_percent <- county_forest %>%
     lu == "imperv_a_acres" ~ "Impervious",
     lu == "apg_a_acres" ~ "Aberdeen Proving Ground")) %>% 
   group_by(name) %>% 
+  mutate(percent = acres/sum(acres)) %>% 
   mutate(percent = acres/sum(acres),
-         label = scales::percent(percent))
+         label = scales::percent(percent, accuracy = 1)) # labels for county percent plot
 
 #---------------------------------------
 # Stacked bar plor lu percent area state and county
@@ -130,6 +135,47 @@ ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)
   )+
   guides(fill = guide_legend(title = "Land Use Type")) +
   coord_flip()
+
+```
+
+Percent tree canopy
+```{r}
+#---------------------------------------
+# 2018 Percent Tree Canopy by County
+#---------------------------------------
+
+# Get tree cover by county
+county_tree_cover <- county_lu_percent %>% 
+  filter(lu == "Tree Canopy")
+
+# Plot
+#---------------------------------------
+fig_4 <- ggplot(data = county_tree_cover, aes(x = fct_rev(name), y = percent)) +
+  geom_col(aes(fill = name)) +
+  geom_text(aes(label = label,
+                color = name,
+                hjust = -0.1),
+            size = 3) +
+  scale_fill_manual(values = county_pallette) +
+  scale_color_manual(values = county_pallette) +
+  scale_y_continuous(breaks = c(0, 0.20, 0.40, 0.60, 0.80),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(
+    title = "Percent Tree Canopy by Jurisdiction 2018",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0))
+  )
+
+fig_4
+
+ggsave(here("Graphics", "Fig4_county_tc_percent.jpg"), fig_4)
 
 ```
 
