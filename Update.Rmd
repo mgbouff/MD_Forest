@@ -47,13 +47,13 @@ md_timber_13_21 <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>%
 lu_palette <- c(
   "#6eb663", # Forest Canopy, light green
   "#8DBE87", # Low veg, light green
+  "#4059AD", # Water, royal blue
   "#F08701", # Impervious, orange 
-  "#21A0A0",  # Wetland, Blue-green
   "#F9A620", # Roads, light orange
   "#D9682A", # Buildings/Structures, brick
-  "#4059AD", # Water, royal blue
   "#F9DB6D", # Barren, light yellow
-  "#57AF94" # Shrub, green-blue
+  "#57AF94", # Shrub, green-blue
+  "#21A0A0"  # Wetland, Blue-green
 )
 
 # Categorical County Color Pallette
@@ -72,19 +72,17 @@ Land use proportion
 # Get percents 
 state_lu_percent <- state_forest %>% 
   select(can_a_acres:apg_a_acres, total_a_acres) %>% 
-  pivot_longer(can_a_acres:apg_a_acres, names_to = "lu", values_to = "acres") %>% 
+  pivot_longer(can_a_acres:road_a_acres, names_to = "lu", values_to = "acres") %>% 
   mutate(lu = case_when(
     lu == "can_a_acres" ~ "Tree Canopy",
+    lu == "wet_a_acres" ~ "Wetland",
     lu == "low_veg_a_acres" ~ "Low Vegetation",
     lu == "shrub_a_acres" ~ "Shrub",
     lu == "barren_a_acres" ~ "Barren",
     lu == "water_a_acres" ~ "Water",
     lu == "struc_a_acres" ~ "Structures",
     lu == "road_a_acres" ~ "Road",
-    lu == "imperv_a_acres" ~ "Impervious",
-    lu == "apg_a_acres" ~ "Aberdeen Proving Ground")) %>% 
-    # lu == "total_a_acres" ~ "Total Area",
-    # lu == "land_a_acres" ~ "Land_Area"))
+    lu == "imperv_a_acres" ~ "Impervious")) %>% 
   mutate(percent = acres/total_a_acres,
          label = scales::percent(percent)) %>% 
   mutate(lu = fct_reorder(lu, desc(percent))) %>% 
@@ -98,10 +96,11 @@ state_lu_percent$name <- "Statewide"
 
 # Get percents 
 county_lu_percent <- county_forest %>% 
-  select(name, can_a_acres:apg_a_acres) %>% 
-  pivot_longer(can_a_acres:apg_a_acres, names_to = "lu", values_to = "acres") %>% 
+  select(name, can_a_acres:road_a_acres) %>% 
+  pivot_longer(can_a_acres:road_a_acres, names_to = "lu", values_to = "acres") %>% 
     mutate(lu = case_when(
     lu == "can_a_acres" ~ "Tree Canopy",
+    lu == "wet_a_acres" ~ "Wetland",
     lu == "low_veg_a_acres" ~ "Low Vegetation",
     lu == "shrub_a_acres" ~ "Shrub",
     lu == "barren_a_acres" ~ "Barren",
@@ -135,6 +134,7 @@ ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)
     y = "Percent Cover") +
     scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
                      labels = c("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%")) +
+  scale_fill_manual(values = lu_palette) +
     theme_minimal() +
   theme(
     plot.title = element_text(size = 16, face = "bold"),
