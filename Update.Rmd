@@ -22,20 +22,26 @@ library(stringr)
 # Task 1 
 #---------------------------------------
 
-# 1a 
+# ---current lu---
 # Read in 2018 state data
-state_forest <- read.csv(here("Data", "New", "1a_State.csv")) %>% 
+state_forest_raw <- read.csv(here("Data", "New", "1a_State.csv")) %>% 
   clean_names()
 
 # Read in 2018 county data
-county_forest <- read.csv(here("Data", "New", "1a_County.csv")) %>% 
+county_forest_raw <- read.csv(here("Data", "New", "1a_County.csv")) %>% 
   clean_names()
+
+# ---lu change---
+# Read in state 2013-2018 change data
+state_change_raw <- read.csv(here("Data", "New", "1a_state_percentchange.csv")) %>% 
+  clean_names()
+
 
 # Task 4
 #---------------------------------------
 
-# Recreate timber data from Iris's table
-md_timber_13_21 <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>% 
+# Read in state timber data
+md_timber_raw <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>% 
   clean_names() %>% 
   mutate(county = str_squish(county)) # remove white space
 
@@ -52,9 +58,12 @@ lu_palette <- c(
   "#F9A620", # Roads, light orange
   "#D9682A", # Buildings/Structures, brick
   "#F9DB6D", # Barren, light yellow
-  "#57AF94", # Shrub, green-blue
+  "#8CC8B5", # Shrub,light green-blue
   "#21A0A0"  # Wetland, Blue-green
 )
+
+# 
+# "#57AF94", # Shrub, green-blue
 
 # Categorical County Color Pallette
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
@@ -70,7 +79,7 @@ Land use proportion
 #---------------------------------------
 
 # Get percents 
-state_lu_percent <- state_forest %>% 
+state_lu_percent <- state_forest_raw %>% 
   select(can_a_acres:apg_a_acres, total_a_acres) %>% 
   pivot_longer(can_a_acres:road_a_acres, names_to = "lu", values_to = "acres") %>% 
   mutate(lu = case_when(
@@ -95,7 +104,7 @@ state_lu_percent$name <- "Statewide"
 #---------------------------------------
 
 # Get percents 
-county_lu_percent <- county_forest %>% 
+county_lu_percent <- county_forest_raw %>% 
   select(name, can_a_acres:road_a_acres) %>% 
   pivot_longer(can_a_acres:road_a_acres, names_to = "lu", values_to = "acres") %>% 
     mutate(lu = case_when(
@@ -152,15 +161,6 @@ ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)
   coord_flip()
 
 ```
-Land use change at the state level
-```{r}
-#---------------------------------------
-# State Land Use Change 2013 to 2018
-#---------------------------------------
-
-# Acres Change
-
-```
 
 Percent tree canopy by county
 ```{r}
@@ -209,6 +209,59 @@ fig_4
 
 ggsave(here("Graphics", "fig4_county_lu.jpg"), fig_4)
 ```
+
+Land use change at the state level
+```{r}
+#---------------------------------------
+# State Land Use Change 2013 to 2018
+#---------------------------------------
+
+# Acres Change
+#---------------------------------------
+
+# Get area for each year
+state_lu_2013 <- state_change_raw %>% 
+  select(x2013_water_a:x2013_road_a) %>% 
+  pivot_longer(x2013_water_a:x2013_road_a, 
+               names_to = "lu",
+               values_to = "lu_2013_m") %>% 
+  mutate(lu = case_when(
+    lu == "x2013_water_a" ~ "Water",
+    lu == "x2013_wet_a" ~ "Wetland",
+    lu == "x2013_can_a" ~ "Tree Canopy",
+    lu == "x2013_shrub_a" ~ "Shrub",
+    lu == "x2013_low_veg_a" ~ "Low Vegetation",
+    lu == "x2013_barren_a" ~ "Barren",
+    lu == "x2013_struc_a" ~ "Structures",
+    lu == "x2013_imperv_a" ~ "Impervious",
+    lu == "x2013_road_a" ~ "Road"))
+
+state_lu_2018 <- state_change_raw %>% 
+  select(water_a:road_a) %>% 
+  pivot_longer(water_a:road_a,
+               names_to = "lu",
+               values_to = "lu_2018_m") %>% 
+    mutate(lu = case_when(
+    lu == "water_a" ~ "Water",
+    lu == "wet_a" ~ "Wetland",
+    lu == "can_a" ~ "Tree Canopy",
+    lu == "shrub_a" ~ "Shrub",
+    lu == "low_veg_a" ~ "Low Vegetation",
+    lu == "barren_a" ~ "Barren",
+    lu == "struc_a" ~ "Structures",
+    lu == "imperv_a" ~ "Impervious",
+    lu == "road_a" ~ "Road"))
+
+# bind back together, convert meters to acres, calculate area change
+state_change_acres <- left_join(state_lu_2013, state_lu_2018) %>% 
+  mutate(lu_2013_acres = lu_2013_m*0.000247105) %>% 
+  mutate(lu_2018_acres = lu_2018_m*0.000247105) %>% 
+  mutate(acres_change = lu_2018_acres-lu_2013_acres) %>% 
+  mutate(acres_change_std = acres_change/25914854725) # divide by total area
+
+
+```
+
 ### Task 4
 
 Total timber harvest by county 2013 to 2021
@@ -218,7 +271,7 @@ Total timber harvest by county 2013 to 2021
 #---------------------------------------
 
 # Get total acres harvested between 2013 and 2021
-timber_total <- md_timber_13_21 %>% 
+timber_total <- md_timber_raw %>% 
   group_by(county) %>% 
   summarise(tot_acres = sum(forest_harvest_acres))
 
