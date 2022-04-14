@@ -36,6 +36,10 @@ county_forest_raw <- read.csv(here("Data", "New", "1a_County.csv")) %>%
 state_change_raw <- read.csv(here("Data", "New", "1a_state_percentchange.csv")) %>% 
   clean_names()
 
+# Task 3
+#---------------------------------------
+riparian_raw <- read.csv(here("Data", "New", "3_riparian_county_2018.csv")) %>% 
+  clean_names()
 
 # Task 4
 #---------------------------------------
@@ -304,7 +308,59 @@ guides(fill = guide_legend(title = "Land Use Type"))
 
 ```
 
-### Task 4
+### Task 3 Urban Change
+
+Percent tree canopy in riparian buffer zone by jurisdiction
+```{r}
+#---------------------------------------
+# Riparian buffer tree canopy
+#---------------------------------------
+
+# Calc percent and Create new variable: above or below threshold
+riparian_buffer <- riparian_raw %>% 
+  select(name, can_a, total_a) %>% 
+  mutate(can_p_calc = can_a/total_a,
+         label = scales::percent(can_p_calc, accuracy = 1)) %>% 
+  mutate(threshold = case_when(
+     can_p_calc >= 0.7 ~ "Meets Goal",
+     can_p_calc < 0.7 ~ "Does Not Meet Goal"
+   ))
+
+# Plot
+#---------------------------------------
+ggplot(data = riparian_buffer, aes(x = fct_rev(name), y = can_p_calc)) +
+  geom_col(aes(fill = threshold)) +
+  scale_fill_manual(values = c("#c3dbcb", "seagreen4")) +
+  labs(
+#    title = "Riparian Buffer Percent Tree Canopy",
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy over Land Area") +
+  geom_text(label = "70%",
+            color = "red",
+            face = "bold",
+            vjust = 12.85,
+            aes(x = "Montgomery",y = 0.70)) +
+  geom_hline(aes(yintercept = 0.70), linetype = "dashed",
+            color = "red",
+            size = 1) +
+  geom_text(aes(label = label,
+                hjust = -0.1),
+            size = 3) +
+  scale_y_continuous(breaks = c(0, 0.20, 0.40, 0.60, 0.80),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  coord_flip(clip = "off") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+
+```
+
+
+### Task 4 Projected Land Use
 
 Total timber harvest by county 2013 to 2021
 ```{r}
