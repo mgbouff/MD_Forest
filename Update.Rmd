@@ -151,7 +151,7 @@ state_county_merge <- rbind(state_lu_percent, county_lu_percent) %>%
 
 # Plot
 #---------------------------------------
-ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)) +
+fig_5 <- ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)) +
   geom_bar(position = "fill", stat = "identity") +
     labs(
 #    title = "2018 Land Use Proportions by Jurisdiction",
@@ -171,12 +171,17 @@ ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)
                                 margin = margin(t = 10, r = 0, b = 0, l = 0)),
     legend.title = element_text(size = 14),
     panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank()
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
   )+
   guides(fill = guide_legend(title = "Land Use Type")) +
   coord_flip()
 
-# Waiting on updated county data with wetland area
+fig_5
+
+ggsave(here("Graphics", "fig5_state_county_lu.jpeg"), fig_5)
 
 ```
 
@@ -300,9 +305,9 @@ ggplot(data = state_change_acres, aes(x = lu, y = acres_change_std)) +
                                 face = "bold",
                                 margin = margin(t = 10, r = 0, b = 0, l = 0)),
     legend.title = element_text(size = 14),
-    # panel.background = element_rect(fill = "white"),
-    # plot.background = element_rect(fill = "white", color = NA),
-    # rect = element_rect(fill = "white", color = NA)
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
   ) +
 guides(fill = guide_legend(title = "Land Use Type"))
 
@@ -328,7 +333,7 @@ riparian_buffer <- riparian_raw %>%
 
 # Plot
 #---------------------------------------
-ggplot(data = riparian_buffer, aes(x = fct_rev(name), y = can_p_calc)) +
+fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(name), y = can_p_calc)) +
   geom_col(aes(fill = threshold)) +
   scale_fill_manual(values = c("#c3dbcb", "seagreen4")) +
   labs(
@@ -339,7 +344,7 @@ ggplot(data = riparian_buffer, aes(x = fct_rev(name), y = can_p_calc)) +
             color = "red",
             face = "bold",
             vjust = 12.85,
-            aes(x = "Montgomery",y = 0.70)) +
+            aes(x = "Kent",y = 0.70)) +
   geom_hline(aes(yintercept = 0.70), linetype = "dashed",
             color = "red",
             size = 1) +
@@ -351,11 +356,23 @@ ggplot(data = riparian_buffer, aes(x = fct_rev(name), y = can_p_calc)) +
   coord_flip(clip = "off") +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 16, face = "bold"),
-    axis.title = element_text(size = 14, face = "bold"),
+#    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
     legend.position = "bottom",
-    legend.title = element_blank()
+    legend.title = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
   )
+
+fig_14
+
+ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16)
 
 ```
 
