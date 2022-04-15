@@ -13,6 +13,7 @@ library(tidyverse)
 library(janitor)
 library(here)
 library(scales)
+library(signs)
 library(stringr)
 
 #---------------------------------------
@@ -38,6 +39,8 @@ state_change_raw <- read.csv(here("Data", "New", "1a_state_percentchange.csv")) 
 
 # Task 3
 #---------------------------------------
+
+# Riparian tree cover data
 riparian_raw <- read.csv(here("Data", "New", "3_riparian_county_2018.csv")) %>% 
   clean_names()
 
@@ -48,7 +51,6 @@ riparian_raw <- read.csv(here("Data", "New", "3_riparian_county_2018.csv")) %>%
 md_timber_raw <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>% 
   clean_names() %>% 
   mutate(county = str_squish(county)) # remove white space
-
 
 #---------------------------------------
 # Color  Palettes
@@ -78,10 +80,7 @@ lu_palette2 <- c(
   "#6eb663" # Forest Canopy, light green
 )
 
-# 
-# "#57AF94", # Shrub, green-blue
-
-# Categorical County Color Pallette
+# Categorical County Color Palette
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
 
 ```
@@ -146,7 +145,7 @@ county_lu_percent <- county_forest_raw %>%
 # Merge state and county dfs
 state_county_merge <- rbind(state_lu_percent, county_lu_percent) %>% 
   mutate(name = as.factor(name)) %>%  
-  mutate(name= fct_relevel(name, "Statewide", " ")) %>% 
+  mutate(name= fct_relevel(name, "Statewide")) %>% 
   select(name, everything())
 
 # Plot
@@ -285,6 +284,35 @@ state_change_acres <- left_join(state_lu_2013, state_lu_2018) %>%
 
 # Plot
 #---------------------------------------
+
+# Acres Change
+ggplot(data = state_change_acres, aes(x = lu, y = acres_change)) +
+  geom_col(aes(fill = lu)) +
+  labs(
+#    title = "Normalized Statewide Area Change by Land Use",
+    x = "Jurisdiction",
+    y = "Area Change (Acres)"
+  ) +
+  scale_fill_manual(values = lu_palette2) +
+#  scale_y_continuous(labels = c()) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+#   plot.title = element_text(size = 16, face = "bold"),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.title = element_text(size = 14),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  ) +
+guides(fill = guide_legend(title = "Land Use Type"))
+
+# Acres Change Normalized
 ggplot(data = state_change_acres, aes(x = lu, y = acres_change_std)) +
   geom_col(aes(fill = lu)) +
   labs(
@@ -310,6 +338,45 @@ ggplot(data = state_change_acres, aes(x = lu, y = acres_change_std)) +
     rect = element_rect(fill = "white", color = NA)
   ) +
 guides(fill = guide_legend(title = "Land Use Type"))
+
+# Acres 2013 vs 2018
+state_change_compare <- state_change_acres %>% 
+  select(lu, lu_2013_acres, lu_2018_acres, acres_change) %>% 
+  pivot_longer(lu_2013_acres:lu_2018_acres, 
+               names_to = "year",
+               values_to = "tot_acres") %>% 
+    mutate(net = case_when(
+     acres_change >= 0 ~ "Gain",
+     acres_change < 0 ~ "Loss"
+   )) %>% 
+  mutate(acres_change = round(acres_change, digits = 0)) %>% 
+  mutate(acres_change = signs(acres_change, format = scales::number, plus_sign = TRUE)) %>% 
+   mutate(year = case_when(
+    year == "lu_2013_acres" ~ "2013",
+    year == "lu_2018_acres" ~ "2018"))
+
+ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
+  geom_bar(aes(fill = lu, alpha = year),
+           position="dodge", stat="identity")+
+  scale_fill_manual(values = lu_palette2) +
+  scale_alpha_manual(values = c(1, 0.5)) +
+  theme_minimal()
+
+ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
+  geom_bar(aes(alpha = year), fill = "#009b77",
+           position="dodge", stat="identity") +
+  geom_text(aes(label = acres_change, color = net, vjust = -0.5)) +
+  scale_color_manual(values = c("green", "red")) +
+  scale_alpha_manual(values = c(1, 0.5)) +
+  labs(
+    x = "Land Use",
+    y = "Total Area (Acres)"
+  ) +
+  theme_minimal()
+
+# color by gain or loss?
+
+# Sankey
 
 ```
 
