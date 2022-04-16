@@ -83,6 +83,17 @@ lu_palette2 <- c(
 # Categorical County Color Palette
 county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
 
+#---------------------------------------
+# Functions
+#---------------------------------------
+
+# Use stringr::str_wrap() to create breaks in long facet titles
+stwr <- function(string, nwrap = 15){
+  paste(strwrap(string, width = nwrap), collapse = "\n")
+}
+
+stwr = Vectorize(stwr)
+
 ```
 
 ### Task 1a. 2018 forest stats
@@ -339,7 +350,8 @@ ggplot(data = state_change_acres, aes(x = lu, y = acres_change_std)) +
   ) +
 guides(fill = guide_legend(title = "Land Use Type"))
 
-# Acres 2013 vs 2018
+# Acres 2013 vs 2018------------------------------------------------------------------
+
 state_change_compare <- state_change_acres %>% 
   select(lu, lu_2013_acres, lu_2018_acres, acres_change) %>% 
   pivot_longer(lu_2013_acres:lu_2018_acres, 
@@ -350,11 +362,12 @@ state_change_compare <- state_change_acres %>%
      acres_change < 0 ~ "Loss"
    )) %>% 
   mutate(acres_change = round(acres_change, digits = 0)) %>% 
-  mutate(acres_change = signs(acres_change, format = scales::number, plus_sign = TRUE)) %>% 
-   mutate(year = case_when(
+  mutate(year = case_when(
     year == "lu_2013_acres" ~ "2013",
-    year == "lu_2018_acres" ~ "2018"))
+    year == "lu_2018_acres" ~ "2018")) %>% 
+  mutate(lu = fct_reorder(lu, desc(acres_change)))
 
+###
 ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
   geom_bar(aes(fill = lu, alpha = year),
            position="dodge", stat="identity")+
@@ -365,14 +378,56 @@ ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
 ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
   geom_bar(aes(alpha = year), fill = "#009b77",
            position="dodge", stat="identity") +
-  geom_text(aes(label = acres_change, color = net, vjust = -0.5)) +
-  scale_color_manual(values = c("green", "red")) +
+  # geom_text(aes(label = acres_change, color = net, vjust = -0.5)) +
+  annotate("text",
+           x = 1, y = 300000,
+           label = "+10,809", color = "#498D43") +
+  annotate("text",
+           x = 2, y = 200000,
+           label = "+4,687", color = "#498D43") +
+  annotate("text",
+           x = 3, y = 150000,
+           label = "+4,269", color = "#498D43") +
+    annotate("text",
+           x = 4, y = 350000,
+           label = "+642", color = "#498D43") +
+    annotate("text",
+           x = 5, y = 220000,
+           label = "+508", color = "#498D43") +
+      annotate("text",
+           x = 6, y = 275000,
+           label = "-214", color = "red") +
+      annotate("text",
+           x = 7, y = 125000,
+           label = "-891", color = "red") +
+      annotate("text",
+           x = 8, y = 2470000,
+           label = "-7,019", color = "red") +
+      annotate("text",
+           x = 9, y = 3190000,
+           label = "-12792", color = "red") +
+  # scale_color_manual(values = c("green", "red")) +
   scale_alpha_manual(values = c(1, 0.5)) +
+  scale_y_continuous(breaks = c(0, 1000000, 2000000, 3000000),
+                     labels = c("0", "1,000,000", "2,000,000", "3,000,000")) +
   labs(
     x = "Land Use",
     y = "Total Area (Acres)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
 
 # color by gain or loss?
 
