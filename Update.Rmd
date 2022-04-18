@@ -368,16 +368,68 @@ state_change_compare <- state_change_acres %>%
   mutate(lu = fct_reorder(lu, desc(acres_change)))
 
 ###
-ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
+fig_22_color <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
   geom_bar(aes(fill = lu, alpha = year),
            position="dodge", stat="identity")+
   scale_fill_manual(values = lu_palette2) +
-  scale_alpha_manual(values = c(1, 0.5)) +
-  theme_minimal()
+  scale_alpha_manual(values = c(0.3, 1)) +
+    annotate("text",
+           x = 1, y = 300000,
+           label = "+10,809", color = "#498D43") +
+  annotate("text",
+           x = 2, y = 200000,
+           label = "+4,687", color = "#498D43") +
+  annotate("text",
+           x = 3, y = 150000,
+           label = "+4,269", color = "#498D43") +
+    annotate("text",
+           x = 4, y = 350000,
+           label = "+642", color = "#498D43") +
+    annotate("text",
+           x = 5, y = 220000,
+           label = "+508", color = "#498D43") +
+      annotate("text",
+           x = 6, y = 275000,
+           label = "-214", color = "red") +
+      annotate("text",
+           x = 7, y = 125000,
+           label = "-891", color = "red") +
+      annotate("text",
+           x = 8, y = 2470000,
+           label = "-7,019", color = "red") +
+      annotate("text",
+           x = 9, y = 3190000,
+           label = "-12792", color = "red") +
+  scale_y_continuous(breaks = c(0, 1000000, 2000000, 3000000),
+                     labels = c("0", "1,000,000", "2,000,000", "3,000,000")) +
+  labs(
+    x = "Land Use",
+    y = "Total Area (Acres)"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  ) +
+  guides(fill = "none")
 
-ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
-  geom_bar(aes(alpha = year), fill = "#009b77",
-           position="dodge", stat="identity") +
+fig_22_color
+
+ggsave(here("Graphics", "fig22_color.jpg"), fig_22_color, height = 5, width = 9)
+
+###
+
+fig_22 <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
+  geom_bar(aes(fill = year), position="dodge", stat="identity") +
   # geom_text(aes(label = acres_change, color = net, vjust = -0.5)) +
   annotate("text",
            x = 1, y = 300000,
@@ -406,8 +458,9 @@ ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
       annotate("text",
            x = 9, y = 3190000,
            label = "-12792", color = "red") +
+  scale_fill_manual(values = c("#7fcdbb", "#009b77")) +
   # scale_color_manual(values = c("green", "red")) +
-  scale_alpha_manual(values = c(1, 0.5)) +
+  # scale_alpha_manual(values = c(1, 0.5)) + 
   scale_y_continuous(breaks = c(0, 1000000, 2000000, 3000000),
                      labels = c("0", "1,000,000", "2,000,000", "3,000,000")) +
   labs(
@@ -428,6 +481,10 @@ ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
     plot.background = element_rect(fill = "white", color = NA),
     rect = element_rect(fill = "white", color = NA)
   )
+
+fig_22
+
+ggsave(here("Graphics", "fig22_state_lu_change.jpg"), fig_22, height = 5, width = 9)
 
 # color by gain or loss?
 
