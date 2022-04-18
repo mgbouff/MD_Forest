@@ -458,7 +458,7 @@ fig_22 <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
       annotate("text",
            x = 9, y = 3190000,
            label = "-12792", color = "red") +
-  scale_fill_manual(values = c("#7fcdbb", "#009b77")) +
+  scale_fill_manual(values = c("gray70", "gray40")) +
   # scale_color_manual(values = c("green", "red")) +
   # scale_alpha_manual(values = c(1, 0.5)) + 
   scale_y_continuous(breaks = c(0, 1000000, 2000000, 3000000),
@@ -486,9 +486,6 @@ fig_22
 
 ggsave(here("Graphics", "fig22_state_lu_change.jpg"), fig_22, height = 5, width = 9)
 
-# color by gain or loss?
-
-# Sankey
 
 ```
 
@@ -506,8 +503,8 @@ riparian_buffer <- riparian_raw %>%
   mutate(can_p_calc = can_a/total_a,
          label = scales::percent(can_p_calc, accuracy = 1)) %>% 
   mutate(threshold = case_when(
-     can_p_calc >= 0.7 ~ "Meets Goal",
-     can_p_calc < 0.7 ~ "Does Not Meet Goal"
+     label >= 70 ~ "Meets Goal",
+     label < 70 ~ "Does Not Meet Goal"
    ))
 
 # Plot
@@ -549,9 +546,9 @@ fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(name), y = can_p_calc))
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_14
+fig_16
 
-ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16)
+ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16, height = 7, width = 8)
 
 ```
 
