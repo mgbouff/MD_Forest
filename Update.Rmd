@@ -548,7 +548,8 @@ county_lu_change <- left_join(county_lu_2013, county_lu_2018) %>%
 ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
   geom_col(aes(fill = lu)) +
   facet_wrap(~name, scales = "free") +
-  scale_fill_manual(values = lu_palette_fig20)
+  scale_fill_manual(values = lu_palette_fig20) +
+  theme_minimal()
 
 ```
 
