@@ -82,13 +82,13 @@ lu_palette_fig25 <- c(
 lu_palette_fig20 <- c(
   "#F9DB6D", # Barren, light yellow
   "#F08701", # Impervious, orange 
-  "#D9682A", # Buildings/Structures, brick
-  "#4059AD", # Water, royal blue
-  "#F9A620", # Roads, light orange
-  "#21A0A0",  # Wetland, Blue-green
-  "#8CC8B5", # Shrub,light green-blue
   "#8DBE87", # Low veg, light green
-  "#6eb663" # Forest Canopy, light green
+  "#F9A620", # Roads, light orange
+  "#8CC8B5", # Shrub,light green-blue
+  "#D9682A", # Buildings/Structures, brick
+  "#6eb663", # Forest Canopy, light green
+  "#4059AD", # Water, royal blue
+  "#21A0A0"  # Wetland, Blue-green
 )
 
 # Categorical County Color Palette
@@ -545,11 +545,37 @@ county_lu_change <- left_join(county_lu_2013, county_lu_2018) %>%
 
 # Plot
 #---------------------------------------
-ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
+fig_20 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
   geom_col(aes(fill = lu)) +
   facet_wrap(~name, scales = "free") +
   scale_fill_manual(values = lu_palette_fig20) +
-  theme_minimal()
+  labs(
+    x = "Land Cover Class",
+    y = "Area Change (Acres)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+fig_20
+
+ggsave(here("Graphics", "fig20_county_lu_change.jpg"), fig_20, height = 8, width = 8)
 
 ```
 
