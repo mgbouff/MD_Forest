@@ -315,7 +315,7 @@ ggplot(data = state_change_acres, aes(x = lu, y = acres_change)) +
     x = "Jurisdiction",
     y = "Area Change (Acres)"
   ) +
-  scale_fill_manual(values = lu_palette2) +
+  scale_fill_manual(values = lu_palette_fig25) +
 #  scale_y_continuous(labels = c()) +
   coord_flip() +
   theme_minimal() +
@@ -342,7 +342,7 @@ ggplot(data = state_change_acres, aes(x = lu, y = acres_change_std)) +
     x = "Jurisdiction",
     y = "Magnitude of Change"
   ) +
-  scale_fill_manual(values = lu_palette2) +
+  scale_fill_manual(values = lu_palette_fig25) +
 #  scale_y_continuous(labels = c()) +
   coord_flip() +
   theme_minimal() +
@@ -433,9 +433,9 @@ fig_25_color <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) 
   ) +
   guides(fill = "none")
 
-fig_22_color
+fig_25_color
 
-# ggsave(here("Graphics", "fig22_color.jpg"), fig_22_color, height = 5, width = 9)
+# ggsave(here("Graphics", "fig25_color.jpg"), fig_25_color, height = 5, width = 9)
 
 ###
 
