@@ -55,7 +55,7 @@ md_timber_raw <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>%
 # Color  Palettes
 #---------------------------------------
 
-lu_palette <- c(
+lu_palette_fig5 <- c(
   "#6eb663", # Forest Canopy, light green
   "#8DBE87", # Low veg, light green
   "#4059AD", # Water, royal blue
@@ -67,10 +67,22 @@ lu_palette <- c(
   "#21A0A0"  # Wetland, Blue-green
 )
 
-lu_palette2 <- c(
+lu_palette_fig25 <- c(
   "#F08701", # Impervious, orange 
   "#D9682A", # Buildings/Structures, brick
   "#F9DB6D", # Barren, light yellow
+  "#4059AD", # Water, royal blue
+  "#F9A620", # Roads, light orange
+  "#21A0A0",  # Wetland, Blue-green
+  "#8CC8B5", # Shrub,light green-blue
+  "#8DBE87", # Low veg, light green
+  "#6eb663" # Forest Canopy, light green
+)
+
+lu_palette_fig20 <- c(
+  "#F9DB6D", # Barren, light yellow
+  "#F08701", # Impervious, orange 
+  "#D9682A", # Buildings/Structures, brick
   "#4059AD", # Water, royal blue
   "#F9A620", # Roads, light orange
   "#21A0A0",  # Wetland, Blue-green
@@ -168,7 +180,7 @@ fig_5 <- ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, f
     y = "Percent Cover") +
     scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
                      labels = c("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%")) +
-  scale_fill_manual(values = lu_palette) +
+  scale_fill_manual(values = lu_palette_fig5) +
     theme_minimal() +
   theme(
 #    plot.title = element_text(size = 16, face = "bold"),
@@ -367,10 +379,10 @@ state_change_compare <- state_change_acres %>%
   mutate(lu = fct_reorder(lu, desc(acres_change)))
 
 ###
-fig_22_color <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
+fig_25_color <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
   geom_bar(aes(fill = lu, alpha = year),
            position="dodge", stat="identity")+
-  scale_fill_manual(values = lu_palette2) +
+  scale_fill_manual(values = lu_palette_fig25) +
   scale_alpha_manual(values = c(0.3, 1)) +
     annotate("text",
            x = 1, y = 300000,
@@ -533,6 +545,10 @@ county_lu_change <- left_join(county_lu_2013, county_lu_2018) %>%
 
 # Plot
 #---------------------------------------
+ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
+  geom_col(aes(fill = lu)) +
+  facet_wrap(~name, scales = "free") +
+  scale_fill_manual(values = lu_palette_fig20)
 
 ```
 
