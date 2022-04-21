@@ -13,7 +13,6 @@ library(tidyverse)
 library(janitor)
 library(here)
 library(scales)
-library(signs)
 library(stringr)
 
 #---------------------------------------
@@ -424,11 +423,11 @@ fig_22_color <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) 
 
 fig_22_color
 
-ggsave(here("Graphics", "fig22_color.jpg"), fig_22_color, height = 5, width = 9)
+# ggsave(here("Graphics", "fig22_color.jpg"), fig_22_color, height = 5, width = 9)
 
 ###
 
-fig_22 <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
+fig_25 <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
   geom_bar(aes(fill = year), position="dodge", stat="identity") +
   # geom_text(aes(label = acres_change, color = net, vjust = -0.5)) +
   annotate("text",
@@ -457,14 +456,14 @@ fig_22 <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
            label = "-7,019", color = "red") +
       annotate("text",
            x = 9, y = 3190000,
-           label = "-12792", color = "red") +
+           label = "-12,792", color = "red") +
   scale_fill_manual(values = c("gray70", "gray40")) +
   # scale_color_manual(values = c("green", "red")) +
   # scale_alpha_manual(values = c(1, 0.5)) + 
   scale_y_continuous(breaks = c(0, 1000000, 2000000, 3000000),
                      labels = c("0", "1,000,000", "2,000,000", "3,000,000")) +
   labs(
-    x = "Land Use",
+    x = "Land Cover Class",
     y = "Total Area (Acres)"
   ) +
   theme_minimal() +
@@ -482,12 +481,61 @@ fig_22 <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_22
+fig_25
 
-ggsave(here("Graphics", "fig22_state_lu_change.jpg"), fig_22, height = 5, width = 9)
+ggsave(here("Graphics", "fig25_state_lu_change.jpg"), fig_25, height = 5, width = 9)
 
 
 ```
+
+Land use change at the county level
+```{r}
+
+#---------------------------------------
+# 2013-2018 Land Use by County
+#---------------------------------------
+
+# Get 2013 lu by county
+county_lu_2013 <- county_forest_raw %>% 
+  select(name:x2013_road_a) %>% 
+  pivot_longer(!name, names_to = "lu", values_to = "lu_2013_m") %>% 
+    mutate(lu = case_when(
+    lu == "x2013_water_a" ~ "Water",
+    lu == "x2013_wet_a" ~ "Wetland",
+    lu == "x2013_can_a" ~ "Tree Canopy",
+    lu == "x2013_shrub_a" ~ "Shrub",
+    lu == "x2013_low_veg_a" ~ "Low Vegetation",
+    lu == "x2013_barren_a" ~ "Barren",
+    lu == "x2013_struc_a" ~ "Structures",
+    lu == "x2013_imperv_a" ~ "Impervious",
+    lu == "x2013_road_a" ~ "Road"))
+
+# Get 2018 lu by county 
+county_lu_2018 <- county_forest_raw %>% 
+  select(name, water_a:road_a) %>% 
+  pivot_longer(!name, names_to = "lu", values_to = "lu_2018_m") %>% 
+      mutate(lu = case_when(
+    lu == "water_a" ~ "Water",
+    lu == "wet_a" ~ "Wetland",
+    lu == "tc_a" ~ "Tree Canopy",
+    lu == "shrub_a" ~ "Shrub",
+    lu == "low_veg_a" ~ "Low Vegetation",
+    lu == "barren_a" ~ "Barren",
+    lu == "struc_a" ~ "Structures",
+    lu == "imperv_a" ~ "Impervious",
+    lu == "road_a" ~ "Road"))
+
+# Bind back together, get area in acres, calculate change
+county_lu_change <- left_join(county_lu_2013, county_lu_2018) %>% 
+  mutate(lu_2013_acres = lu_2013_m*0.000247105) %>% 
+  mutate(lu_2018_acres = lu_2018_m*0.000247105) %>% 
+  mutate(acres_change = lu_2018_acres-lu_2013_acres)
+
+# Plot
+#---------------------------------------
+
+```
+
 
 ### Task 3 Urban Change
 
