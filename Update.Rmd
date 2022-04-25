@@ -575,7 +575,7 @@ fig_20 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
 
 fig_20
 
-ggsave(here("Graphics", "fig20_county_lu_change.jpg"), fig_20, height = 8, width = 8)
+ggsave(here("Graphics", "fig20_county_lu_change.jpg"), fig_20, height = 7.5, width = 8)
 
 ```
 
