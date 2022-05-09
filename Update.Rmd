@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(tidyverse)
 library(janitor)
 library(here)
+library(readxl)
 library(scales)
 library(stringr)
 
@@ -29,6 +30,15 @@ state_forest_raw <- read.csv(here("Data", "New", "1a_State.csv")) %>%
 
 # Read in 2018 county data
 county_forest_raw <- read.csv(here("Data", "New", "1a_County.csv")) %>% 
+  clean_names()
+
+# Old county data with population
+county_pop <- read.csv(here("Data", "1a_County_short_2018.csv")) %>% 
+  clean_names() %>% 
+  select(county, x2020_pop)
+
+# Read in 2018 county forest tree cover data
+county_tc_forest_raw <- read_xlsx(here("Data", "New", "Figure4_PercentTC_TableToExcel.xlsx")) %>% 
   clean_names()
 
 # ---lu change---
@@ -218,7 +228,7 @@ county_tree_cover <- county_lu_percent %>%
 
 # Plot
 #---------------------------------------
-fig_4 <- ggplot(data = county_tree_cover, aes(x = fct_rev(name), y = percent)) +
+ggplot(data = county_tree_cover, aes(x = fct_rev(name), y = percent)) +
   geom_col(aes(fill = name)) +
   geom_text(aes(label = label,
                 color = name,
@@ -249,8 +259,56 @@ fig_4 <- ggplot(data = county_tree_cover, aes(x = fct_rev(name), y = percent)) +
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_4
+#---------------------------------------
+# 2018 Percent Tree Canopy by County Inside vs Outside Forest
+#---------------------------------------
+county_tc_forest <- county_tc_forest_raw %>% 
+  mutate(fore_pc_calc = forest_ac/jurisdicti) %>% # Calculate percent in forest
+  mutate(tc_pc_calc = tc_out_fore/jurisdicti) %>% # Calculate percent out of forest
+  select(name, fore_pc_calc, tc_pc_calc) %>% 
+  pivot_longer(!name, 
+               names_to = "type",
+               values_to = "percent") %>% 
+        mutate(type = case_when(
+    type == "fore_pc_calc" ~ "Inside Forest",
+    type == "tc_pc_calc" ~ "Outside Forest")) %>% 
+  rename(county = name)
 
+# Join population to county inside/outside forest data
+county_tc_pop <- full_join(county_tc_forest, county_pop, by = "county") %>% 
+  mutate(type = as.factor(type)) %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, x2020_pop)) # order by population (largest to smallest)
+
+# Plot
+#---------------------------------------
+fig_4 <- ggplot(data = county_tc_pop, aes(x = county, y = percent)) +
+  geom_col(aes(fill = type)) +
+  scale_fill_manual(values = c("#24693d", "#6eb663")) +
+  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy Cover"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+fig_4
+ 
 ggsave(here("Graphics", "fig4_county_lu.jpg"), fig_4)
 ```
 

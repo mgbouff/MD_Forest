@@ -29,13 +29,12 @@ county_forest <- read.csv(here("Data", "1a_County_short_2018.csv")) %>%
 # Read in Plantable Area data
 plantable_county <- read.csv(here("Data", "1b_plantable_2018_county.csv")) %>% 
   clean_names() %>% 
-  rename(county = i_county) %>% 
   mutate(county = as.factor(county))
 
 # Old csv with percent data
 plantable_percent <- read.csv(here("Data", "1b_plantableareas_2018_county_full.csv")) %>% 
   clean_names() %>% 
-  rename(county = i_county) %>% 
+  rename(county = county) %>% 
   mutate(county = as.factor(county))
 
 # Plantable area stack
@@ -397,7 +396,7 @@ ordered_p <- ggplot(data = county_ordered_p, aes(x = county, y = p_calc)) +
 
 ordered_p 
 
-ggsave(here("Graphics", "1a_county_ordered_p.jpg"), ordered_p)
+# ggsave(here("Graphics", "1a_county_ordered_p.jpg"), ordered_p)
 
 #---------------------------------------
 # Ordered by County Size
@@ -473,7 +472,8 @@ ordered_pop <- ggplot(data = county_ordered_pop, aes(x = fct_rev(county), y = p_
 
 ordered_pop 
 
-ggsave(here("Graphics", "1a_county_ordered_pop.jpg"), ordered_pop)
+
+# ggsave(here("Graphics", "1a_county_ordered_pop.jpg"), ordered_pop)
 
 #---------------------------------------
 # Ordered by population, stacked by inside vs. outside forest
@@ -512,7 +512,7 @@ ordered_pop_stack <- ggplot(data = county_pop_stack, aes(x = fct_rev(county), y 
 
 ordered_pop_stack
 
-ggsave(here("Graphics", "1a_county_ordered_pop_stack.jpg"), ordered_pop_stack)
+# ggsave(here("Graphics", "1a_county_ordered_pop_stack.jpg"), ordered_pop_stack)
 
 ```
 
