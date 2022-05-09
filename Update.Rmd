@@ -142,9 +142,9 @@ state_lu_percent <- state_forest_raw %>%
   mutate(percent = acres/total_a_acres,
          label = scales::percent(percent)) %>% 
   mutate(lu = fct_reorder(lu, desc(percent))) %>% 
-  select(lu:label)
-
-state_lu_percent$name <- "Statewide"
+  select(lu:label) %>% 
+  mutate(x2020_pop = 6177224) %>% 
+  mutate(county = "Statewide")
 
 #---------------------------------------
 # County level land use
@@ -168,21 +168,28 @@ county_lu_percent <- county_forest_raw %>%
   group_by(name) %>% 
   mutate(percent = acres/sum(acres)) %>% 
   mutate(percent = acres/sum(acres),
-         label = scales::percent(percent, accuracy = 1)) # labels for county percent plot
+         label = scales::percent(percent, accuracy = 1)) %>% # labels for county percent plot
+  rename(county = name)
+
+# Ordered by population
+#---------------------------------------
+# Join county and population data
+county_percent_pop <- full_join(county_lu_percent, county_pop, by = "county")
 
 #---------------------------------------
-# Stacked bar plor lu percent area state and county
+# Stacked bar plot lu percent area state and county
 #---------------------------------------
 
 # Merge state and county dfs
-state_county_merge <- rbind(state_lu_percent, county_lu_percent) %>% 
-  mutate(name = as.factor(name)) %>%  
-  mutate(name= fct_relevel(name, "Statewide")) %>% 
-  select(name, everything())
+state_county_merge <- rbind(state_lu_percent, county_percent_pop) %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, x2020_pop)) %>% 
+  select(county, everything())
 
+#---------------------------------------
 # Plot
 #---------------------------------------
-fig_5 <- ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, fill = lu)) +
+fig_5 <- ggplot(data = state_county_merge, aes(x = county, y = percent, fill = lu)) +
   geom_bar(position = "fill", stat = "identity") +
     labs(
 #    title = "2018 Land Use Proportions by Jurisdiction",
@@ -207,7 +214,7 @@ fig_5 <- ggplot(data = state_county_merge, aes(x = fct_rev(name), y = percent, f
     plot.background = element_rect(fill = "white", color = NA),
     rect = element_rect(fill = "white", color = NA)
   )+
-  guides(fill = guide_legend(title = "Land Use Type")) +
+  guides(fill = guide_legend(title = "Land Cover Type")) +
   coord_flip()
 
 fig_5
@@ -320,7 +327,6 @@ Land use change at the state level
 
 # Acres Change (Normalized)
 #---------------------------------------
-
 # Get area for each year
 state_lu_2013 <- state_change_raw %>% 
   select(x2013_water_a:x2013_road_a) %>% 
@@ -364,7 +370,6 @@ state_change_acres <- left_join(state_lu_2013, state_lu_2018) %>%
 
 # Plot
 #---------------------------------------
-
 # Acres Change
 ggplot(data = state_change_acres, aes(x = lu, y = acres_change)) +
   geom_col(aes(fill = lu)) +
@@ -673,7 +678,7 @@ fig_16 <- ggplot(data = riparian_buffer_pop, aes(x = county, y = can_p_calc)) +
   labs(
 #    title = "Riparian Buffer Percent Tree Canopy",
     x = "Jurisdiction",
-    y = "Percent Tree Canopy over Land Area") +
+    y = "Percent Tree Canopy Over Riparian Buffer Area") +
   geom_text(label = "70%",
             color = "red",
             face = "bold",
