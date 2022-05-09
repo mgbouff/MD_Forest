@@ -654,11 +654,20 @@ riparian_buffer <- riparian_raw %>%
   mutate(threshold = case_when(
      label >= 70 ~ "Meets Goal",
      label < 70 ~ "Does Not Meet Goal"
-   ))
+   )) %>% 
+  rename(county = name)
 
+# Ordered by population
+#---------------------------------------
+# Join riparian and population data
+riparian_buffer_pop <- full_join(riparian_buffer, county_pop, by = "county") %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, x2020_pop)) # order by population (largest to smallest)
+
+#---------------------------------------
 # Plot
 #---------------------------------------
-fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(name), y = can_p_calc)) +
+fig_16 <- ggplot(data = riparian_buffer_pop, aes(x = county, y = can_p_calc)) +
   geom_col(aes(fill = threshold)) +
   scale_fill_manual(values = c("#c3dbcb", "seagreen4")) +
   labs(
@@ -715,9 +724,17 @@ timber_total <- md_timber_raw %>%
   group_by(county) %>% 
   summarise(tot_acres = sum(forest_harvest_acres))
 
+# Ordered by population
+#---------------------------------------
+# Join timber total and population data
+timber_pop <- full_join(timber_total, county_pop, by = "county") %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, x2020_pop)) # order by population (largest to smallest)
+
+#---------------------------------------
 # Plot
 #---------------------------------------
-fig_21 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
+fig_21 <- ggplot(data = timber_pop, aes(x = county, y = tot_acres)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
   labs(
@@ -746,46 +763,6 @@ fig_21 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
 fig_21
 
 ggsave(here("Graphics", "fig21_timber.jpg"), fig_21)
-
-#---------------------------------------
-# Ordered by population
-#---------------------------------------
-# Join timber total and population data
-timber_pop <- full_join(timber_total, county_pop, by = "county") %>% 
-  mutate(county = as.factor(county)) %>% 
-  mutate(county = fct_reorder(county, x2020_pop)) # order by population (largest to smallest)
-
-# Plot
-#---------------------------------------
-fig_21_pop <- ggplot(data = timber_pop, aes(x = county, y = tot_acres)) +
-  geom_col(aes(fill = county)) +
-  scale_fill_manual(values = county_pallette) +
-  labs(
-#    title = "Total Timber Harvest by Jurisdiction \n between 2013 and 2021",
-    x = "Jurisdiction",
-    y = "Forest Harvested (Acres)"
-  ) +
-    scale_y_continuous(breaks = c(0, 10000, 20000),
-                     labels = c("0", "10,000", "20,000")) +
-  coord_flip() +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-#    plot.title = element_text(size = 16, face = "bold"),
-    axis.title.y = element_text(size = 14,
-                                face = "bold",
-                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
-    axis.title.x = element_text(size = 14,
-                                face = "bold",
-                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white", color = NA),
-    rect = element_rect(fill = "white", color = NA)
-  )
-
-fig_21_pop
-
-ggsave(here("Graphics", "fig21_timber_pop.jpg"), fig_21_pop)
 
 ```
 
