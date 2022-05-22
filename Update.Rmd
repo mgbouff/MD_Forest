@@ -52,6 +52,15 @@ state_change_raw <- read.csv(here("Data", "New", "1a_state_percentchange.csv")) 
 plantable_raw <- read_xls(here("Data", "New", "1b_Plantable_Area_Final.xls")) %>% 
   clean_names()
 
+# Task 2
+#---------------------------------------
+# State level 2013 and 2018
+frag_state_13_raw <- read_xls(here("Data", "New", "2_tab_state_13.xls"), range = cell_cols("B:C")) %>% 
+  clean_names()
+
+frag_state_18_raw <- read_xls(here("Data", "New", "2_tab_state_18.xls"), range = cell_cols("B:C")) %>% 
+  clean_names()
+
 # Task 3
 #---------------------------------------
 # Riparian tree cover data
@@ -128,7 +137,6 @@ Land use proportion
 #---------------------------------------
 # State level land use
 #---------------------------------------
-
 # Get percents 
 state_lu_percent <- state_forest_raw %>% 
   select(can_a_acres:apg_a_acres, total_a_acres) %>% 
@@ -153,7 +161,6 @@ state_lu_percent <- state_forest_raw %>%
 #---------------------------------------
 # County level land use
 #---------------------------------------
-
 # Get percents 
 county_lu_percent <- county_forest_raw %>% 
   select(name, can_a_acres:road_a_acres) %>% 
@@ -183,7 +190,6 @@ county_percent_pop <- full_join(county_lu_percent, county_pop, by = "county")
 #---------------------------------------
 # Stacked bar plot lu percent area state and county
 #---------------------------------------
-
 # Merge state and county dfs
 state_county_merge <- rbind(state_lu_percent, county_percent_pop) %>% 
   mutate(county = as.factor(county)) %>% 
@@ -232,17 +238,16 @@ Percent tree canopy by county
 #---------------------------------------
 # 2018 Percent Tree Canopy by County
 #---------------------------------------
-
 # Get tree cover by county
 county_tree_cover <- county_lu_percent %>% 
   filter(lu == "Tree Canopy")
 
 # Plot
 #---------------------------------------
-ggplot(data = county_tree_cover, aes(x = fct_rev(name), y = percent)) +
-  geom_col(aes(fill = name)) +
+ggplot(data = county_tree_cover, aes(x = fct_rev(county), y = percent)) +
+  geom_col(aes(fill = county)) +
   geom_text(aes(label = label,
-                color = name,
+                color = county,
                 hjust = -0.1),
             size = 3) +
   scale_fill_manual(values = county_pallette) +
@@ -324,6 +329,7 @@ ggsave(here("Graphics", "fig4_county_lu.jpg"), fig_4)
 ```
 
 Land use change at the state level
+
 ```{r}
 #---------------------------------------
 # State Land Use Change 2013 to 2018
@@ -429,7 +435,6 @@ ggplot(data = state_change_acres, aes(x = lu, y = acres_change_std)) +
 guides(fill = guide_legend(title = "Land Use Type"))
 
 # Acres 2013 vs 2018------------------------------------------------------------------
-
 state_change_compare <- state_change_acres %>% 
   select(lu, lu_2013_acres, lu_2018_acres, acres_change) %>% 
   pivot_longer(lu_2013_acres:lu_2018_acres, 
@@ -568,12 +573,11 @@ ggsave(here("Graphics", "fig25_state_lu_change.jpg"), fig_25, height = 5, width 
 ```
 
 Land use change at the county level
-```{r}
 
+```{r}
 #---------------------------------------
 # 2013-2018 Land Use by County
 #---------------------------------------
-
 # Get 2013 lu by county
 county_lu_2013 <- county_forest_raw %>% 
   select(name:x2013_road_a) %>% 
@@ -760,7 +764,45 @@ fig_7
 ggsave(here("Graphics", "fig7_plantable_percent.jpg"), fig_7)
 
 ```
+### Task 2 Forest Health
 
+Forest fragmentation at the state level
+
+```{r}
+#---------------------------------------
+# State Fragmentation Area
+#---------------------------------------
+# 2013 state
+frag_state_13 <- frag_state_13_raw %>% 
+  rename(area_m = objec_864) %>% 
+  mutate(area_acres = area_m * 0.000247105) %>% # Convert to acres
+  mutate(year = "2013") %>% 
+  select(value, year, area_acres)
+  
+# 2018 state
+frag_state_18 <- frag_state_18_raw %>% 
+  rename(area_m = objec_864) %>% 
+  mutate(area_acres = area_m * 0.000247105) %>% # Convert to acres
+  mutate(year = "2018") %>% 
+  select(value, year, area_acres)
+
+# Join years together
+frag_state_full <- full_join(frag_state_13, frag_state_18) %>% 
+  rename(frag_type = value) %>% 
+  mutate(frag_type = case_when(
+    frag_type == "1" ~ "Isolated Patch",
+    frag_type == "2" ~ "Edge",
+    frag_type == "4" ~ "Small Core",
+    frag_type == "5" ~ "Medium Core",
+    frag_type == "6" ~ "Large Core",
+  ))
+  
+# Plot
+#---------------------------------------
+ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres)) +
+  geom_col(aes(fill = year), position = "dodge")
+
+```
 
 ### Task 3 Urban Change
 
