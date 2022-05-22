@@ -61,6 +61,11 @@ frag_state_13_raw <- read_xls(here("Data", "New", "2_tab_state_13.xls"), range =
 frag_state_18_raw <- read_xls(here("Data", "New", "2_tab_state_18.xls"), range = cell_cols("B:C")) %>% 
   clean_names()
 
+# County level 2013 and 2018
+frag_county_13_raw <- read_xls(here("Data", "New", "2_tab_county_13.xls"), range = cell_cols("B:Z"))
+
+frag_county_18_raw <- read_xls(here("Data", "New", "2_tab_county_18.xls"), range = cell_cols("B:Z"))
+
 # Task 3
 #---------------------------------------
 # Riparian tree cover data
@@ -789,7 +794,7 @@ frag_state_18 <- frag_state_18_raw %>%
 # Join years together
 frag_state_full <- full_join(frag_state_13, frag_state_18) %>% 
   rename(frag_type = value) %>% 
-  mutate(frag_type = case_when(
+  mutate(frag_type = case_when( 
     frag_type == "1" ~ "Isolated Patch",
     frag_type == "2" ~ "Edge",
     frag_type == "4" ~ "Small Core",
@@ -819,6 +824,76 @@ ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres)) +
   ) +
   guides(fill = guide_legend(title = "Year", 
                              title.position = "top"))
+```
+Forest Fragmentation at the county level
+
+```{r}
+#---------------------------------------
+# County Fragmentation Area
+#---------------------------------------
+# 2013 county
+frag_county_13 <- frag_county_13_raw %>% 
+  pivot_longer(!VALUE, names_to = "county", values_to = "area_m") %>% 
+  rename(frag_type = VALUE) %>% 
+  mutate(acres_2013 = area_m * 0.000247105) %>% # Convert to acres
+  select(county, frag_type, acres_2013)
+  
+# 2018 county
+frag_county_18 <- frag_county_18_raw %>% 
+  pivot_longer(!VALUE, names_to = "county", values_to = "area_m") %>% 
+  rename(frag_type = VALUE) %>% 
+  mutate(acres_2018 = area_m * 0.000247105) %>% # Convert to acres
+  select(county, frag_type, acres_2018)
+
+# Join years together
+frag_county_full <- full_join(frag_county_13, frag_county_18) %>% 
+  mutate(county = str_replace_all(county, "_", " ")) %>% # Fix county name formatting
+  mutate(county = str_to_title(county)) %>% 
+  mutate(county = str_replace_all(county, " S", "'s")) %>% 
+  mutate(county = str_replace_all(county, "St  Mary's", "St. Mary's")) %>% 
+  mutate(frag_type = case_when(
+    frag_type == "1" ~ "Isolated Patch",
+    frag_type == "2" ~ "Edge",
+    frag_type == "4" ~ "Small Core",
+    frag_type == "5" ~ "Medium Core",
+    frag_type == "6" ~ "Large Core",
+  )) %>% 
+  mutate(acres_change = acres_2018 - acres_2013)
+
+# Ordered by population
+#---------------------------------------
+# Join population data
+frag_county_pop <- full_join(frag_county_full, county_pop, by = "county") %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, x2020_pop))
+  
+# Plot
+#---------------------------------------
+ggplot(data = frag_county_pop, aes(x = county, y = acres_change)) +
+  geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
+    labs(
+      #title = "Forest Fragment Type Area Change \n from 2013 to 2018",
+       y = "Area (acres)") +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  facet_wrap(~frag_type, scale = "free_y") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 12, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+   ) +
+    guides(fill = guide_legend(title = "Jurisdiction",
+                               title.position = "top",
+                               nrow = 4))
+
 ```
 
 ### Task 3 Urban Change
