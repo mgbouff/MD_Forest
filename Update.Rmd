@@ -800,8 +800,25 @@ frag_state_full <- full_join(frag_state_13, frag_state_18) %>%
 # Plot
 #---------------------------------------
 ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres)) +
-  geom_col(aes(fill = year), position = "dodge")
-
+  geom_col(aes(fill = year), position = "dodge") +
+    scale_fill_manual(values = c("#6eb663", "#24693d")) +
+  labs(
+    #  title = "Forest Fragment Type Area in 2013 and 2018",
+       x = "Forest Fragment Type",
+       y = "Total Area (Acres)") +
+  scale_y_continuous(breaks = c(0, 500000, 1000000, 1500000),
+                     labels = c("0", "500,000", "1,000,000", "1,500,000")) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold", margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    legend.title = element_text(size = 14, face = "bold")
+  ) +
+  guides(fill = guide_legend(title = "Year", 
+                             title.position = "top"))
 ```
 
 ### Task 3 Urban Change
