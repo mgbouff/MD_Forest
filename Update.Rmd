@@ -375,180 +375,48 @@ state_lu_2018 <- state_change_raw %>%
     lu == "imperv_a" ~ "Impervious",
     lu == "road_a" ~ "Road"))
 
+# Area change 2013 to 2018
+#---------------------------------------
 # bind back together, convert meters to acres, calculate area change
-state_change_acres <- left_join(state_lu_2013, state_lu_2018) %>% 
+state_lu_acres <- left_join(state_lu_2013, state_lu_2018) %>% 
   mutate(lu_2013_acres = lu_2013_m*0.000247105) %>% 
   mutate(lu_2018_acres = lu_2018_m*0.000247105) %>% 
   mutate(acres_change = lu_2018_acres-lu_2013_acres) %>% 
   mutate(acres_change_std = acres_change/25914854725) %>% # divide by total area
   mutate(lu = fct_reorder(lu, desc(acres_change_std)))
 
-# Plot
-#---------------------------------------
-# Acres Change
-ggplot(data = state_change_acres, aes(x = lu, y = acres_change)) +
-  geom_col(aes(fill = lu)) +
-  labs(
-#    title = "Normalized Statewide Area Change by Land Use",
-    x = "Jurisdiction",
-    y = "Area Change (Acres)"
-  ) +
-  scale_fill_manual(values = lu_palette_fig25) +
-#  scale_y_continuous(labels = c()) +
-  coord_flip() +
-  theme_minimal() +
-  theme(
-#   plot.title = element_text(size = 16, face = "bold"),
-    axis.title.y = element_text(size = 14,
-                                face = "bold",
-                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
-    axis.title.x = element_text(size = 14,
-                                face = "bold",
-                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
-    legend.title = element_text(size = 14),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white", color = NA),
-    rect = element_rect(fill = "white", color = NA)
-  ) +
-guides(fill = guide_legend(title = "Land Use Type"))
-
-# Acres Change Normalized
-ggplot(data = state_change_acres, aes(x = lu, y = acres_change_std)) +
-  geom_col(aes(fill = lu)) +
-  labs(
-#    title = "Normalized Statewide Area Change by Land Use",
-    x = "Jurisdiction",
-    y = "Magnitude of Change"
-  ) +
-  scale_fill_manual(values = lu_palette_fig25) +
-#  scale_y_continuous(labels = c()) +
-  coord_flip() +
-  theme_minimal() +
-  theme(
-#   plot.title = element_text(size = 16, face = "bold"),
-    axis.title.y = element_text(size = 14,
-                                face = "bold",
-                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
-    axis.title.x = element_text(size = 14,
-                                face = "bold",
-                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
-    legend.title = element_text(size = 14),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white", color = NA),
-    rect = element_rect(fill = "white", color = NA)
-  ) +
-guides(fill = guide_legend(title = "Land Use Type"))
-
-# Acres 2013 vs 2018------------------------------------------------------------------
-state_change_compare <- state_change_acres %>% 
-  select(lu, lu_2013_acres, lu_2018_acres, acres_change) %>% 
+# Make tidy with year variable
+state_lu_long <- state_lu_acres %>% 
+  select(lu, lu_2013_acres, lu_2018_acres) %>% 
   pivot_longer(lu_2013_acres:lu_2018_acres, 
                names_to = "year",
                values_to = "tot_acres") %>% 
-    mutate(net = case_when(
+  mutate(year = case_when(
+    year == "lu_2013_acres" ~ "2013",
+    year == "lu_2018_acres" ~ "2018"))
+
+# Gain and loss labels
+state_lu_change <- state_lu_acres %>% 
+      mutate(net = case_when(
      acres_change >= 0 ~ "Gain",
      acres_change < 0 ~ "Loss"
    )) %>% 
   mutate(acres_change = round(acres_change, digits = 0)) %>% 
-  mutate(year = case_when(
-    year == "lu_2013_acres" ~ "2013",
-    year == "lu_2018_acres" ~ "2018")) %>% 
-  mutate(lu = fct_reorder(lu, desc(acres_change)))
+  mutate(year = "2013") %>% # prepare for merge so only one set remains
+  mutate(acres_change = sprintf("%+d", acres_change)) %>%  # Add + to positive values
+  select(lu, year, acres_change, net)
 
-###
-fig_25_color <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
-  geom_bar(aes(fill = lu, alpha = year),
-           position="dodge", stat="identity")+
-  scale_fill_manual(values = lu_palette_fig25) +
-  scale_alpha_manual(values = c(0.3, 1)) +
-    annotate("text",
-           x = 1, y = 300000,
-           label = "+10,809", color = "#498D43") +
-  annotate("text",
-           x = 2, y = 200000,
-           label = "+4,687", color = "#498D43") +
-  annotate("text",
-           x = 3, y = 150000,
-           label = "+4,269", color = "#498D43") +
-    annotate("text",
-           x = 4, y = 350000,
-           label = "+642", color = "#498D43") +
-    annotate("text",
-           x = 5, y = 220000,
-           label = "+508", color = "#498D43") +
-      annotate("text",
-           x = 6, y = 275000,
-           label = "-214", color = "red") +
-      annotate("text",
-           x = 7, y = 125000,
-           label = "-891", color = "red") +
-      annotate("text",
-           x = 8, y = 2470000,
-           label = "-7,019", color = "red") +
-      annotate("text",
-           x = 9, y = 3190000,
-           label = "-12792", color = "red") +
-  scale_y_continuous(breaks = c(0, 1000000, 2000000, 3000000),
-                     labels = c("0", "1,000,000", "2,000,000", "3,000,000")) +
-  labs(
-    x = "Land Use",
-    y = "Total Area (Acres)"
-  ) +
-  theme_minimal() +
-  theme(
-    legend.position = "bottom",
-    legend.title = element_blank(),
-    axis.title.y = element_text(size = 14,
-                                face = "bold",
-                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
-    axis.title.x = element_text(size = 14,
-                                face = "bold",
-                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
-    panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white", color = NA),
-    rect = element_rect(fill = "white", color = NA)
-  ) +
-  guides(fill = "none")
+# Merge back together
+state_change_full <- full_join(state_lu_long, state_lu_change) %>% 
+  mutate(lu = fct_reorder(lu, desc(acres_change))) 
 
-fig_25_color
-
-# ggsave(here("Graphics", "fig25_color.jpg"), fig_25_color, height = 5, width = 9)
-
-###
-
-fig_25 <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
+# Figure 25
+#---------------------------------------
+fig_25 <- ggplot(data = state_change_full, aes(x = lu, y = tot_acres)) +
   geom_bar(aes(fill = year), position="dodge", stat="identity") +
-  # geom_text(aes(label = acres_change, color = net, vjust = -0.5)) +
-  annotate("text",
-           x = 1, y = 300000,
-           label = "+10,809", color = "#498D43") +
-  annotate("text",
-           x = 2, y = 200000,
-           label = "+4,687", color = "#498D43") +
-  annotate("text",
-           x = 3, y = 150000,
-           label = "+4,269", color = "#498D43") +
-    annotate("text",
-           x = 4, y = 350000,
-           label = "+642", color = "#498D43") +
-    annotate("text",
-           x = 5, y = 220000,
-           label = "+508", color = "#498D43") +
-      annotate("text",
-           x = 6, y = 275000,
-           label = "-214", color = "red") +
-      annotate("text",
-           x = 7, y = 125000,
-           label = "-891", color = "red") +
-      annotate("text",
-           x = 8, y = 2470000,
-           label = "-7,019", color = "red") +
-      annotate("text",
-           x = 9, y = 3190000,
-           label = "-12,792", color = "red") +
+  geom_text(aes(label = acres_change, color = net, vjust = -0.5)) +
   scale_fill_manual(values = c("gray70", "gray40")) +
-  # scale_color_manual(values = c("green", "red")) +
-  # scale_alpha_manual(values = c(1, 0.5)) + 
+  scale_color_manual(values = c("#498D43", "red")) +
   scale_y_continuous(breaks = c(0, 1000000, 2000000, 3000000),
                      labels = c("0", "1,000,000", "2,000,000", "3,000,000")) +
   labs(
@@ -556,6 +424,7 @@ fig_25 <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
     y = "Total Area (Acres)"
   ) +
   theme_minimal() +
+  coord_cartesian(clip = "off") +
   theme(
     legend.position = "bottom",
     legend.title = element_blank(),
@@ -568,7 +437,8 @@ fig_25 <- ggplot(data = state_change_compare, aes(x = lu, y = tot_acres)) +
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white", color = NA),
     rect = element_rect(fill = "white", color = NA)
-  )
+  ) +
+  guides(color = "none")
 
 fig_25
 
@@ -827,7 +697,8 @@ frag_state_full <- full_join(frag_state_merge, frag_state_diff) %>%
 #---------------------------------------
 fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, label = area_diff)) +
   geom_col(aes(fill = year), position = "dodge") +
-  scale_fill_manual(values = c("#6eb663", "#24693d")) +
+#  scale_fill_manual(values = c("#6eb663", "#24693d")) +
+  scale_fill_manual(values = c("gray70", "gray40")) +
   geom_text(aes(color = net), vjust = -0.5) +
   scale_color_manual(values = c("#498D43", "red")) +
   labs(
@@ -852,7 +723,7 @@ fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, labe
 
 fig_10
 
-# ggsave(here("Graphics", "fig10_state_fragmentation.jpg"), fig_10)
+ggsave(here("Graphics", "fig10_state_fragmentation.jpg"), fig_10)
 
 ```
 Forest Fragmentation at the county level
