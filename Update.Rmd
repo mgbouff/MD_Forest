@@ -82,7 +82,6 @@ md_timber_raw <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>%
 #---------------------------------------
 # Color  Palettes
 #---------------------------------------
-
 lu_palette_fig5 <- c(
   "#6eb663", # Forest Canopy, light green
   "#8DBE87", # Low veg, light green
@@ -804,7 +803,7 @@ frag_state_full <- full_join(frag_state_13, frag_state_18) %>%
   
 # Plot
 #---------------------------------------
-ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres)) +
+fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres)) +
   geom_col(aes(fill = year), position = "dodge") +
     scale_fill_manual(values = c("#6eb663", "#24693d")) +
   labs(
@@ -824,6 +823,11 @@ ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres)) +
   ) +
   guides(fill = guide_legend(title = "Year", 
                              title.position = "top"))
+
+fig_10
+
+ggsave(here("Graphics", "fig10_state_fragmentation.jpg"), fig_10)
+
 ```
 Forest Fragmentation at the county level
 
@@ -869,7 +873,7 @@ frag_county_pop <- full_join(frag_county_full, county_pop, by = "county") %>%
   
 # Plot
 #---------------------------------------
-ggplot(data = frag_county_pop, aes(x = county, y = acres_change)) +
+fig_11 <- ggplot(data = frag_county_pop, aes(x = county, y = acres_change)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
     labs(
@@ -893,6 +897,10 @@ ggplot(data = frag_county_pop, aes(x = county, y = acres_change)) +
     guides(fill = guide_legend(title = "Jurisdiction",
                                title.position = "top",
                                nrow = 4))
+
+fig_11
+
+ggsave(here("Graphics", "fig11_county_fragmentation.jpg"), fig_11)
 
 ```
 
