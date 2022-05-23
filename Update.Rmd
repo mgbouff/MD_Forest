@@ -15,6 +15,7 @@ library(here)
 library(readxl)
 library(scales)
 library(stringr)
+library(naniar)
 
 #---------------------------------------
 # Read in Data
@@ -791,7 +792,7 @@ frag_state_18 <- frag_state_18_raw %>%
   select(value, year, area_acres)
 
 # Join years together
-frag_state_full <- full_join(frag_state_13, frag_state_18) %>% 
+frag_state_merge <- full_join(frag_state_13, frag_state_18) %>% 
   rename(frag_type = value) %>% 
   mutate(frag_type = case_when( 
     frag_type == "1" ~ "Isolated Patch",
@@ -800,12 +801,35 @@ frag_state_full <- full_join(frag_state_13, frag_state_18) %>%
     frag_type == "5" ~ "Medium Core",
     frag_type == "6" ~ "Large Core",
   ))
+
+# Get difference between 2013 and 2018
+frag_state_diff <- frag_state_merge %>% 
+  mutate(year = case_when( 
+    year == "2013" ~ "area_2013",
+    year == "2018" ~ "area_2018"
+  )) %>% 
+  pivot_wider(names_from = year, values_from = area_acres) %>% 
+  mutate(area_diff = area_2018 - area_2013) %>% 
+  mutate(year = "2013") %>% # Prepare so only one set comes through on merge
+  select(frag_type, year, area_diff)
+
+# Full set with difference labels
+frag_state_full <- full_join(frag_state_merge, frag_state_diff) %>% 
+  mutate(area_diff = round(area_diff, digits = 0)) %>% 
+  mutate(net = case_when(
+    area_diff > 0 ~ "Gain",
+    area_diff < 0 ~ "Loss"
+  )) %>% 
+  mutate(area_diff = sprintf("%+d", area_diff)) %>% # Add + to positive values
+  replace_with_na(replace = list(area_diff = "NA")) # Fix NA values that sprintf converted
   
 # Plot
 #---------------------------------------
-fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres)) +
+fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, label = area_diff)) +
   geom_col(aes(fill = year), position = "dodge") +
-    scale_fill_manual(values = c("#6eb663", "#24693d")) +
+  scale_fill_manual(values = c("#6eb663", "#24693d")) +
+  geom_text(aes(color = net), vjust = -0.5) +
+  scale_color_manual(values = c("#498D43", "red")) +
   labs(
     #  title = "Forest Fragment Type Area in 2013 and 2018",
        x = "Forest Fragment Type",
@@ -813,6 +837,7 @@ fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres)) +
   scale_y_continuous(breaks = c(0, 500000, 1000000, 1500000),
                      labels = c("0", "500,000", "1,000,000", "1,500,000")) +
   theme_minimal() +
+  coord_cartesian(clip = "off") +
   theme(
     axis.title.x = element_blank(),
     plot.title = element_text(size = 16, face = "bold"),
@@ -821,12 +846,13 @@ fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres)) +
     legend.title.align = 0.5,
     legend.title = element_text(size = 14, face = "bold")
   ) +
-  guides(fill = guide_legend(title = "Year", 
+  guides(color = "none",
+         fill = guide_legend(title = "Year", 
                              title.position = "top"))
 
 fig_10
 
-ggsave(here("Graphics", "fig10_state_fragmentation.jpg"), fig_10)
+# ggsave(here("Graphics", "fig10_state_fragmentation.jpg"), fig_10)
 
 ```
 Forest Fragmentation at the county level
