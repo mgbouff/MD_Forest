@@ -56,16 +56,20 @@ plantable_raw <- read_xls(here("Data", "New", "1b_Plantable_Area_Final.xls")) %>
 # Task 2
 #---------------------------------------
 # State level 2013 and 2018
-frag_state_13_raw <- read_xls(here("Data", "New", "2_tab_state_13.xls"), range = cell_cols("B:C")) %>% 
+frag_state_13_qa <- read_xls(here("Data", "New", "tab_state_13.xls"), range = cell_cols("B:C")) %>% 
   clean_names()
 
-frag_state_18_raw <- read_xls(here("Data", "New", "2_tab_state_18.xls"), range = cell_cols("B:C")) %>% 
+frag_state_18_qa <- read_xls(here("Data", "New", "tab_state_18.xls"), range = cell_cols("B:C")) %>% 
   clean_names()
 
 # County level 2013 and 2018
 frag_county_13_raw <- read_xls(here("Data", "New", "2_tab_county_13.xls"), range = cell_cols("B:Z"))
 
 frag_county_18_raw <- read_xls(here("Data", "New", "2_tab_county_18.xls"), range = cell_cols("B:Z"))
+
+frag_county_13_qa <- read_xls(here("Data", "New", "tab_county_13.xls"), range = cell_cols("B:Z"))
+
+frag_county_18_qa <- read_xls(here("Data", "New", "tab_county_18.xls"), range = cell_cols("B:Z"))
 
 # Task 3
 #---------------------------------------
@@ -648,16 +652,14 @@ Forest fragmentation at the state level
 # State Fragmentation Area
 #---------------------------------------
 # 2013 state
-frag_state_13 <- frag_state_13_raw %>% 
-  rename(area_m = objec_864) %>% 
-  mutate(area_acres = area_m * 0.000247105) %>% # Convert to acres
+frag_state_13 <- frag_state_13_qa %>% 
+  rename(area_acres = area) %>% 
   mutate(year = "2013") %>% 
   select(value, year, area_acres)
   
 # 2018 state
-frag_state_18 <- frag_state_18_raw %>% 
-  rename(area_m = objec_864) %>% 
-  mutate(area_acres = area_m * 0.000247105) %>% # Convert to acres
+frag_state_18 <- frag_state_18_qa %>% 
+  rename(area_acres = area) %>% 
   mutate(year = "2018") %>% 
   select(value, year, area_acres)
 
@@ -691,8 +693,15 @@ frag_state_full <- full_join(frag_state_merge, frag_state_diff) %>%
     area_diff < 0 ~ "Loss"
   )) %>% 
   mutate(area_diff = sprintf("%+d", area_diff)) %>% # Add + to positive values
-  replace_with_na(replace = list(area_diff = "NA")) # Fix NA values that sprintf converted
-  
+  replace_with_na(replace = list(area_diff = "NA")) %>%  # Fix NA values that sprintf converted
+  mutate(frag_type = as.factor(frag_type)) %>% 
+  mutate(frag_type = fct_relevel(frag_type,
+                              "Isolated Patch",
+                              "Edge",
+                              "Small Core",
+                              "Medium Core",
+                              "Large Core"
+                              ))
 # Plot
 #---------------------------------------
 fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, label = area_diff)) +
