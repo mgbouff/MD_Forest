@@ -18,6 +18,7 @@ library(here)
 library(kableExtra)
 library(stringr)
 library(patchwork)
+library(scales)
 
 # Read in Projected LU data (2025 to 2055 Change Sheet)
 LU_change_raw <- read_excel(here("Data", "4_MD_LU_2025_2055.xlsx"), sheet = 3) %>% 
@@ -59,6 +60,11 @@ tea_data <- read.csv(here("Data", "PercentChange", "TEA_SUM_percentchange.csv"))
 timber_county <- read.csv(here("Data", "4_MD_TimberHarvest_20132021_county.csv")) %>% 
   clean_names() %>% 
   mutate(i_county, as.factor(i_county))
+
+# County data with population
+county_pop <- read.csv(here("Data", "1a_County_short_2018.csv")) %>% 
+  clean_names() %>% 
+  select(county, x2020_pop)
 
 # Land Use Pallette
 lc_pallette <- c("#B0A4CC", # Light purple
@@ -159,6 +165,10 @@ ggsave(here("Graphics", "4_protected_lands.jpg"), protected_lands_plot)
 #---------------------------------------
 lu_update <- lu_change_update %>% 
   pivot_longer(!fips:cntyname, names_to = "land_use", values_to = "acres") %>% 
+  rename(county = cntyname) %>% 
+  mutate(county = str_replace(county, "Prince Georges", "Prince George's")) %>% # Fix county names with apostrophes so they match population data
+  mutate(county = str_replace(county, "Queen Annes", "Queen Anne's")) %>%  
+  mutate(county = str_replace(county, "St Marys", "St. Mary's")) %>%
     mutate(full_name = case_when(
     land_use == "ir_chg" ~ "Impervious Roads",
     land_use == "inr_chg" ~ "Impervious Non-Roads",
@@ -175,24 +185,31 @@ lu_update <- lu_change_update %>%
     land_use == "pas_chg" ~ "Pasture",
   )) %>% 
   drop_na()
+  
 
 # Use string wrap function
 lu_update$full_name = stwr(lu_update$full_name)
 
+# Join population to projected lu
+lu_update_pop <- full_join(lu_update, county_pop, by = "county") %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, x2020_pop)) # order by population (largest to smallest)
+
 # Plot
 #---------------------------------------
-lu_update_plot <- ggplot(lu_update, aes(x = fct_rev(cntyname), y = acres)) +
-  geom_col(aes(fill = cntyname)) +
+lu_update_plot <- ggplot(lu_update_pop, aes(x = county, y = acres)) +
+  geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
   facet_wrap(~full_name, scales = "free_y") +
+  scale_y_continuous(labels = comma_format()) +
   labs(
-    title = "Projected Land Use Change Between 2025 and 2055",
+#    title = "Projected Land Use Change Between 2025 and 2055",
     x = "County", 
     y = "Change in Area (Acres)") +
   theme_minimal() +
    geom_hline(aes(yintercept=0)) +
   theme(
-    plot.title = element_text(size = 16, face = "bold"),
+#    plot.title = element_text(size = 16, face = "bold"),
     strip.background = element_rect(color = "grey40", fill = "grey30"),
     strip.text = element_text(color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA),
@@ -200,7 +217,9 @@ lu_update_plot <- ggplot(lu_update, aes(x = fct_rev(cntyname), y = acres)) +
    legend.title = element_text(size = 14, face = "bold"),
    legend.position = "bottom",
    legend.title.align = 0.5,
-    axis.title.y = element_text(size = 14, face = "bold"),
+axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
     axis.text.x = element_blank(),
     axis.title.x = element_blank()) +
   guides(fill = guide_legend(title = "Jurisdiction", 
@@ -209,9 +228,7 @@ lu_update_plot <- ggplot(lu_update, aes(x = fct_rev(cntyname), y = acres)) +
 
 lu_update_plot
 
-ggsave(here("Graphics", "4_lu_update_legend.jpg"), lu_update_plot, height = 6)
-
-# , width = 8.5, height = 7
+ggsave(here("Graphics", "fig35_projected_lu_change.jpg"), lu_update_plot, height = 6, width = 7.5)
 
 ```
 
@@ -308,7 +325,7 @@ lu_change_plot <- ggplot(lu_change, aes(x = fct_rev(county), y = acres)) +
     legend.title = element_text(size = 14, face = "bold"),
     legend.position = "bottom",
     legend.title.align = 0.5) +
-  guides(fill = guide_legend(title = "County", 
+  guides(fill = guide_legend(title = "Jurisdiction", 
                              title.position = "top",
                              nrow = 4))
 

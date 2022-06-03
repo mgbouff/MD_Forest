@@ -78,6 +78,11 @@ riparian_raw <- read.csv(here("Data", "New", "3_riparian_county_2018.csv")) %>%
 
 # Task 4
 #---------------------------------------
+# Read in projected land use change
+projected_lu_raw<- read_excel(here("Data", "4_MD_Tech_Study_cz_2021_20210929.xlsx"), sheet = 3) %>% 
+  clean_names() %>% 
+  mutate(cntyname = str_to_title(cntyname)) # change counties from all caps to sentence case
+
 # Read in state timber data
 md_timber_raw <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>% 
   clean_names() %>% 
@@ -230,7 +235,7 @@ fig_5 <- ggplot(data = state_county_merge, aes(x = county, y = percent, fill = l
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white", color = NA),
     rect = element_rect(fill = "white", color = NA)
-  )+
+  ) +
   guides(fill = guide_legend(title = "Land Cover Type")) +
   coord_flip()
 
@@ -792,7 +797,7 @@ fig_11 <- ggplot(data = frag_county_pop, aes(x = county, y = acres_change)) +
 
 fig_11
 
-ggsave(here("Graphics", "fig11_county_fragmentation.jpg"), fig_11, height = 4.5, width = 7)
+ggsave(here("Graphics", "fig11_county_fragmentation.jpg"), fig_11, height = 4.5, width = 8)
 
 ```
 
@@ -868,10 +873,81 @@ ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16, height = 7, width = 8)
 
 ```
 
-
 ### Task 4 Projected Land Use
 
+Projected land use 2025 and 2055
+
+```{r}
+#---------------------------------------
+# Projected land use by land use type and county
+#---------------------------------------
+projected_lu <- projected_lu_raw %>% 
+  pivot_longer(!fips:cntyname, names_to = "land_use", values_to = "acres") %>% 
+  rename(county = cntyname) %>% 
+  mutate(county = str_replace(county, "Prince Georges", "Prince George's")) %>% # Fix county names with apostrophes so they match population data
+  mutate(county = str_replace(county, "Queen Annes", "Queen Anne's")) %>%  
+  mutate(county = str_replace(county, "St Marys", "St. Mary's")) %>%
+    mutate(full_name = case_when(
+    land_use == "ir_chg" ~ "Impervious Roads",
+    land_use == "inr_chg" ~ "Impervious Non-Roads",
+    land_use == "tci_chg" ~ "Tree Canopy Over Impervious",
+    land_use == "tg_chg" ~ "Turf Grass",
+    land_use == "tct_chg" ~ "Tree Canopy over Turf Grass",
+    land_use == "fore_chg" ~ "Forest",
+    land_use == "wlo_chg" ~ "Wetlands (Other)",
+    land_use == "wlf_chg" ~ "Wetlands (Floodplain)",
+#    land_use == "wat_chg" ~ "Water", # Model not run for water and wetland
+    land_use == "mo_chg" ~ "Mixed Open",
+    land_use == "crp_chg" ~ "Cropland",
+    land_use == "pas_chg" ~ "Pasture",
+  )) %>% 
+  drop_na()
+
+# Use string wrap function
+projected_lu$full_name = stwr(projected_lu$full_name)
+
+# Join population to projected lu
+projected_lu_pop <- full_join(projected_lu, county_pop, by = "county") %>% 
+  mutate(county = as.factor(county)) %>% 
+  mutate(county = fct_reorder(county, x2020_pop)) # order by population (largest to smallest)
+
+# Plot
+#---------------------------------------
+fig_35 <- ggplot(projected_lu_pop, aes(x = county, y = acres)) +
+  geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
+  facet_wrap(~full_name, scales = "free_y") +
+  scale_y_continuous(labels = comma_format()) +
+  labs(
+#    title = "Projected Land Use Change Between 2025 and 2055",
+    x = "County", 
+    y = "Change in Area (Acres)") +
+  theme_minimal() +
+   geom_hline(aes(yintercept=0)) +
+  theme(
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+   legend.title = element_text(size = 14, face = "bold"),
+   legend.position = "bottom",
+   legend.title.align = 0.5,
+axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank()) +
+  guides(fill = guide_legend(title = "Jurisdiction", 
+                             title.position = "top",
+                             nrow = 4))
+
+fig_35
+
+ggsave(here("Graphics", "fig35_projected_lu_change.jpg"), fig_35, height = 6, width = 7.5)
+
+```
+
 Total timber harvest by county 2013 to 2021
+
 ```{r}
 #---------------------------------------
 # Total timber harvest by county
