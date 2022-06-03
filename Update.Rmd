@@ -63,13 +63,12 @@ frag_state_18_qa <- read_xls(here("Data", "New", "tab_state_18.xls"), range = ce
   clean_names()
 
 # County level 2013 and 2018
-frag_county_13_raw <- read_xls(here("Data", "New", "2_tab_county_13.xls"), range = cell_cols("B:Z"))
+frag_county_13_qa <- read_xls(here("Data", "New", "tab_county_13.xls"), range = cell_cols("B:G")) %>% 
+  clean_names()
 
-frag_county_18_raw <- read_xls(here("Data", "New", "2_tab_county_18.xls"), range = cell_cols("B:Z"))
+frag_county_18_qa <- read_xls(here("Data", "New", "tab_county_18.xls"), range = cell_cols("B:G")) %>% 
+  clean_names()
 
-frag_county_13_qa <- read_xls(here("Data", "New", "tab_county_13.xls"), range = cell_cols("B:Z"))
-
-frag_county_18_qa <- read_xls(here("Data", "New", "tab_county_18.xls"), range = cell_cols("B:Z"))
 
 # Task 3
 #---------------------------------------
@@ -741,34 +740,25 @@ Forest Fragmentation at the county level
 #---------------------------------------
 # County Fragmentation Area
 #---------------------------------------
-# 2013 county
-frag_county_13 <- frag_county_13_raw %>% 
-  pivot_longer(!VALUE, names_to = "county", values_to = "area_m") %>% 
-  rename(frag_type = VALUE) %>% 
-  mutate(acres_2013 = area_m * 0.000247105) %>% # Convert to acres
-  select(county, frag_type, acres_2013)
-  
-# 2018 county
-frag_county_18 <- frag_county_18_raw %>% 
-  pivot_longer(!VALUE, names_to = "county", values_to = "area_m") %>% 
-  rename(frag_type = VALUE) %>% 
-  mutate(acres_2018 = area_m * 0.000247105) %>% # Convert to acres
-  select(county, frag_type, acres_2018)
+# 2013 County
+frag_county_13 <- frag_county_13_qa %>% 
+  pivot_longer(!name, names_to = "frag_type", values_to = "acres_2013")
+
+# 2018 County
+frag_county_18 <- frag_county_18_qa %>% 
+  pivot_longer(!name, names_to = "frag_type", values_to = "acres_2018")
 
 # Join years together
 frag_county_full <- full_join(frag_county_13, frag_county_18) %>% 
-  mutate(county = str_replace_all(county, "_", " ")) %>% # Fix county name formatting
-  mutate(county = str_to_title(county)) %>% 
-  mutate(county = str_replace_all(county, " S", "'s")) %>% 
-  mutate(county = str_replace_all(county, "St  Mary's", "St. Mary's")) %>% 
   mutate(frag_type = case_when(
-    frag_type == "1" ~ "Isolated Patch",
-    frag_type == "2" ~ "Edge",
-    frag_type == "4" ~ "Small Core",
-    frag_type == "5" ~ "Medium Core",
-    frag_type == "6" ~ "Large Core",
-  )) %>% 
-  mutate(acres_change = acres_2018 - acres_2013)
+    frag_type == "value_1" ~ "Isolated Patch",
+    frag_type == "value_2" ~ "Edge",
+    frag_type == "value_4" ~ "Small Core",
+    frag_type == "value_5" ~ "Medium Core",
+    frag_type == "value_6" ~ "Large Core",
+  )) %>%
+  mutate(acres_change = acres_2018 - acres_2013) %>% 
+  rename(county = name)
 
 # Ordered by population
 #---------------------------------------
