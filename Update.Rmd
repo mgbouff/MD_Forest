@@ -213,8 +213,7 @@ fig_5 <- ggplot(data = state_county_merge, aes(x = county, y = percent, fill = l
 #    title = "2018 Land Use Proportions by Jurisdiction",
     x = "Jurisdiction",
     y = "Percent Cover") +
-    scale_y_continuous(breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
-                     labels = c("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%")) +
+  scale_y_continuous(labels = percent) +
   scale_fill_manual(values = lu_palette_fig5) +
     theme_minimal() +
   theme(
@@ -309,8 +308,7 @@ county_tc_pop <- full_join(county_tc_forest, county_pop, by = "county") %>%
 fig_4 <- ggplot(data = county_tc_pop, aes(x = county, y = percent)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = c("#24693d", "#6eb663")) +
-  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8),
-                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  scale_y_continuous(labels = percent) +
   labs(
     x = "Jurisdiction",
     y = "Percent Tree Canopy Cover"
@@ -493,7 +491,7 @@ county_lu_change <- left_join(county_lu_2013, county_lu_2018) %>%
 
 # Plot
 #---------------------------------------
-fig_20 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
+fig_27 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
   geom_col(aes(fill = lu)) +
   facet_wrap(~name, scales = "free") +
   scale_fill_manual(values = lu_palette_fig20) +
@@ -522,9 +520,9 @@ fig_20 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_20
+fig_27
 
-ggsave(here("Graphics", "fig20_county_lu_change.jpg"), fig_20, height = 7.5, width = 8)
+ggsave(here("Graphics", "fig27_county_lu_change.jpg"), fig_27, height = 7.5, width = 8)
 
 ```
 ### Task 1b. Plantable Area
@@ -614,8 +612,7 @@ fig_7 <- ggplot(data = plantable_percent_pop, aes(x = county, y = percent)) +
   scale_fill_manual(values = c("#85D5A3", # Lightest Green
                                "#3EB66A", # Lighter Green
                                "#24693d")) + # Dark Green
-  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6),
-                     labels = c("0%", "20%", "40%", "60%")) +
+  scale_y_continuous(labels = percent) +
   labs(
     x = "Jurisdiction",
     y = "Percent of Jurisdiction Land Area"
@@ -795,7 +792,7 @@ fig_11 <- ggplot(data = frag_county_pop, aes(x = county, y = acres_change)) +
 
 fig_11
 
-ggsave(here("Graphics", "fig11_county_fragmentation.jpg"), fig_11)
+ggsave(here("Graphics", "fig11_county_fragmentation.jpg"), fig_11, height = 4.5, width = 7)
 
 ```
 
@@ -839,16 +836,15 @@ fig_16 <- ggplot(data = riparian_buffer_pop, aes(x = county, y = can_p_calc)) +
   geom_text(label = "70%",
             color = "red",
             face = "bold",
-            vjust = 12.85,
-            aes(x = "Kent",y = 0.70)) +
+            vjust = 2.65,
+            aes(x = "Kent", y = 0.70)) +
   geom_hline(aes(yintercept = 0.70), linetype = "dashed",
             color = "red",
             size = 1) +
   geom_text(aes(label = label,
                 hjust = -0.1),
             size = 3) +
-  scale_y_continuous(breaks = c(0, 0.20, 0.40, 0.60, 0.80),
-                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  scale_y_continuous(labels = percent) +
   coord_flip(clip = "off") +
   theme_minimal() +
   theme(
