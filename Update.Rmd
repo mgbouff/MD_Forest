@@ -420,8 +420,7 @@ fig_25 <- ggplot(data = state_change_full, aes(x = lu, y = tot_acres)) +
   geom_text(aes(label = acres_change, color = net, vjust = -0.5)) +
   scale_fill_manual(values = c("gray70", "gray40")) +
   scale_color_manual(values = c("#498D43", "red")) +
-  scale_y_continuous(breaks = c(0, 1000000, 2000000, 3000000),
-                     labels = c("0", "1,000,000", "2,000,000", "3,000,000")) +
+  scale_y_continuous(labels = comma_format()) +
   labs(
     x = "Land Cover Class",
     y = "Total Area (Acres)"
@@ -502,6 +501,7 @@ fig_20 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
     x = "Land Cover Class",
     y = "Area Change (Acres)"
   ) +
+  scale_y_continuous(labels=comma_format()) +
   theme_minimal() +
   theme(
     axis.text.x = element_blank(),
@@ -554,8 +554,7 @@ fig_6 <- ggplot(data = plantable_area_pop, aes(x = county, y = plantable_ac)) +
   labs(x = "Jurisdiction", 
        y = "Total Area (Acres)") +
   scale_fill_manual(values = county_pallette) +
-  scale_y_continuous(breaks = c(0, 10000, 20000, 30000, 40000),
-                     labels = c("0", "10,000", "20,000", "30,000", "40,000")) +
+  scale_y_continuous(labels=comma_format()) +
   coord_flip() +
   theme_minimal() +
   theme(
@@ -713,8 +712,7 @@ fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, labe
     #  title = "Forest Fragment Type Area in 2013 and 2018",
        x = "Forest Fragment Type",
        y = "Total Area (Acres)") +
-  scale_y_continuous(breaks = c(0, 500000, 1000000, 1500000),
-                     labels = c("0", "500,000", "1,000,000", "1,500,000")) +
+  scale_y_continuous(labels=comma_format()) +
   theme_minimal() +
   coord_cartesian(clip = "off") +
   theme(
@@ -792,7 +790,8 @@ fig_11 <- ggplot(data = frag_county_pop, aes(x = county, y = acres_change)) +
    ) +
     guides(fill = guide_legend(title = "Jurisdiction",
                                title.position = "top",
-                               nrow = 4))
+                               nrow = 4)) +
+  scale_y_continuous(labels=comma_format())
 
 fig_11
 
@@ -905,8 +904,7 @@ fig_21 <- ggplot(data = timber_pop, aes(x = county, y = tot_acres)) +
     x = "Jurisdiction",
     y = "Forest Harvested (Acres)"
   ) +
-    scale_y_continuous(breaks = c(0, 10000, 20000),
-                     labels = c("0", "10,000", "20,000")) +
+  scale_y_continuous(labels=comma_format()) +
   coord_flip() +
   theme_minimal() +
   theme(
