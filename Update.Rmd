@@ -553,7 +553,7 @@ plantable_area_pop <- full_join(plantable_area, county_pop, by = "county") %>%
 # Plot Plantable Area
 #---------------------------------------
 fig_6 <- ggplot(data = plantable_area_pop, aes(x = county, y = plantable_ac)) +
-  geom_col(aes(fill = county)) +
+  geom_col(aes(fill = county), color = "gray40") +
   labs(x = "Jurisdiction", 
        y = "Total Area (Acres)") +
   scale_fill_manual(values = county_pallette) +
@@ -575,7 +575,7 @@ fig_6 <- ggplot(data = plantable_area_pop, aes(x = county, y = plantable_ac)) +
 
 fig_6
 
-ggsave(here("Graphics", "fig6_plantable_area.jpg"), fig_6)
+ggsave(here("Graphics", "fig6_plantable_area.jpg"), fig_6, height = 6, width = 7)
 
 ```
 # Percent plantable area by jurisdiction
@@ -969,7 +969,7 @@ timber_pop <- full_join(timber_total, county_pop, by = "county") %>%
 # Plot
 #---------------------------------------
 fig_21 <- ggplot(data = timber_pop, aes(x = county, y = tot_acres)) +
-  geom_col(aes(fill = county)) +
+  geom_col(aes(fill = county), color = "gray40") +
   scale_fill_manual(values = county_pallette) +
   labs(
 #    title = "Total Timber Harvest by Jurisdiction \n between 2013 and 2021",
