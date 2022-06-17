@@ -557,7 +557,7 @@ fig_6 <- ggplot(data = plantable_area, aes(x = fct_rev(county), y = plantable_ac
   geom_col(aes(fill = county)) +
   labs(x = "Jurisdiction", 
        y = "Total Area (Acres)") +
-  scale_fill_manual(values = rep(brewer.pal(4, "YlGn"),6)) +
+  scale_fill_manual(values = rep(c("#78b98f", "#453e7d", "#c1c2f5", "#1b511d", "#8fc86c", "#aedddd"),4)) +
   scale_y_continuous(labels = comma_format()) +
   coord_flip() +
   theme_minimal() +
@@ -578,7 +578,7 @@ fig_6
 
 ggsave(here("Graphics", "fig6_plantable_area.jpg"), fig_6, height = 4.5, width = 7.29)
 
-
+ 
 ```
 
 # Percent plantable area by jurisdiction
