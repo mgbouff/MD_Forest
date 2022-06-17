@@ -16,6 +16,7 @@ library(readxl)
 library(scales)
 library(stringr)
 library(naniar)
+library(RColorBrewer)
 
 #---------------------------------------
 # Read in Data
@@ -552,12 +553,12 @@ plantable_area_pop <- full_join(plantable_area, county_pop, by = "county") %>%
 #---------------------------------------
 # Plot Plantable Area
 #---------------------------------------
-fig_6 <- ggplot(data = plantable_area_pop, aes(x = county, y = plantable_ac)) +
-  geom_col(aes(fill = county), color = "gray40") +
+fig_6 <- ggplot(data = plantable_area, aes(x = fct_rev(county), y = plantable_ac)) +
+  geom_col(aes(fill = county)) +
   labs(x = "Jurisdiction", 
        y = "Total Area (Acres)") +
-  scale_fill_manual(values = county_pallette) +
-  scale_y_continuous(labels=comma_format()) +
+  scale_fill_manual(values = rep(brewer.pal(4, "YlGn"),6)) +
+  scale_y_continuous(labels = comma_format()) +
   coord_flip() +
   theme_minimal() +
   theme(
@@ -575,9 +576,11 @@ fig_6 <- ggplot(data = plantable_area_pop, aes(x = county, y = plantable_ac)) +
 
 fig_6
 
-ggsave(here("Graphics", "fig6_plantable_area.jpg"), fig_6, height = 6, width = 7)
+ggsave(here("Graphics", "fig6_plantable_area.jpg"), fig_6, height = 4.5, width = 7.29)
+
 
 ```
+
 # Percent plantable area by jurisdiction
 
 ```{r}
@@ -723,7 +726,10 @@ fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, labe
     axis.title.y = element_text(size = 14, face = "bold", margin = margin(t = 0, r = 10, b = 0, l = 0)),
     legend.position = "bottom",
     legend.title.align = 0.5,
-    legend.title = element_text(size = 14, face = "bold")
+    legend.title = element_text(size = 14, face = "bold"),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA),
   ) +
   guides(color = "none",
          fill = guide_legend(title = "Year", 
@@ -786,6 +792,9 @@ fig_11 <- ggplot(data = frag_county_pop, aes(x = county, y = acres_change)) +
     legend.title = element_text(size = 14, face = "bold"),
     legend.position = "bottom",
     legend.title.align = 0.5,
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA),
     strip.background = element_rect(color = "grey40", fill = "grey30"),
     strip.text = element_text(size = 12, color = "white", face = "bold"),
     panel.border = element_rect(color = "grey40", fill = NA)
