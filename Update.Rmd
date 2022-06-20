@@ -507,6 +507,7 @@ fig_27 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
   ) +
   scale_y_continuous(labels=comma_format()) +
   theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
   theme(
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
