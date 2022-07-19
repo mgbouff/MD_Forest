@@ -94,14 +94,14 @@ md_timber_raw <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>%
 #---------------------------------------
 lu_palette_fig5 <- c(
   "#6eb663", # Forest Canopy, light green
-  "#8DBE87", # Low veg, light green
+  "#AFD2AA", # Low veg, light green
   "#4059AD", # Water, royal blue
   "#F08701", # Impervious, orange 
+  "#21A0A0", # Wetland, Blue-green
   "#F9A620", # Roads, light orange
   "#D9682A", # Buildings/Structures, brick
   "#F9DB6D", # Barren, light yellow
-  "#8CC8B5", # Shrub,light green-blue
-  "#21A0A0"  # Wetland, Blue-green
+  "#8CC8B5" # Shrub,light green-blue
 )
 
 lu_palette_fig25 <- c(
@@ -112,14 +112,14 @@ lu_palette_fig25 <- c(
   "#F9A620", # Roads, light orange
   "#21A0A0",  # Wetland, Blue-green
   "#8CC8B5", # Shrub,light green-blue
-  "#8DBE87", # Low veg, light green
+  "#AFD2AA", # Low veg, light green
   "#6eb663" # Forest Canopy, light green
 )
 
 lu_palette_fig20 <- c(
   "#F9DB6D", # Barren, light yellow
   "#F08701", # Impervious, orange 
-  "#8DBE87", # Low veg, light green
+  "#AFD2AA", # Low veg, light green
   "#F9A620", # Roads, light orange
   "#8CC8B5", # Shrub,light green-blue
   "#D9682A", # Buildings/Structures, brick
@@ -558,7 +558,8 @@ fig_6 <- ggplot(data = plantable_area, aes(x = fct_rev(county), y = plantable_ac
   geom_col(aes(fill = county)) +
   labs(x = "Jurisdiction", 
        y = "Total Area (Acres)") +
-  scale_fill_manual(values = rep(c("#78b98f", "#453e7d", "#c1c2f5", "#1b511d", "#8fc86c", "#aedddd"),4)) +
+  scale_fill_manual(values = county_pallette) +
+# scale_fill_manual(values = rep(c("#78b98f", "#453e7d", "#c1c2f5", "#1b511d", "#8fc86c", "#aedddd"),4)) +
   scale_y_continuous(labels = comma_format()) +
   coord_flip() +
   theme_minimal() +
@@ -776,7 +777,7 @@ frag_county_pop <- full_join(frag_county_full, county_pop, by = "county") %>%
   
 # Plot
 #---------------------------------------
-fig_11 <- ggplot(data = frag_county_pop, aes(x = county, y = acres_change)) +
+fig_11 <- ggplot(data = frag_county_full, aes(x = county, y = acres_change)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
     labs(
@@ -841,7 +842,7 @@ riparian_buffer_pop <- full_join(riparian_buffer, county_pop, by = "county") %>%
 #---------------------------------------
 # Plot
 #---------------------------------------
-fig_16 <- ggplot(data = riparian_buffer_pop, aes(x = county, y = can_p_calc)) +
+ggplot(data = riparian_buffer_pop, aes(x = county, y = can_p_calc)) +
   geom_col(aes(fill = threshold)) +
   scale_fill_manual(values = c("#c3dbcb", "seagreen4")) +
   labs(
@@ -877,8 +878,35 @@ fig_16 <- ggplot(data = riparian_buffer_pop, aes(x = county, y = can_p_calc)) +
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_16
+# Without threshold
+fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(county), y = can_p_calc)) +
+  geom_col(aes(fill = county)) +
+  scale_fill_manual(values = county_pallette) +
+  labs(
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy Over Riparian Buffer Area") +
+    geom_text(aes(label = label,
+                hjust = -0.1),
+            size = 3) +
+  scale_y_continuous(labels = percent) +
+  coord_flip(clip = "off") +
+  theme_minimal() +
+  theme(
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
 
+fig_16
+ 
 ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16, height = 7, width = 8)
 
 ```
