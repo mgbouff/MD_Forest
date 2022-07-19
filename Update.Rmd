@@ -129,7 +129,30 @@ lu_palette_fig20 <- c(
 )
 
 # Categorical County Color Palette
-county_pallette <- c("#68affc", "#485172", "#d6a7f0", "#7c46a0", "#20d8fd", "#155126", "#a2e84f", "#528f7a", "#7dd9a0", "#39970e", "#d0d9ae", "#e27040", "#f29180", "#e13224", "#922d4c", "#d9c937", "#fa217f", "#36f459", "#b825af", "#f27ff5", "#fda547", "#b7358d", "#a1e8af", "#7e52a0")
+county_pallette <- c("Allegany" = "#68affc",
+                           "Anne Arundel" = "#485172",
+                           "Baltimore" = "#d6a7f0", 
+                           "Baltimore City" = "#7c46a0",
+                           "Calvert" = "#20d8fd", 
+                           "Caroline" = "#155126", 
+                           "Carroll" = "#a2e84f", 
+                           "Cecil" = "#528f7a", 
+                           "Charles" = "#7dd9a0",
+                           "Dorchester" = "#39970e", 
+                           "Frederick" = "#d0d9ae", 
+                           "Garrett" = "#e27040", 
+                           "Harford" = "#f29180", 
+                           "Howard" = "#e13224", 
+                           "Kent" = "#922d4c", 
+                           "Montgomery" = "#d9c937", 
+                           "Prince George's" = "#fa217f",
+                           "Queen Anne's" = "#36f459", 
+                           "St. Mary's" = "#b825af", 
+                           "Somerset" = "#f27ff5", 
+                           "Talbot" = "#fda547", 
+                           "Washington" = "#b7358d", 
+                           "Wicomico" = "#a1e8af", 
+                           "Worcester" = "#7e52a0")
 
 #---------------------------------------
 # Functions
@@ -898,7 +921,7 @@ fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(county), y = can_p_calc
     axis.title.x = element_text(size = 14,
                                 face = "bold",
                                 margin = margin(t = 10, r = 0, b = 0, l = 0)),
-    legend.position = "bottom",
+    legend.position = "none",
     legend.title = element_blank(),
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white", color = NA),
@@ -907,7 +930,7 @@ fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(county), y = can_p_calc
 
 fig_16
  
-ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16, height = 7, width = 8)
+ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16)
 
 ```
 
@@ -951,7 +974,7 @@ projected_lu_pop <- full_join(projected_lu, county_pop, by = "county") %>%
 
 # Plot
 #---------------------------------------
-fig_35 <- ggplot(projected_lu_pop, aes(x = county, y = acres)) +
+fig_35 <- ggplot(projected_lu, aes(x = county, y = acres)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
   facet_wrap(~full_name, scales = "free_y") +
@@ -969,11 +992,14 @@ fig_35 <- ggplot(projected_lu_pop, aes(x = county, y = acres)) +
    legend.title = element_text(size = 14, face = "bold"),
    legend.position = "bottom",
    legend.title.align = 0.5,
-axis.title.y = element_text(size = 14,
+   axis.title.y = element_text(size = 14,
                                 face = "bold",
                                 margin = margin(t = 0, r = 10, b = 0, l = 0)),
     axis.text.x = element_blank(),
-    axis.title.x = element_blank()) +
+    axis.title.x = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)) +
   guides(fill = guide_legend(title = "Jurisdiction", 
                              title.position = "top",
                              nrow = 4))
@@ -1006,10 +1032,10 @@ timber_pop <- full_join(timber_total, county_pop, by = "county") %>%
 #---------------------------------------
 # Plot
 #---------------------------------------
-fig_21 <- ggplot(data = timber_pop, aes(x = county, y = tot_acres)) +
+fig_21 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
   geom_col(aes(fill = county)) +
-#  scale_fill_manual(values = county_pallette) +
-    scale_fill_manual(values = rep(c("#78b98f", "#453e7d", "#c1c2f5", "#1b511d", "#8fc86c", "#aedddd"),4)) +
+ scale_fill_manual(values = county_pallette) +
+    # scale_fill_manual(values = rep(c("#78b98f", "#453e7d", "#c1c2f5", "#1b511d", "#8fc86c", "#aedddd"),4)) +
   labs(
 #    title = "Total Timber Harvest by Jurisdiction \n between 2013 and 2021",
     x = "Jurisdiction",
