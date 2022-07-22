@@ -92,40 +92,16 @@ md_timber_raw <- read.csv(here("Data", "New", "4_MD_Timber.csv")) %>%
 #---------------------------------------
 # Color  Palettes
 #---------------------------------------
-lu_palette_fig5 <- c(
-  "#6eb663", # Forest Canopy, light green
-  "#AFD2AA", # Low veg, light green
-  "#4059AD", # Water, royal blue
-  "#F08701", # Impervious, orange 
-  "#21A0A0", # Wetland, Blue-green
-  "#F9A620", # Roads, light orange
-  "#D9682A", # Buildings/Structures, brick
-  "#F9DB6D", # Barren, light yellow
-  "#8CC8B5" # Shrub,light green-blue
-)
-
-lu_palette_fig25 <- c(
-  "#F08701", # Impervious, orange 
-  "#D9682A", # Buildings/Structures, brick
-  "#F9DB6D", # Barren, light yellow
-  "#4059AD", # Water, royal blue
-  "#F9A620", # Roads, light orange
-  "#21A0A0",  # Wetland, Blue-green
-  "#8CC8B5", # Shrub,light green-blue
-  "#AFD2AA", # Low veg, light green
-  "#6eb663" # Forest Canopy, light green
-)
-
-lu_palette_fig20 <- c(
-  "#F9DB6D", # Barren, light yellow
-  "#F08701", # Impervious, orange 
-  "#AFD2AA", # Low veg, light green
-  "#F9A620", # Roads, light orange
-  "#8CC8B5", # Shrub,light green-blue
-  "#D9682A", # Buildings/Structures, brick
-  "#6eb663", # Forest Canopy, light green
-  "#4059AD", # Water, royal blue
-  "#21A0A0"  # Wetland, Blue-green
+lu_palette <- c(
+  "Tree Canopy" = "#6eb663", # Forest Canopy, light green
+  "Low Vegetation" = "#AFD2AA", # Low veg, light green
+  "Water" = "#4059AD", # Water, royal blue
+  "Impervious" = "#F08701", # Impervious, orange 
+  "Wetland" = "#21A0A0", # Wetland, Blue-green
+  "Road" = "#F9A620", # Roads, light orange
+  "Structures" = "#D9682A", # Buildings/Structures, brick
+  "Barren" = "#F9DB6D", # Barren, light yellow
+  "Shrub" = "#8CC8B5" # Shrub,light green-blue
 )
 
 # Categorical County Color Palette
@@ -243,7 +219,7 @@ fig_5 <- ggplot(data = state_county_merge, aes(x = county, y = percent, fill = l
     x = "Jurisdiction",
     y = "Percent Cover") +
   scale_y_continuous(labels = percent) +
-  scale_fill_manual(values = lu_palette_fig5) +
+  scale_fill_manual(values = lu_palette) +
     theme_minimal() +
   theme(
 #    plot.title = element_text(size = 16, face = "bold"),
@@ -523,7 +499,7 @@ county_lu_change <- left_join(county_lu_2013, county_lu_2018) %>%
 fig_27 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
   geom_col(aes(fill = lu)) +
   facet_wrap(~name, scales = "free") +
-  scale_fill_manual(values = lu_palette_fig20) +
+  scale_fill_manual(values = lu_palette) +
   labs(
     x = "Land Cover Class",
     y = "Area Change (Acres)"
