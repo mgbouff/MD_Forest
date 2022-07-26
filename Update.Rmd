@@ -17,6 +17,7 @@ library(scales)
 library(stringr)
 library(naniar)
 library(RColorBrewer)
+library(xlsx)
 
 #---------------------------------------
 # Read in Data
@@ -1073,6 +1074,11 @@ projected_lu_grouped_table <- projected_lu_table %>%
     county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
   group_by(region, land_use) %>% 
   summarise(acres = sum(acres))
+
+# Export to excel
+write.xlsx(as.data.frame(projected_lu_table), file.path("Tables", file = "Fig35_Table_Projected_LU.xlsx") , sheet = "county", row.names = FALSE)
+
+write.xlsx(as.data.frame(projected_lu_grouped_table), file.path("Tables", file = "Fig35_Table_Projected_LU.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 ```
 
