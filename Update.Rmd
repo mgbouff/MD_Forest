@@ -642,6 +642,8 @@ ggplot(data = plantable_percent, aes(x = fct_rev(county), y = percent)) +
     rect = element_rect(fill = "white", color = NA)
   )
 
+# ggsave(here("Graphics", "fig7_plantable_percent.jpg"), fig_7, width = 7.29, height = 4.5)
+
 ```
 
 Percent plantable area by jurisdiction
@@ -674,7 +676,9 @@ plantable_group <- plantable_raw %>%
     type == "plantable_p" ~ "Plantable Area"
     )) %>% 
   mutate(type = as.factor(type)) %>% 
-  mutate(type = fct_relevel(type, "LC", "LU/LC", "Plantable Area"))
+  mutate(type = fct_relevel(type, "LC", "LU/LC", "Plantable Area")) %>% 
+  mutate(region = as.factor(region)) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
 
 #---------------------------------------
 # Plot grouped plantable percent
@@ -707,7 +711,7 @@ fig_7 <- ggplot(data = plantable_group, aes(x = region, y = percent)) +
 
 fig_7
 
-ggsave(here("Graphics", "fig7_plantable_percent.jpg"), fig_7)
+ggsave(here("Graphics", "fig7_plantable_percent.svg"), fig_7)
 
 ```
 
@@ -1013,6 +1017,7 @@ projected_lu_pop <- full_join(projected_lu, county_pop, by = "county") %>%
   mutate(county = as.factor(county)) %>% 
   mutate(county = fct_reorder(county, x2020_pop)) # order by population (largest to smallest)
 
+
 # Plot
 #---------------------------------------
 fig_35 <- ggplot(projected_lu, aes(x = county, y = acres)) +
@@ -1048,6 +1053,26 @@ fig_35 <- ggplot(projected_lu, aes(x = county, y = acres)) +
 fig_35
 
 ggsave(here("Graphics", "fig35_projected_lu_change.jpg"), fig_35, height = 6, width = 7.5)
+
+#---------------------------------------
+# Projected land use tables for Jessica
+#---------------------------------------
+# Projected land use by county
+projected_lu_table <- projected_lu %>% 
+  select(county, full_name, acres) %>% 
+  rename(land_use = full_name)
+
+# Projected land use by region
+projected_lu_grouped_table <- projected_lu_table %>% 
+  mutate(region = case_when(
+    county %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    county %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    county %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    county %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+  group_by(region, land_use) %>% 
+  summarise(acres = sum(acres))
 
 ```
 
