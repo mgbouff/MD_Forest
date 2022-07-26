@@ -586,6 +586,20 @@ ggsave(here("Graphics", "fig6_plantable_area.jpg"), fig_6, height = 4.5, width =
 
 ```{r}
 #---------------------------------------
+# Group by Region
+#---------------------------------------
+plantable_group <- plantable_raw %>% 
+  mutate(region = case_when(
+    name %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    name %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    name %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    name %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    name %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    name %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+  select(name, region, lc_plantable_ac, lulc_plantable_ac, plantable_ac, jurisdiction_ac) %>% 
+  group_by(region)
+
+#---------------------------------------
 # Percent plantable area by exclusion zone
 #---------------------------------------
 plantable_percent <- plantable_raw %>% 
