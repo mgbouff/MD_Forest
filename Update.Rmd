@@ -586,20 +586,6 @@ ggsave(here("Graphics", "fig6_plantable_area.jpg"), fig_6, height = 4.5, width =
 
 ```{r}
 #---------------------------------------
-# Group by Region
-#---------------------------------------
-plantable_group <- plantable_raw %>% 
-  mutate(region = case_when(
-    name %in% c("Garrett", "Allegany", "Washington") ~ "Western",
-    name %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
-    name %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
-    name %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
-    name %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
-    name %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
-  select(name, region, lc_plantable_ac, lulc_plantable_ac, plantable_ac, jurisdiction_ac) %>% 
-  group_by(region)
-
-#---------------------------------------
 # Percent plantable area by exclusion zone
 #---------------------------------------
 plantable_percent <- plantable_raw %>% 
@@ -630,7 +616,70 @@ plantable_percent_pop <- full_join(plantable_percent, county_pop, by = "county")
 #---------------------------------------
 # Plot plantable percent
 #---------------------------------------
-fig_7 <- ggplot(data = plantable_percent_pop, aes(x = county, y = percent)) +
+ggplot(data = plantable_percent, aes(x = fct_rev(county), y = percent)) +
+  geom_col(aes(fill = type)) +
+  scale_fill_manual(values = c("#85D5A3", # Lightest Green
+                               "#3EB66A", # Lighter Green
+                               "#24693d")) + # Dark Green
+  scale_y_continuous(labels = percent) +
+  labs(
+    x = "Jurisdiction",
+    y = "Percent of Jurisdiction Land Area"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+    theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+```
+
+Percent plantable area by jurisdiction
+
+```{r}
+#---------------------------------------
+# Percent Plantable grouped by Region
+#---------------------------------------
+plantable_group <- plantable_raw %>% 
+  mutate(region = case_when(
+    name %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    name %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    name %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    name %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    name %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    name %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+  select(name, region, lc_plantable_ac, lulc_plantable_ac, plantable_ac, jurisdiction_ac) %>% 
+  group_by(region) %>% 
+  summarise(across(where(is.numeric), sum)) %>% 
+    mutate(lc_p = lc_plantable_ac/jurisdiction_ac) %>% 
+  mutate(lulc_p = lulc_plantable_ac/jurisdiction_ac) %>% 
+  mutate(plantable_p = plantable_ac/jurisdiction_ac) %>% 
+  mutate(lc_stack = lc_p - lulc_p) %>% 
+  mutate(lulc_stack = lulc_p - plantable_p) %>% 
+  select(region, plantable_p, lulc_stack, lc_stack) %>%
+  pivot_longer(!region, names_to = "type", values_to = "percent") %>% 
+  mutate(type = case_when(
+    type == "lc_stack" ~ "LC",
+    type == "lulc_stack" ~ "LU/LC",
+    type == "plantable_p" ~ "Plantable Area"
+    )) %>% 
+  mutate(type = as.factor(type)) %>% 
+  mutate(type = fct_relevel(type, "LC", "LU/LC", "Plantable Area"))
+
+#---------------------------------------
+# Plot grouped plantable percent
+#---------------------------------------
+fig_7 <- ggplot(data = plantable_group, aes(x = region, y = percent)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = c("#85D5A3", # Lightest Green
                                "#3EB66A", # Lighter Green
@@ -661,6 +710,8 @@ fig_7
 ggsave(here("Graphics", "fig7_plantable_percent.jpg"), fig_7)
 
 ```
+
+
 ### Task 2 Forest Health
 
 Forest fragmentation at the state level
