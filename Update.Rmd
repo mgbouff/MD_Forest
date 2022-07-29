@@ -87,6 +87,10 @@ outside_forest_raw <- read_excel(here("Data", "New", "Forest + Tree Canopy Land 
 development_change_raw <- read_excel(here("Data", "New", "Land Use Change Analysis - Classes going into and coming out of forests (Data for Sankey Diagrams).xlsx"), sheet =  "Forest + TC to development") %>%
   clean_names()
 
+# Figure 30 Forest transitions to other land covers and uses
+forest_transitions_raw <- read_excel(here("Data", "New", "Land Use Change Analysis - Classes going into and coming out of forests (Data for Sankey Diagrams).xlsx"), sheet =  "Forest loss, all causes") %>%
+  clean_names()
+
 # Task 4
 #---------------------------------------
 # Read in projected land use change
@@ -1089,6 +1093,17 @@ fig_29
 ggsave(here("Graphics", "fig29_development_tc_change.jpg"), fig_29)
 
 ```
+Forest transitions to other land covers and uses
+
+```{r}
+#---------------------------------------
+# Forest change to other land uses
+#---------------------------------------
+forest_transitions <- forest_transitions_raw %>% 
+  select(county_jurisdiction_name, forest_to_tree_canopy:forest_to_water)
+
+```
+
 
 
 ### Task 4 Projected Land Use
