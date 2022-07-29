@@ -17,7 +17,8 @@ library(scales)
 library(stringr)
 library(naniar)
 library(RColorBrewer)
-library(xlsx)
+library(readxl)
+library(googlesheets4)
 
 #---------------------------------------
 # Read in Data
@@ -76,6 +77,10 @@ frag_county_18_qa <- read_xls(here("Data", "New", "tab_county_18.xls"), range = 
 #---------------------------------------
 # Riparian tree cover data
 riparian_raw <- read.csv(here("Data", "New", "3_riparian_county_2018.csv")) %>% 
+  clean_names()
+
+# Figure 28 Outside forest TC change
+outside_forest_raw <- read_excel(here("Data", "New", "Forest + Tree Canopy Land Use stats.xlsx"), sheet = "Net forest +TC change") %>% 
   clean_names()
 
 # Task 4
@@ -979,6 +984,45 @@ fig_16
 ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16)
 
 ```
+
+Net change in the extent of forest and tree canopy outside of forest land use, by jurisdiction (acres).
+
+```{r}
+#---------------------------------------
+# Riparian buffer tree canopy
+#---------------------------------------
+outside_forest <- outside_forest_raw %>% 
+  pivot_longer(!county_jurisdiction_name, names_to = "type", values_to = "acres_change")
+
+# Plot
+#---------------------------------------
+ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+  geom_col(aes(fill = type), position = "dodge") +
+  scale_fill_discrete(labels=c("Net Forest Change", "Net TC Outside Forest Change")) +
+  scale_y_continuous(labels = comma_format()) +
+  labs(
+    x = "Jurisdiction",
+    y = "Change in Area (Acres)"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+```
+
 
 ### Task 4 Projected Land Use
 
