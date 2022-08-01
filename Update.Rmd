@@ -1231,7 +1231,6 @@ Net percent change in forest and tree canopy outside forest by jurisdictional po
 #---------------------------------------
 growth_vs_change <- growth_vs_change_raw %>% 
   select(county_jurisdiction, net_change_percent, growth_rate) %>% 
-  mutate(net_change_percent = net_change_percent*100) %>% 
   mutate(county_jurisdiction = str_replace_all(county_jurisdiction, " County", "")) %>% 
   mutate(region = case_when(
     county_jurisdiction %in% c("Garrett", "Allegany", "Washington") ~ "Western",
@@ -1246,6 +1245,7 @@ growth_vs_change <- growth_vs_change_raw %>%
 fig_32 <- ggplot(data = growth_vs_change, aes(x = growth_rate, y = net_change_percent)) +
   geom_point(aes(color = region)) +
   geom_text_repel(aes(label = county_jurisdiction), size = 2.5) +
+  scale_y_continuous(labels = percent) +
   labs(
     x = "Population growth rate (2010-2020)",
     y = "Net percent change in forest \n and tree canopy outside forest"
