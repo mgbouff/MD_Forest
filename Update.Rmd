@@ -18,6 +18,7 @@ library(stringr)
 library(naniar)
 library(RColorBrewer)
 library(readxl)
+library(ggrepel)
 
 #---------------------------------------
 # Read in Data
@@ -90,8 +91,12 @@ development_change_raw <- read_excel(here("Data", "New", "Land Use Change Analys
 forest_transitions_raw <- read_excel(here("Data", "New", "Land Use Change Analysis - Classes going into and coming out of forests (Data for Sankey Diagrams).xlsx"), sheet =  "Forest loss, all causes") %>%
   clean_names()
 
-# Figure 32 Tree cover outside forests transitions to other land covers and uses
+# Figure 31 Tree cover outside forests transitions to other land covers and uses
 tc_transitions_raw <- read_excel(here("Data", "New", "Land Use Change Analysis - Classes going into and coming out of forests (Data for Sankey Diagrams).xlsx"), sheet =  "TC loss, all causes") %>%
+  clean_names()
+
+# Figure 32 Tree cover change vs Population growth
+growth_vs_change_raw <- read_excel(here("Data", "New", "Forest + Tree Canopy Land Use stats.xlsx"), sheet = "Growth vs Chg Scatterplot") %>% 
   clean_names()
 
 # Task 4
@@ -1189,7 +1194,7 @@ tc_transitions <- tc_transitions_raw %>%
 
 # Plot
 #---------------------------------------
-ggplot(data = tc_transitions, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+fig_31 <- ggplot(data = tc_transitions, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = transition)) +
   scale_fill_manual(values = tc_transition_palette) +
   labs(
@@ -1213,6 +1218,62 @@ ggplot(data = tc_transitions, aes(x = fct_rev(county_jurisdiction_name), y = acr
     rect = element_rect(fill = "white", color = NA)
   )
 
+fig_31
+
+ggsave(here("Graphics", "fig31_tc_transitions.jpg"), fig_31)
+
+```
+Net percent change in forest and tree canopy outside forest by jurisdictional population growth rate, 2010-2020.
+
+```{r}
+#---------------------------------------
+# Percent tree canopy change vs population growth
+#---------------------------------------
+growth_vs_change <- growth_vs_change_raw %>% 
+  select(county_jurisdiction, net_change_percent, growth_rate) %>% 
+  mutate(net_change_percent = net_change_percent*100) %>% 
+  mutate(county_jurisdiction = str_replace_all(county_jurisdiction, " County", "")) %>% 
+  mutate(region = case_when(
+    county_jurisdiction %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    county_jurisdiction %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    county_jurisdiction %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    county_jurisdiction %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    county_jurisdiction %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    county_jurisdiction %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern"))
+
+# Plot
+#---------------------------------------
+fig_32 <- ggplot(data = growth_vs_change, aes(x = growth_rate, y = net_change_percent)) +
+  geom_point(aes(color = region)) +
+  geom_text_repel(aes(label = county_jurisdiction), size = 2.5) +
+  labs(
+    x = "Population growth rate (2010-2020)",
+    y = "Net percent change in forest \n and tree canopy outside forest"
+  ) +
+  coord_cartesian(clip = "off") +
+  theme_minimal() +
+  geom_hline(aes(yintercept = 0), alpha = 0.4) +
+  geom_vline(aes(xintercept = 0), alpha = 0.4) +
+  theme(
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  ) +
+    guides(color = guide_legend(title = "Region", 
+                             title.position = "top",
+                             nrow = 1))
+
+fig_32
+
+ggsave(here("Graphics", "fig32_growth_vs_change.jpg"), fig_32, width = 7.29, height = 4.51)
 
 ```
 
