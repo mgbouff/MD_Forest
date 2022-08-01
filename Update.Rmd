@@ -155,14 +155,24 @@ development_palette <- c(
   "developed_to_tree_canopy" = "#6eb663"
 )
 
-# Fig 30 Transition Palette
-transition_palette <- c(
+# Fig 30 Forest Transition Palette
+forest_transition_palette <- c(
   "Forest To Tree Canopy" = "#6eb663",
   "Forest To Developed" = "#F08701",
   "Forest To Natural" = "#498D43",
   "Forest To Production Ag Extractive" = "#97CC04",
   "Forest To Wetlands" = "#21A0A0",
-  "Forest To Water" = "4059AD"
+  "Forest To Water" = "#4059AD"
+)
+
+# Fig 31 Tree canopy Transition Palette
+tc_transition_palette <- c(
+  "Tree Canopy To Forest" = "#24693d",
+  "Tree Canopy To Developed" = "#F08701",
+  "Tree Canopy To Natural" = "#498D43",
+  "Tree Canopy To Production Ag Extractive" = "#97CC04",
+  "Tree Canopy To Wetlands" = "#21A0A0",
+  "Tree Canopy To Water" = "#4059AD"
 )
 
 #---------------------------------------
@@ -1130,10 +1140,10 @@ forest_transitions <- forest_transitions_raw %>%
 #---------------------------------------
 fig_30 <- ggplot(data = forest_transitions, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = transition)) +
-  scale_fill_manual(values = transition_palette) +
+  scale_fill_manual(values = forest_transition_palette) +
   labs(
     x = "Jurisdiction",
-    y = "Forest Change Transition Type (Acres)"
+    y = "Transition Area (Acres)"
   ) +
   scale_y_continuous(labels = comma_format()) +
   coord_flip() +
@@ -1165,7 +1175,44 @@ Area of Tree Canopy Outside Forest Converted to Other Land Use Classes (acres)
 #---------------------------------------
 tc_transitions <- tc_transitions_raw %>% 
   select(county_jurisdiction_name, tree_canopy_to_forest:tree_canopy_to_water) %>% 
-  pivot_longer(!county_jurisdiction_name, names_to = "transition", values_to = "acres_change")
+  pivot_longer(!county_jurisdiction_name, names_to = "transition", values_to = "acres_change") %>% 
+  mutate(transition = str_replace_all(transition, "_", " ")) %>% 
+  mutate(transition = str_to_title(transition)) %>% 
+  mutate(transition = fct_relevel(transition, 
+                                  "Tree Canopy To Water",
+                                  "Tree Canopy To Wetlands",
+                                  "Tree Canopy To Forest",
+                                  "Tree Canopy To Natural",
+                                  "Tree Canopy To Production Ag Extractive",
+                                  "Tree Canopy To Developed"
+                                  ))
+
+# Plot
+#---------------------------------------
+ggplot(data = tc_transitions, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+  geom_col(aes(fill = transition)) +
+  scale_fill_manual(values = tc_transition_palette) +
+  labs(
+    x = "Jurisdiction",
+    y = "Transition Area (Acres)"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+  scale_y_continuous(labels = comma_format()) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
 
 ```
 
