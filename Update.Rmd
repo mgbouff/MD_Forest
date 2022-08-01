@@ -1273,7 +1273,7 @@ fig_32 <- ggplot(data = growth_vs_change, aes(x = growth_rate, y = net_change_pe
 
 fig_32
 
-ggsave(here("Graphics", "fig32_growth_vs_change.jpg"), fig_32, width = 7.29, height = 4.51)
+ggsave(here("Graphics", "fig32_growth_vs_change.jpg"), fig_32)
 
 ```
 
