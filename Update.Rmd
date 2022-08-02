@@ -17,7 +17,7 @@ library(scales)
 library(stringr)
 library(naniar)
 library(RColorBrewer)
-library(readxl)
+library(xlsx)
 library(ggrepel)
 
 #---------------------------------------
@@ -583,6 +583,33 @@ fig_27 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
 fig_27
 
 ggsave(here("Graphics", "fig27_county_lu_change.jpg"), fig_27, height = 7.5, width = 8)
+
+#---------------------------------------
+# County land cover change tables for Jessica
+#---------------------------------------
+county_change_table <- county_lu_change %>% 
+  select(name, lu, lu_2013_acres:acres_change) %>% 
+  rename(county = name) %>% 
+  rename(land_cover = lu) %>% 
+  rename(acres_2013 = lu_2013_acres) %>% 
+  rename(acres_2018 = lu_2018_acres)
+
+# Group land cover change by region
+county_change_grouped_table <- county_change_table %>% 
+  mutate(region = case_when(
+    county %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    county %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    county %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    county %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+group_by(region, land_cover) %>% 
+  summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum)))
+
+# Export to excel
+write.xlsx(as.data.frame(county_change_tables), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx") , sheet = "county", row.names = FALSE)
+
+write.xlsx(as.data.frame(county_change_grouped_table), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 ```
 ### Task 1b. Plantable Area
@@ -1244,7 +1271,7 @@ growth_vs_change <- growth_vs_change_raw %>%
 #---------------------------------------
 fig_32 <- ggplot(data = growth_vs_change, aes(x = growth_rate, y = net_change_percent)) +
   geom_point(aes(color = region)) +
-  geom_text_repel(aes(label = county_jurisdiction), size = 2.5) +
+  geom_text_repel(aes(label = county_jurisdiction), size = 3) +
   scale_y_continuous(labels = percent) +
   labs(
     x = "Population growth rate (2010-2020)",
