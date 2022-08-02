@@ -959,6 +959,29 @@ fig_11
 
 ggsave(here("Graphics", "fig11_county_fragmentation.jpg"), fig_11, height = 4.5, width = 8)
 
+#---------------------------------------
+# County fragmentation change tables for Jessica
+#---------------------------------------
+fragmentation_table <- frag_county_full %>% 
+  rename(fragmentation_type = frag_type)
+
+# Group land cover change by region
+fragmentation_grouped_table <- fragmentation_table %>% 
+  mutate(region = case_when(
+    county %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    county %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    county %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    county %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+group_by(region, fragmentation_type) %>% 
+  summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum)))
+
+# Export to excel
+write.xlsx(as.data.frame(fragmentation_table), file.path("Tables", file = "Fig11_Table_Fragmentation.xlsx") , sheet = "county", row.names = FALSE)
+
+write.xlsx(as.data.frame(fragmentation_grouped_table), file.path("Tables", file = "Fig11_Table_Fragmentation.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+
 ```
 
 ### Task 3 Urban Change
