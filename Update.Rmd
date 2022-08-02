@@ -926,7 +926,7 @@ frag_county_pop <- full_join(frag_county_full, county_pop, by = "county") %>%
   
 # Plot
 #---------------------------------------
-fig_11 <- ggplot(data = frag_county_full, aes(x = county, y = acres_change)) +
+fig_13 <- ggplot(data = frag_county_full, aes(x = county, y = acres_change)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
     labs(
@@ -955,9 +955,9 @@ fig_11 <- ggplot(data = frag_county_full, aes(x = county, y = acres_change)) +
                                nrow = 4)) +
   scale_y_continuous(labels=comma_format())
 
-fig_11
+fig_13
 
-ggsave(here("Graphics", "fig11_county_fragmentation.jpg"), fig_11, height = 4.5, width = 8)
+ggsave(here("Graphics", "fig13_county_fragmentation.jpg"), fig_13, height = 4.5, width = 8)
 
 #---------------------------------------
 # County fragmentation change tables for Jessica
@@ -978,9 +978,9 @@ group_by(region, fragmentation_type) %>%
   summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum)))
 
 # Export to excel
-write.xlsx(as.data.frame(fragmentation_table), file.path("Tables", file = "Fig11_Table_Fragmentation.xlsx") , sheet = "county", row.names = FALSE)
+write.xlsx(as.data.frame(fragmentation_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx") , sheet = "county", row.names = FALSE)
 
-write.xlsx(as.data.frame(fragmentation_grouped_table), file.path("Tables", file = "Fig11_Table_Fragmentation.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+write.xlsx(as.data.frame(fragmentation_grouped_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 ```
 
@@ -1090,7 +1090,9 @@ Net change in the extent of forest and tree canopy outside of forest land use, b
 # Riparian buffer tree canopy
 #---------------------------------------
 outside_forest <- outside_forest_raw %>% 
-  pivot_longer(!county_jurisdiction_name, names_to = "type", values_to = "acres_change")
+  pivot_longer(!county_jurisdiction_name, names_to = "type", values_to = "acres_change") %>% 
+  mutate(county_jurisdiction_name = str_replace_all(county_jurisdiction_name, "Somserset", "Somerset")) %>% 
+    mutate(county_jurisdiction_name = str_replace_all(county_jurisdiction_name, " County", ""))
 
 # Plot
 #---------------------------------------
@@ -1122,6 +1124,30 @@ fig_28 <- ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name
 fig_28
 
 ggsave(here("Graphics", "fig28_outside_forest_change.jpg"), fig_28)
+
+#---------------------------------------
+# Outside forest change tables for Jessica
+#---------------------------------------
+outside_forest_table <- outside_forest %>% 
+  rename(county = county_jurisdiction_name) %>% 
+  rename(change_type = type)
+  
+# Group outside forest change by region
+outside_forest_grouped_table <- outside_forest_table %>% 
+  mutate(region = case_when(
+    county %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    county %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    county %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    county %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+group_by(region, change_type) %>% 
+  summarise(acres_change = sum(acres_change))
+
+# Export to excel
+write.xlsx(as.data.frame(outside_forest_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx") , sheet = "county", row.names = FALSE)
+
+write.xlsx(as.data.frame(outside_forest_grouped_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 ```
 Total forest and total tree canopy land use loss and gain associated with development (acres).
