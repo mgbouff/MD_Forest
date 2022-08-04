@@ -17,7 +17,7 @@ library(scales)
 library(stringr)
 library(naniar)
 library(RColorBrewer)
-library(xlsx)
+# library(xlsx)
 library(ggrepel)
 
 #---------------------------------------
@@ -607,9 +607,9 @@ group_by(region, land_cover) %>%
   summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum)))
 
 # Export to excel
-write.xlsx(as.data.frame(county_change_tables), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx") , sheet = "county", row.names = FALSE)
-
-write.xlsx(as.data.frame(county_change_grouped_table), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+# write.xlsx(as.data.frame(county_change_tables), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx") , sheet = "county", row.names = FALSE)
+# 
+# write.xlsx(as.data.frame(county_change_grouped_table), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 ```
 ### Task 1b. Plantable Area
@@ -957,7 +957,7 @@ fig_13 <- ggplot(data = frag_county_full, aes(x = county, y = acres_change)) +
 
 fig_13
 
-ggsave(here("Graphics", "fig13_county_fragmentation.jpg"), fig_13, height = 4.5, width = 8)
+# ggsave(here("Graphics", "fig13_county_fragmentation.jpg"), fig_13, height = 4.5, width = 8)
 
 #---------------------------------------
 # County fragmentation change tables for Jessica
@@ -978,9 +978,9 @@ group_by(region, fragmentation_type) %>%
   summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum)))
 
 # Export to excel
-write.xlsx(as.data.frame(fragmentation_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx") , sheet = "county", row.names = FALSE)
-
-write.xlsx(as.data.frame(fragmentation_grouped_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+# write.xlsx(as.data.frame(fragmentation_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx") , sheet = "county", row.names = FALSE)
+# 
+# write.xlsx(as.data.frame(fragmentation_grouped_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 ```
 
@@ -1083,11 +1083,11 @@ ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16)
 
 ```
 
-Net change in the extent of forest and tree canopy outside of forest land use, by jurisdiction (acres).
+Net change in the extent of forest and tree canopy outside of forest land use (acres).
 
 ```{r}
 #---------------------------------------
-# Riparian buffer tree canopy
+# Net change outside forest by jurisdiction
 #---------------------------------------
 outside_forest <- outside_forest_raw %>% 
   pivot_longer(!county_jurisdiction_name, names_to = "type", values_to = "acres_change") %>% 
@@ -1096,7 +1096,7 @@ outside_forest <- outside_forest_raw %>%
 
 # Plot
 #---------------------------------------
-fig_28 <- ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = type), position = "dodge") +
   scale_fill_discrete(labels=c("Net Forest Change", "Net TC Outside Forest Change")) +
   scale_y_continuous(labels = comma_format()) +
@@ -1145,12 +1145,48 @@ group_by(region, change_type) %>%
   summarise(acres_change = sum(acres_change))
 
 # Export to excel
-write.xlsx(as.data.frame(outside_forest_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx") , sheet = "county", row.names = FALSE)
+# write.xlsx(as.data.frame(outside_forest_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx") , sheet = "county", row.names = FALSE)
+# 
+# write.xlsx(as.data.frame(outside_forest_grouped_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
-write.xlsx(as.data.frame(outside_forest_grouped_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+#---------------------------------------
+# Net change outside forest grouped by region
+#---------------------------------------
+fig_28 <- ggplot(data = outside_forest_grouped_table, aes(x = region, y = acres_change)) +
+  geom_col(aes(fill = change_type), 
+           width = 0.7,
+           position = "dodge") +
+  scale_fill_discrete(labels = c("Net Forest Change", "Net TC Outside Forest Change")) +
+  scale_y_continuous(labels = comma_format()) +
+  labs(
+    x = "Region",
+    y = "Change in Area (Acres)"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+    geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+fig_28
+
+ggsave(here("Graphics", "fig28_outside_forest_change.jpg"), fig_28)
 
 ```
+
 Total forest and total tree canopy land use loss and gain associated with development (acres).
+
 ```{r}
 #---------------------------------------
 # Forest and Tree Canopy Change Associated with Development
@@ -1450,9 +1486,9 @@ projected_lu_grouped_table <- projected_lu_table %>%
   summarise(acres = sum(acres))
 
 # Export to excel
-write.xlsx(as.data.frame(projected_lu_table), file.path("Tables", file = "Fig35_Table_Projected_LU.xlsx") , sheet = "county", row.names = FALSE)
-
-write.xlsx(as.data.frame(projected_lu_grouped_table), file.path("Tables", file = "Fig35_Table_Projected_LU.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+# write.xlsx(as.data.frame(projected_lu_table), file.path("Tables", file = "Fig35_Table_Projected_LU.xlsx") , sheet = "county", row.names = FALSE)
+# 
+# write.xlsx(as.data.frame(projected_lu_grouped_table), file.path("Tables", file = "Fig35_Table_Projected_LU.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 ```
 
