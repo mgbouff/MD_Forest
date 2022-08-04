@@ -222,7 +222,7 @@ state_lu_percent <- state_forest_raw %>%
          label = scales::percent(percent)) %>% 
   mutate(lu = fct_reorder(lu, desc(percent))) %>% 
   select(lu:label) %>% 
-  mutate(x2020_pop = 6177224) %>% 
+#  mutate(x2020_pop = 6177224) %>% 
   mutate(county = "Statewide")
 
 #---------------------------------------
@@ -258,15 +258,20 @@ county_percent_pop <- full_join(county_lu_percent, county_pop, by = "county")
 # Stacked bar plot lu percent area state and county
 #---------------------------------------
 # Merge state and county dfs
-state_county_merge <- rbind(state_lu_percent, county_percent_pop) %>% 
+# state_county_merge <- rbind(state_lu_percent, county_percent_pop) %>% 
+#   mutate(county = as.factor(county))
+#   mutate(county = fct_reorder(county, x2020_pop)) %>% 
+#   select(county, everything())
+
+state_county_merge <- full_join(county_lu_percent, state_lu_percent) %>%
   mutate(county = as.factor(county)) %>% 
-  mutate(county = fct_reorder(county, x2020_pop)) %>% 
-  select(county, everything())
+  mutate(county = fct_relevel(county, "Statewide", " ")) %>% 
+  mutate(lu = fct_reorder(lu, desc(percent)))
 
 #---------------------------------------
 # Plot
 #---------------------------------------
-fig_5 <- ggplot(data = state_county_merge, aes(x = county, y = percent, fill = lu)) +
+fig_5 <- ggplot(data = state_county_merge, aes(x = fct_rev(county), y = percent, fill = lu)) +
   geom_bar(position = "fill", stat = "identity") +
     labs(
 #    title = "2018 Land Use Proportions by Jurisdiction",
@@ -697,7 +702,7 @@ plantable_percent_pop <- full_join(plantable_percent, county_pop, by = "county")
 #---------------------------------------
 # Plot plantable percent
 #---------------------------------------
-ggplot(data = plantable_percent, aes(x = fct_rev(county), y = percent)) +
+fig_7 <- ggplot(data = plantable_percent, aes(x = fct_rev(county), y = percent)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = c("#85D5A3", # Lightest Green
                                "#3EB66A", # Lighter Green
@@ -723,7 +728,10 @@ ggplot(data = plantable_percent, aes(x = fct_rev(county), y = percent)) +
     rect = element_rect(fill = "white", color = NA)
   )
 
-# ggsave(here("Graphics", "fig7_plantable_percent.jpg"), fig_7, width = 7.29, height = 4.5)
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig7_plantable_percent.jpg"), fig_7, width = 7.29, height = 4.5)
+ggsave(here("Graphics", "fig7_plantable_percent.svg"), fig_7, width = 7.29, height = 4.5)
 
 ```
 
@@ -761,10 +769,9 @@ plantable_group <- plantable_raw %>%
   mutate(region = as.factor(region)) %>% 
   mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
 
-#---------------------------------------
 # Plot grouped plantable percent
 #---------------------------------------
-fig_7 <- ggplot(data = plantable_group, aes(x = region, y = percent)) +
+fig_7_grouped <- ggplot(data = plantable_group, aes(x = region, y = percent)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = c("#85D5A3", # Lightest Green
                                "#3EB66A", # Lighter Green
@@ -790,9 +797,12 @@ fig_7 <- ggplot(data = plantable_group, aes(x = region, y = percent)) +
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_7
+fig_7_grouped
 
-ggsave(here("Graphics", "fig7_plantable_percent.svg"), fig_7)
+#Export
+#---------------------------------------
+ggsave(here("Graphics", "fig7_plantable_percent_grouped.jpg"), fig_7_grouped)
+ggsave(here("Graphics", "fig7_plantable_percent_grouped.svg"), fig_7_grouped)
 
 ```
 
