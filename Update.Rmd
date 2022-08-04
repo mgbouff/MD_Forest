@@ -400,8 +400,62 @@ fig_4
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig4_county_lu.jpg"), fig_4)
-ggsave(here("Graphics", "SVGs", "fig4_county_lu.svg"), fig_4)
+ggsave(here("Graphics", "fig4_forest_percent.jpg"), fig_4)
+ggsave(here("Graphics", "SVGs", "fig4_forest_percent.svg"), fig_4)
+
+#---------------------------------------
+# Group by region
+#---------------------------------------
+county_tc_forest_grouped <- county_tc_forest_raw %>% 
+  mutate(region = case_when(
+    name %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    name %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    name %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    name %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    name %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    name %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+  group_by(region) %>% 
+  summarise(across(c("forest_ac", "tc_out_fore","jurisdicti"), funs(sum))) %>% 
+  mutate(inside_forest = forest_ac_sum/jurisdicti_sum) %>%
+  mutate(outside_forest = tc_out_fore_sum/jurisdicti_sum) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern")) %>% 
+  select(region, inside_forest, outside_forest) %>% 
+  pivot_longer(!region, names_to = "type", values_to = "percent")
+
+# Grouped Plot
+#---------------------------------------
+fig_4_grouped <- ggplot(data = county_tc_forest_grouped, aes(x = region, y = percent)) +
+  geom_col(aes(fill = type)) +
+  scale_fill_manual(values = c("#24693d", "#6eb663"),
+                    labels = c("Inside Forest", "Outside Forest")
+                      ) +
+  scale_y_continuous(labels = percent) +
+  labs(
+    x = "Jurisdiction",
+    y = "Percent Tree Canopy Cover"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+    theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+  
+fig_4_grouped
+
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig4_forest_percent_grouped.jpg"), fig_4_grouped)
+ggsave(here("Graphics", "SVGs", "fig4_forest_percent_grouped.svg"), fig_4_grouped)
 
 ```
 
