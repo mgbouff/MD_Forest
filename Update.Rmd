@@ -1194,11 +1194,13 @@ Total forest and total tree canopy land use loss and gain associated with develo
 development_change <- development_change_raw %>% 
   select(county_jurisdiction_name:tree_canopy_to_developed, developed_to_forest, developed_to_tree_canopy) %>% 
   pivot_longer(!county_jurisdiction_name, names_to = "type", values_to = "acres_change") %>% 
-  drop_na()
+  drop_na() %>% 
+    mutate(county_jurisdiction_name = str_replace_all(county_jurisdiction_name, "Somserset", "Somerset")) %>% 
+    mutate(county_jurisdiction_name = str_replace_all(county_jurisdiction_name, " County", ""))
 
 # Plot
 #---------------------------------------
-fig_29 <- ggplot(data = development_change, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+ggplot(data = development_change, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = development_palette,
                     labels=c("developed_to_forest" = "Developed to Forest", 
@@ -1228,11 +1230,58 @@ fig_29 <- ggplot(data = development_change, aes(x = fct_rev(county_jurisdiction_
   ) +
   guides(fill = guide_legend(nrow = 2))
 
+#---------------------------------------
+# Group by region
+#---------------------------------------
+development_change_grouped <- development_change %>% 
+    mutate(region = case_when(
+    county_jurisdiction_name %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    county_jurisdiction_name %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    county_jurisdiction_name %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    county_jurisdiction_name %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    county_jurisdiction_name %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    county_jurisdiction_name %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+group_by(region, type) %>% 
+  summarise(acres_change = sum(acres_change))
+
+# Plot
+#---------------------------------------
+fig_29 <- ggplot(data = development_change_grouped, aes(x = region, y = acres_change)) +
+  geom_col(aes(fill = type)) +
+  scale_fill_manual(values = development_palette,
+                    labels=c("developed_to_forest" = "Developed to Forest", 
+                             "developed_to_tree_canopy" = "Developed to Tree Canopy",
+                             "forest_to_developed" = "Forest to Developed", 
+                             "tree_canopy_to_developed" = "Tree Canopy to Developed")) +
+  scale_y_continuous(labels = comma_format()) +
+  labs(
+    x = "Region",
+    y = "Change in Area (Acres)"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+    geom_hline(aes(yintercept=0)) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  ) +
+  guides(fill = guide_legend(nrow = 2))
+
 fig_29
 
 ggsave(here("Graphics", "fig29_development_tc_change.jpg"), fig_29)
 
 ```
+
 Forest transitions to other land covers and uses
 
 ```{r}
