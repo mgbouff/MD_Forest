@@ -300,7 +300,10 @@ fig_5 <- ggplot(data = state_county_merge, aes(x = fct_rev(county), y = percent,
 
 fig_5
 
+# Export
+#---------------------------------------
 ggsave(here("Graphics", "fig5_state_county_lu.jpeg"), fig_5)
+ggsave(here("Graphics", "SvGs", "fig5_state_county_lu.svg"), fig_5)
 
 ```
 
@@ -369,7 +372,7 @@ county_tc_pop <- full_join(county_tc_forest, county_pop, by = "county") %>%
 
 # Plot
 #---------------------------------------
-fig_4 <- ggplot(data = county_tc_pop, aes(x = county, y = percent)) +
+fig_4 <- ggplot(data = county_tc_forest, aes(x = fct_rev(county), y = percent)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = c("#24693d", "#6eb663")) +
   scale_y_continuous(labels = percent) +
@@ -394,8 +397,12 @@ fig_4 <- ggplot(data = county_tc_pop, aes(x = county, y = percent)) +
   )
 
 fig_4
- 
+
+# Export
+#---------------------------------------
 ggsave(here("Graphics", "fig4_county_lu.jpg"), fig_4)
+ggsave(here("Graphics", "SVGs", "fig4_county_lu.svg"), fig_4)
+
 ```
 
 Land use change at the state level
