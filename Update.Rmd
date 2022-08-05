@@ -799,7 +799,7 @@ fig_7 <- ggplot(data = plantable_percent, aes(x = fct_rev(county), y = percent))
 # Export
 #---------------------------------------
 ggsave(here("Graphics", "fig7_plantable_percent.jpg"), fig_7, width = 7.29, height = 4.5)
-ggsave(here("Graphics", "fig7_plantable_percent.svg"), fig_7, width = 7.29, height = 4.5)
+ggsave(here("Graphics", "SVGs", "fig7_plantable_percent.svg"), fig_7, width = 7.29, height = 4.5)
 
 #---------------------------------------
 # Percent Plantable grouped by Region
@@ -865,7 +865,7 @@ fig_7_grouped
 #Export
 #---------------------------------------
 ggsave(here("Graphics", "fig7_plantable_percent_grouped.jpg"), fig_7_grouped)
-ggsave(here("Graphics", "fig7_plantable_percent_grouped.svg"), fig_7_grouped)
+ggsave(here("Graphics", "SVGs", "fig7_plantable_percent_grouped.svg"), fig_7_grouped)
 
 ```
 
@@ -1291,7 +1291,7 @@ development_change <- development_change_raw %>%
 
 # Plot
 #---------------------------------------
-ggplot(data = development_change, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+fig_29 <- ggplot(data = development_change, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = development_palette,
                     labels=c("developed_to_forest" = "Developed to Forest", 
@@ -1321,6 +1321,13 @@ ggplot(data = development_change, aes(x = fct_rev(county_jurisdiction_name), y =
   ) +
   guides(fill = guide_legend(nrow = 2))
 
+fig_29
+
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig29_development_change.jpg"), fig_29)
+ggsave(here("Graphics", "SVGs", "fig29_development_change.svg"), fig_29)
+
 #---------------------------------------
 # Group by region
 #---------------------------------------
@@ -1337,7 +1344,7 @@ group_by(region, type) %>%
 
 # Plot
 #---------------------------------------
-fig_29 <- ggplot(data = development_change_grouped, aes(x = region, y = acres_change)) +
+fig_29_grouped <- ggplot(data = development_change_grouped, aes(x = region, y = acres_change)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = development_palette,
                     labels=c("developed_to_forest" = "Developed to Forest", 
@@ -1367,9 +1374,12 @@ fig_29 <- ggplot(data = development_change_grouped, aes(x = region, y = acres_ch
   ) +
   guides(fill = guide_legend(nrow = 2))
 
-fig_29
+fig_29_grouped
 
-ggsave(here("Graphics", "fig29_development_tc_change.jpg"), fig_29)
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig29_development_change_grouped.jpg"), fig_29_grouped)
+ggsave(here("Graphics", "SVGs", "fig29_development_change_grouped.svg"), fig_29_grouped)
 
 ```
 
@@ -1417,11 +1427,15 @@ fig_30 <- ggplot(data = forest_transitions, aes(x = fct_rev(county_jurisdiction_
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white", color = NA),
     rect = element_rect(fill = "white", color = NA)
-  )
+  ) +
+  guides(fill = guide_legend(nrow = 3))
 
 fig_30
 
+# Export
+#---------------------------------------
 ggsave(here("Graphics", "fig30_forest_transitions.jpg"), fig_30)
+ggsave(here("Graphics", "SVGs", "fig30_forest_transitions.svg"), fig_30)
 
 ```
 Area of Tree Canopy Outside Forest Converted to Other Land Use Classes (acres)
@@ -1453,6 +1467,7 @@ fig_31 <- ggplot(data = tc_transitions, aes(x = fct_rev(county_jurisdiction_name
     x = "Jurisdiction",
     y = "Transition Area (Acres)"
   ) +
+  coord_cartesian(clip = "off") +
   coord_flip() +
   theme_minimal() +
   scale_y_continuous(labels = comma_format()) +
@@ -1468,11 +1483,15 @@ fig_31 <- ggplot(data = tc_transitions, aes(x = fct_rev(county_jurisdiction_name
     panel.background = element_rect(fill = "white"),
     plot.background = element_rect(fill = "white", color = NA),
     rect = element_rect(fill = "white", color = NA)
-  )
+  ) +
+  guides(fill = guide_legend(nrow = 3))
 
 fig_31
 
+# Export
+#---------------------------------------
 ggsave(here("Graphics", "fig31_tc_transitions.jpg"), fig_31)
+ggsave(here("Graphics", "SVGs", "fig31_tc_transitions.svg"), fig_31)
 
 ```
 Net percent change in forest and tree canopy outside forest by jurisdictional population growth rate, 2010-2020.
@@ -1525,7 +1544,10 @@ fig_32 <- ggplot(data = growth_vs_change, aes(x = growth_rate, y = net_change_pe
 
 fig_32
 
+# Export
+#---------------------------------------
 ggsave(here("Graphics", "fig32_growth_vs_change.jpg"), fig_32)
+ggsave(here("Graphics", "SVGs", "fig32_growth_vs_change.svg"), fig_32)
 
 ```
 
@@ -1603,7 +1625,7 @@ fig_35 <- ggplot(projected_lu, aes(x = county, y = acres)) +
 
 fig_35
 
-ggsave(here("Graphics", "fig35_projected_lu_change.jpg"), fig_35, height = 6, width = 7.5)
+# ggsave(here("Graphics", "fig35_projected_lu_change.jpg"), fig_35, height = 6, width = 7.5)
 
 #---------------------------------------
 # Projected land use tables for Jessica
@@ -1625,7 +1647,8 @@ projected_lu_grouped_table <- projected_lu_table %>%
   group_by(region, land_use) %>% 
   summarise(acres = sum(acres))
 
-# Export to excel
+# Export to Excel
+#---------------------------------------
 # write.xlsx(as.data.frame(projected_lu_table), file.path("Tables", file = "Fig35_Table_Projected_LU.xlsx") , sheet = "county", row.names = FALSE)
 # 
 # write.xlsx(as.data.frame(projected_lu_grouped_table), file.path("Tables", file = "Fig35_Table_Projected_LU.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
@@ -1638,7 +1661,6 @@ Total timber harvest by county 2013 to 2021
 #---------------------------------------
 # Total timber harvest by county
 #---------------------------------------
-
 # Get total acres harvested between 2013 and 2021
 timber_total <- md_timber_raw %>% 
   group_by(county) %>% 
@@ -1682,7 +1704,10 @@ fig_21 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
 
 fig_21
 
+# Export
+#---------------------------------------
 ggsave(here("Graphics", "fig21_timber.jpg"), fig_21)
+ggsave(here("Graphics", "SVGs", "fig21_timber.svg"), fig_21)
 
 ```
 
