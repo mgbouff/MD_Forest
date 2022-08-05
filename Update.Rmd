@@ -302,8 +302,8 @@ fig_5
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig5_state_county_lu.jpeg"), fig_5)
-ggsave(here("Graphics", "SvGs", "fig5_state_county_lu.svg"), fig_5)
+ggsave(here("Graphics", "fig5_state_county_lu.jpeg"), fig_5, height = 4.5, width = 7.29)
+ggsave(here("Graphics", "SvGs", "fig5_state_county_lu.svg"), fig_5, height = 4.5, width = 7.29)
 
 ```
 
@@ -567,8 +567,10 @@ fig_25 <- ggplot(data = state_change_full, aes(x = lu, y = tot_acres)) +
 
 fig_25
 
-ggsave(here("Graphics", "fig25_state_lu_change.jpg"), fig_25, height = 5, width = 9)
-
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig25_state_lu_change.jpg"), fig_25, height = 5.5, width = 9)
+ggsave(here("Graphics", "SVGs", "fig25_state_lu_change.svg"), fig_25, height = 5.5, width = 9)
 
 ```
 
@@ -648,7 +650,9 @@ fig_27 <- ggplot(data = county_lu_change, aes(x = lu, y = acres_change)) +
 
 fig_27
 
-ggsave(here("Graphics", "fig27_county_lu_change.jpg"), fig_27, height = 7.5, width = 8)
+# Export
+#---------------------------------------
+# ggsave(here("Graphics", "fig27_county_lu_change.jpg"), fig_27, height = 7.5, width = 8)
 
 #---------------------------------------
 # County land cover change tables for Jessica
@@ -672,7 +676,8 @@ county_change_grouped_table <- county_change_table %>%
 group_by(region, land_cover) %>% 
   summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum)))
 
-# Export to excel
+# Export to Excel
+#---------------------------------------
 # write.xlsx(as.data.frame(county_change_tables), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx") , sheet = "county", row.names = FALSE)
 # 
 # write.xlsx(as.data.frame(county_change_grouped_table), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
@@ -724,8 +729,10 @@ fig_6 <- ggplot(data = plantable_area, aes(x = fct_rev(county), y = plantable_ac
 
 fig_6
 
+# Export
+#---------------------------------------
 ggsave(here("Graphics", "fig6_plantable_area.jpg"), fig_6, height = 4.5, width = 7.29)
-
+ggsave(here("Graphics", "SVGs", "fig6_plantable_area.svg"), fig_6, height = 4.5, width = 7.29)
  
 ```
 
@@ -794,11 +801,6 @@ fig_7 <- ggplot(data = plantable_percent, aes(x = fct_rev(county), y = percent))
 ggsave(here("Graphics", "fig7_plantable_percent.jpg"), fig_7, width = 7.29, height = 4.5)
 ggsave(here("Graphics", "fig7_plantable_percent.svg"), fig_7, width = 7.29, height = 4.5)
 
-```
-
-Percent plantable area by jurisdiction
-
-```{r}
 #---------------------------------------
 # Percent Plantable grouped by Region
 #---------------------------------------
@@ -866,7 +868,6 @@ ggsave(here("Graphics", "fig7_plantable_percent_grouped.jpg"), fig_7_grouped)
 ggsave(here("Graphics", "fig7_plantable_percent_grouped.svg"), fig_7_grouped)
 
 ```
-
 
 ### Task 2 Forest Health
 
@@ -959,9 +960,13 @@ fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, labe
 
 fig_10
 
+#Export
+#---------------------------------------
 ggsave(here("Graphics", "fig10_state_fragmentation.jpg"), fig_10)
+ggsave(here("Graphics", "SVGs", "fig10_state_fragmentation.svg"), fig_10)
 
 ```
+
 Forest Fragmentation at the county level
 
 ```{r}
@@ -1049,6 +1054,7 @@ group_by(region, fragmentation_type) %>%
   summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum)))
 
 # Export to excel
+#---------------------------------------
 # write.xlsx(as.data.frame(fragmentation_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx") , sheet = "county", row.names = FALSE)
 # 
 # write.xlsx(as.data.frame(fragmentation_grouped_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
@@ -1063,7 +1069,6 @@ Percent tree canopy in riparian buffer zone by jurisdiction
 #---------------------------------------
 # Riparian buffer tree canopy
 #---------------------------------------
-
 # Calc percent and Create new variable: above or below threshold
 riparian_buffer <- riparian_raw %>% 
   select(name, can_a, total_a) %>% 
@@ -1149,8 +1154,11 @@ fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(county), y = can_p_calc
   )
 
 fig_16
- 
+
+#Export
+#---------------------------------------
 ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16)
+ggsave(here("Graphics", "SVGs", "fig16_riparian.svg"), fig_16)
 
 ```
 
@@ -1167,9 +1175,11 @@ outside_forest <- outside_forest_raw %>%
 
 # Plot
 #---------------------------------------
-ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+fig_28 <- ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = type), position = "dodge") +
-  scale_fill_discrete(labels=c("Net Forest Change", "Net TC Outside Forest Change")) +
+  scale_fill_manual(values = c("#24693d", "#6eb663"),
+                    labels = c("Net Forest Change", "Net TC Outside Forest Change")
+                     ) +
   scale_y_continuous(labels = comma_format()) +
   labs(
     x = "Jurisdiction",
@@ -1194,7 +1204,11 @@ ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name), y = acr
 
 fig_28
 
+# Export
+#---------------------------------------
 ggsave(here("Graphics", "fig28_outside_forest_change.jpg"), fig_28)
+
+ggsave(here("Graphics", "SVGs", "fig28_outside_forest_change.svg"), fig_28)
 
 #---------------------------------------
 # Outside forest change tables for Jessica
@@ -1215,19 +1229,22 @@ outside_forest_grouped_table <- outside_forest_table %>%
 group_by(region, change_type) %>% 
   summarise(acres_change = sum(acres_change))
 
-# Export to excel
-# write.xlsx(as.data.frame(outside_forest_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx") , sheet = "county", row.names = FALSE)
-# 
-# write.xlsx(as.data.frame(outside_forest_grouped_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+# Export for Excel
+#---------------------------------------
+write.xlsx(as.data.frame(outside_forest_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx") , sheet = "county", row.names = FALSE)
+
+write.xlsx(as.data.frame(outside_forest_grouped_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 #---------------------------------------
 # Net change outside forest grouped by region
 #---------------------------------------
-fig_28 <- ggplot(data = outside_forest_grouped_table, aes(x = region, y = acres_change)) +
+fig_28_grouped <- ggplot(data = outside_forest_grouped_table, aes(x = region, y = acres_change)) +
   geom_col(aes(fill = change_type), 
            width = 0.7,
            position = "dodge") +
-  scale_fill_discrete(labels = c("Net Forest Change", "Net TC Outside Forest Change")) +
+    scale_fill_manual(values = c("#24693d", "#6eb663"),
+                    labels = c("Net Forest Change", "Net TC Outside Forest Change")
+                     ) +
   scale_y_continuous(labels = comma_format()) +
   labs(
     x = "Region",
@@ -1250,9 +1267,12 @@ fig_28 <- ggplot(data = outside_forest_grouped_table, aes(x = region, y = acres_
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_28
+fig_28_grouped
 
-ggsave(here("Graphics", "fig28_outside_forest_change.jpg"), fig_28)
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig28_outside_forest_change_grouped.jpg"), fig_28_grouped)
+ggsave(here("Graphics", "SVGs", "fig28_outside_forest_change_grouped.svg"), fig_28_grouped)
 
 ```
 
