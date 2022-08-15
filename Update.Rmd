@@ -1683,7 +1683,7 @@ fig_21 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
   labs(
 #    title = "Total Timber Harvest by Jurisdiction \n between 2013 and 2021",
     x = "Jurisdiction",
-    y = "Forest Harvested (Acres)"
+    y = "Timber Harvest Permits (Acres)"
   ) +
   scale_y_continuous(labels=comma_format()) +
   coord_flip() +
