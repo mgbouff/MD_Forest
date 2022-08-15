@@ -17,7 +17,7 @@ library(scales)
 library(stringr)
 library(naniar)
 library(RColorBrewer)
-# library(xlsx)
+library(xlsx)
 library(ggrepel)
 
 #---------------------------------------
@@ -454,8 +454,14 @@ fig_4_grouped
 
 # Export
 #---------------------------------------
+# Plot images
 ggsave(here("Graphics", "fig4_forest_percent_grouped.jpg"), fig_4_grouped)
 ggsave(here("Graphics", "SVGs", "fig4_forest_percent_grouped.svg"), fig_4_grouped)
+
+# Excel
+write.xlsx(as.data.frame(county_tc_forest), file.path("Tables", file = "Fig4_Table_TC_Forest.xlsx") , sheet = "county", row.names = FALSE)
+
+write.xlsx(as.data.frame(county_tc_forest_grouped), file.path("Tables", file = "Fig4_Table_TC_Forest.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 ```
 
