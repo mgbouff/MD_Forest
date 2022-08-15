@@ -400,8 +400,12 @@ fig_4
 
 # Export
 #---------------------------------------
+# Plot images
 ggsave(here("Graphics", "fig4_forest_percent.jpg"), fig_4)
 ggsave(here("Graphics", "SVGs", "fig4_forest_percent.svg"), fig_4)
+
+# Excel
+write.xlsx(as.data.frame(county_tc_forest), file.path("Tables", file = "Fig4_Table_TC_Forest.xlsx") , sheet = "county", row.names = FALSE)
 
 #---------------------------------------
 # Group by region
@@ -459,8 +463,6 @@ ggsave(here("Graphics", "fig4_forest_percent_grouped.jpg"), fig_4_grouped)
 ggsave(here("Graphics", "SVGs", "fig4_forest_percent_grouped.svg"), fig_4_grouped)
 
 # Excel
-write.xlsx(as.data.frame(county_tc_forest), file.path("Tables", file = "Fig4_Table_TC_Forest.xlsx") , sheet = "county", row.names = FALSE)
-
 write.xlsx(as.data.frame(county_tc_forest_grouped), file.path("Tables", file = "Fig4_Table_TC_Forest.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 ```
@@ -737,8 +739,58 @@ fig_6
 
 # Export
 #---------------------------------------
+# Plot images
 ggsave(here("Graphics", "fig6_plantable_area.jpg"), fig_6, height = 4.5, width = 7.29)
 ggsave(here("Graphics", "SVGs", "fig6_plantable_area.svg"), fig_6, height = 4.5, width = 7.29)
+
+# Excel
+write.xlsx(as.data.frame(plantable_area), file.path("Tables", file = "Fig6_Plantable_Area.xlsx") , sheet = "county", row.names = FALSE)
+
+#---------------------------------------
+# Group by region
+#---------------------------------------
+plantable_area_grouped <- plantable_area %>% 
+   mutate(region = case_when(
+    county %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    county %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    county %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    county %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+group_by(region) %>% 
+  summarise(plantable_ac = sum(plantable_ac)) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
+
+# Plot Grouped by Region
+#---------------------------------------
+fig_6_grouped <- ggplot(data = plantable_area_grouped, aes(x = region, y = plantable_ac)) +
+  geom_col(aes(fill = region)) +
+  labs(
+    x = "Region",
+    y = "Plantable Acres"
+  ) +
+  scale_y_continuous(labels = comma_format()) +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+# Plot images
+ggsave(here("Graphics", "fig6_plantable_area_grouped.jpg"), fig_6_grouped, height = 4.5, width = 7.29)
+ggsave(here("Graphics", "SVGs", "fig6_plantable_area_grouped.svg"), fig_6_grouped, height = 4.5, width = 7.29)
+
+# Excel
+write.xlsx(as.data.frame(plantable_area_grouped), file.path("Tables", file = "Fig6_Plantable_Area.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
  
 ```
 
@@ -1346,7 +1398,9 @@ development_change_grouped <- development_change %>%
     county_jurisdiction_name %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
     county_jurisdiction_name %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
 group_by(region, type) %>% 
-  summarise(acres_change = sum(acres_change))
+  summarise(acres_change = sum(acres_change)) %>% 
+  mutate(region = as.factor(region)) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
 
 # Plot
 #---------------------------------------
@@ -1515,7 +1569,8 @@ growth_vs_change <- growth_vs_change_raw %>%
     county_jurisdiction %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
     county_jurisdiction %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
     county_jurisdiction %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
-    county_jurisdiction %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern"))
+    county_jurisdiction %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
 
 # Plot
 #---------------------------------------
