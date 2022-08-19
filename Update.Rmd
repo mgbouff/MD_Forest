@@ -428,7 +428,7 @@ county_tc_forest_grouped <- county_tc_forest_raw %>%
 
 # Grouped Plot
 #---------------------------------------
-fig_4_grouped <- ggplot(data = county_tc_forest_grouped, aes(x = region, y = percent)) +
+fig_4_grouped <- ggplot(data = county_tc_forest_grouped, aes(x = fct_rev(region), y = percent)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = c("#24693d", "#6eb663"),
                     labels = c("Inside Forest", "Outside Forest")
@@ -763,7 +763,7 @@ group_by(region) %>%
 
 # Plot Grouped by Region
 #---------------------------------------
-fig_6_grouped <- ggplot(data = plantable_area_grouped, aes(x = region, y = plantable_ac)) +
+fig_6_grouped <- ggplot(data = plantable_area_grouped, aes(x = fct_rev(region), y = plantable_ac)) +
   geom_col(aes(fill = region)) +
   labs(
     x = "Region",
@@ -784,6 +784,8 @@ fig_6_grouped <- ggplot(data = plantable_area_grouped, aes(x = region, y = plant
     plot.background = element_rect(fill = "white", color = NA),
     rect = element_rect(fill = "white", color = NA)
   )
+
+fig_6_grouped
 
 # Plot images
 ggsave(here("Graphics", "fig6_plantable_area_grouped.jpg"), fig_6_grouped, height = 4.5, width = 7.29)
@@ -892,7 +894,7 @@ plantable_group <- plantable_raw %>%
 
 # Plot grouped plantable percent
 #---------------------------------------
-fig_7_grouped <- ggplot(data = plantable_group, aes(x = region, y = percent)) +
+fig_7_grouped <- ggplot(data = plantable_group, aes(x = fct_rev(region), y = percent)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = c("#85D5A3", # Lightest Green
                                "#3EB66A", # Lighter Green
@@ -1285,7 +1287,9 @@ outside_forest_grouped_table <- outside_forest_table %>%
     county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
     county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
 group_by(region, change_type) %>% 
-  summarise(acres_change = sum(acres_change))
+  summarise(acres_change = sum(acres_change)) %>% 
+  mutate(region = as.factor(region)) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
 
 # Export for Excel
 #---------------------------------------
@@ -1296,7 +1300,7 @@ write.xlsx(as.data.frame(outside_forest_grouped_table), file.path("Tables", file
 #---------------------------------------
 # Net change outside forest grouped by region
 #---------------------------------------
-fig_28_grouped <- ggplot(data = outside_forest_grouped_table, aes(x = region, y = acres_change)) +
+fig_28_grouped <- ggplot(data = outside_forest_grouped_table, aes(x = fct_rev(region), y = acres_change)) +
   geom_col(aes(fill = change_type), 
            width = 0.7,
            position = "dodge") +
@@ -1404,7 +1408,7 @@ group_by(region, type) %>%
 
 # Plot
 #---------------------------------------
-fig_29_grouped <- ggplot(data = development_change_grouped, aes(x = region, y = acres_change)) +
+fig_29_grouped <- ggplot(data = development_change_grouped, aes(x = fct_rev(region), y = acres_change)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = development_palette,
                     labels=c("developed_to_forest" = "Developed to Forest", 
