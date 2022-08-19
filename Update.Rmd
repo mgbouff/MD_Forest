@@ -1277,7 +1277,7 @@ riparian_buffer_pop <- full_join(riparian_buffer, county_pop, by = "county") %>%
 #---------------------------------------
 # Plot
 #---------------------------------------
-ggplot(data = riparian_buffer_pop, aes(x = county, y = can_p_calc)) +
+ggplot(data = riparian_buffer, aes(x = county, y = can_p_calc)) +
   geom_col(aes(fill = threshold)) +
   scale_fill_manual(values = c("#c3dbcb", "seagreen4")) +
   labs(
@@ -1342,10 +1342,62 @@ fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(county), y = can_p_calc
 
 fig_16
 
-#Export
+# Export
 #---------------------------------------
 ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16)
 ggsave(here("Graphics", "SVGs", "fig16_riparian.svg"), fig_16)
+
+#---------------------------------------
+# Group by region
+#---------------------------------------
+riparian_grouped <- riparian_buffer %>% 
+  select(county, can_a, total_a) %>% 
+    mutate(region = case_when(
+    county %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    county %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    county %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    county %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+group_by(region) %>% 
+  summarise(across(where(is.numeric), sum)) %>% 
+  mutate(region = as.factor(region)) %>%
+  mutate(can_p_calc = can_a/total_a,
+         label = scales::percent(can_p_calc, accuracy = 1)) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
+
+# Plot
+#---------------------------------------
+fig_16_grouped <- ggplot(data = riparian_grouped, aes(x = region, y = can_p_calc)) +
+  geom_col(aes(fill = region)) +
+  labs(
+    x = "Region",
+    y = "Percent Tree Canopy \n Over Riparian Buffer Area") +
+    geom_text(aes(label = label,
+                vjust = -0.5),
+            size = 3) +
+  scale_y_continuous(labels = percent) +
+  theme_minimal() +
+  theme(
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.position = "none",
+    legend.title = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+fig_16_grouped
+
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig16_riparian_grouped.jpg"), fig_16)
+ggsave(here("Graphics", "SVGs", "fig16_riparian_grouped.svg"), fig_16)
 
 ```
 
