@@ -815,14 +815,13 @@ group_by(region) %>%
 
 # Plot Grouped by Region
 #---------------------------------------
-fig_6_grouped <- ggplot(data = plantable_area_grouped, aes(x = fct_rev(region), y = plantable_ac)) +
+fig_6_grouped <- ggplot(data = plantable_area_grouped, aes(x = region, y = plantable_ac)) +
   geom_col(aes(fill = region)) +
   labs(
     x = "Region",
-    y = "Plantable Acres"
+    y = "Plantable Area (Acres)"
   ) +
   scale_y_continuous(labels = comma_format()) +
-  coord_flip() +
   theme_minimal() +
   theme(
     legend.position = "none",
@@ -1396,8 +1395,8 @@ fig_16_grouped
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig16_riparian_grouped.jpg"), fig_16)
-ggsave(here("Graphics", "SVGs", "fig16_riparian_grouped.svg"), fig_16)
+ggsave(here("Graphics", "fig16_riparian_grouped.jpg"), fig_16_grouped)
+ggsave(here("Graphics", "SVGs", "fig16_riparian_grouped.svg"), fig_16_grouped)
 
 ```
 
