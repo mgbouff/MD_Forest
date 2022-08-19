@@ -152,6 +152,16 @@ county_pallette <- c("Allegany" = "#68affc",
                            "Wicomico" = "#a1e8af", 
                            "Worcester" = "#7e52a0")
 
+# Fragmentaion Type Palette
+frag_pallette <- c(
+  "Isolated Patch" = "#EE4266",
+  "Edge" = "#D4F0D1",
+  "Small Core" = "#6CB88F",
+  "Medium Core" = "#1E895E",
+  "Large Core" = "#035339"
+)
+
+
 # Fig 29 Development Change Palette
 development_palette <- c(
   "forest_to_developed" = "#F08701",
@@ -660,7 +670,7 @@ fig_27
 
 # Export
 #---------------------------------------
-# ggsave(here("Graphics", "fig27_county_lu_change.jpg"), fig_27, height = 7.5, width = 8)
+ggsave(here("Graphics", "fig27_county_lu_change.jpg"), fig_27, height = 7.5, width = 8)
 
 #---------------------------------------
 # County land cover change tables for Jessica
@@ -682,13 +692,55 @@ county_change_grouped_table <- county_change_table %>%
     county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
     county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
 group_by(region, land_cover) %>% 
-  summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum)))
+  summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum))) %>% 
+  mutate(region = as.factor(region)) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
 
 # Export to Excel
 #---------------------------------------
 # write.xlsx(as.data.frame(county_change_tables), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx") , sheet = "county", row.names = FALSE)
 # 
 # write.xlsx(as.data.frame(county_change_grouped_table), file.path("Tables", file = "Fig27_Table_LC_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+
+#---------------------------------------
+# Grouped Plot
+#---------------------------------------
+fig_27_grouped <- ggplot(data = county_change_grouped_table, aes(x = land_cover, y = acres_change_sum)) +
+  geom_col(aes(fill = land_cover)) +
+  facet_wrap(~region, scales = "free") +
+    scale_fill_manual(values = lu_palette) +
+  labs(
+    x = "Land Cover Class",
+    y = "Area Change (Acres)"
+  ) +
+  scale_y_continuous(labels=comma_format()) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+fig_27_grouped
+
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig27_county_change_grouped.jpg"), fig_27_grouped)
+ggsave(here("Graphics", "SVGs", "fig27_county_change_grouped.svg"), fig_27_grouped)
 
 ```
 ### Task 1b. Plantable Area
@@ -1093,7 +1145,7 @@ fig_13 <- ggplot(data = frag_county_full, aes(x = county, y = acres_change)) +
 
 fig_13
 
-# ggsave(here("Graphics", "fig13_county_fragmentation.jpg"), fig_13, height = 4.5, width = 8)
+ggsave(here("Graphics", "fig13_county_fragmentation.jpg"), fig_13, height = 4.5, width = 8)
 
 #---------------------------------------
 # County fragmentation change tables for Jessica
@@ -1111,13 +1163,88 @@ fragmentation_grouped_table <- fragmentation_table %>%
     county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
     county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
 group_by(region, fragmentation_type) %>% 
-  summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum)))
+  summarise(across(c("acres_2013", "acres_2018","acres_change"), funs(sum))) %>% 
+  mutate(region = as.factor(region)) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern")) %>% 
+  mutate(fragmentation_type = as.factor(fragmentation_type)) %>% 
+  mutate(fragmentation_type = fct_relevel(fragmentation_type, "Isolated Patch", "Edge", "Small Core", "Medium Core", "Large Core"))
 
 # Export to excel
 #---------------------------------------
 # write.xlsx(as.data.frame(fragmentation_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx") , sheet = "county", row.names = FALSE)
 # 
 # write.xlsx(as.data.frame(fragmentation_grouped_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+
+#---------------------------------------
+# Grouped Plot
+#---------------------------------------
+
+# Facet by region
+#---------------------------------------
+fig_13_region_facet <- ggplot(data = fragmentation_grouped_table, aes(x = fragmentation_type, y = acres_change_sum)) +
+  geom_col(aes(fill = fragmentation_type)) +
+    scale_fill_manual(values = frag_pallette) +
+    labs(
+      #title = "Forest Fragment Type Area Change \n from 2013 to 2018",
+       y = "Area Change (acres)") +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  facet_wrap(~region, scale = "free_y") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 12, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+   ) +
+    guides(fill = guide_legend(title = "Forest Type",
+                               title.position = "top")) +
+  scale_y_continuous(labels=comma_format())
+
+fig_13_region_facet
+
+ggsave(here("Graphics", "fig13_grouped_fragmentation_region_facet.jpg"), fig_13_region_facet, height = 4.5, width = 8)
+
+# Facet by fragmentation type
+#---------------------------------------
+fig_13_frag_facet <- ggplot(data = fragmentation_grouped_table, aes(x = region, y = acres_change_sum)) +
+  geom_col(aes(fill = region)) +
+    labs(
+      #title = "Forest Fragment Type Area Change \n from 2013 to 2018",
+       y = "Area Change (acres)") +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  facet_wrap(~fragmentation_type, scale = "free_y") +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 14, face = "bold"),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom",
+    legend.title.align = 0.5,
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(size = 12, color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA)
+   ) +
+    guides(fill = guide_legend(title = "Forest Type",
+                               title.position = "top")) +
+  scale_y_continuous(labels=comma_format())
+
+fig_13_frag_facet
+
+ggsave(here("Graphics", "fig13_grouped_fragmentation_facet.jpg"), fig_13_frag_facet, height = 4.5, width = 8)
 
 ```
 
