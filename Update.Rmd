@@ -1752,6 +1752,7 @@ growth_vs_change <- growth_vs_change_raw %>%
     county_jurisdiction %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
     county_jurisdiction %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
     county_jurisdiction %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+  mutate(region = as.factor(region)) %>% 
   mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
 
 # Plot
