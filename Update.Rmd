@@ -1478,7 +1478,7 @@ write.xlsx(as.data.frame(outside_forest_grouped_table), file.path("Tables", file
 #---------------------------------------
 # Net change outside forest grouped by region
 #---------------------------------------
-fig_28_grouped <- ggplot(data = outside_forest_grouped_table, aes(x = fct_rev(region), y = acres_change)) +
+fig_28_grouped <- ggplot(data = outside_forest_grouped_table, aes(x = region, y = acres_change)) +
   geom_col(aes(fill = change_type), 
            width = 0.7,
            position = "dodge") +
@@ -1490,7 +1490,6 @@ fig_28_grouped <- ggplot(data = outside_forest_grouped_table, aes(x = fct_rev(re
     x = "Region",
     y = "Change in Area (Acres)"
   ) +
-  coord_flip() +
   theme_minimal() +
     geom_hline(aes(yintercept=0)) +
   theme(
@@ -1586,7 +1585,7 @@ group_by(region, type) %>%
 
 # Plot
 #---------------------------------------
-fig_29_grouped <- ggplot(data = development_change_grouped, aes(x = fct_rev(region), y = acres_change)) +
+fig_29_grouped <- ggplot(data = development_change_grouped, aes(x = region, y = acres_change)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = development_palette,
                     labels=c("developed_to_forest" = "Developed to Forest", 
@@ -1598,7 +1597,6 @@ fig_29_grouped <- ggplot(data = development_change_grouped, aes(x = fct_rev(regi
     x = "Region",
     y = "Change in Area (Acres)"
   ) +
-  coord_flip() +
   theme_minimal() +
     geom_hline(aes(yintercept=0)) +
   theme(
@@ -1911,13 +1909,10 @@ timber_total <- md_timber_raw %>%
   summarise(tot_acres = sum(forest_harvest_acres))
 
 # Ordered by population
-#---------------------------------------
-# Join timber total and population data
 timber_pop <- full_join(timber_total, county_pop, by = "county") %>% 
   mutate(county = as.factor(county)) %>% 
   mutate(county = fct_reorder(county, x2020_pop)) # order by population (largest to smallest)
 
-#---------------------------------------
 # Plot
 #---------------------------------------
 fig_21 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
@@ -1952,6 +1947,52 @@ fig_21
 #---------------------------------------
 ggsave(here("Graphics", "fig21_timber.jpg"), fig_21)
 ggsave(here("Graphics", "SVGs", "fig21_timber.svg"), fig_21)
+
+#---------------------------------------
+# Group by region
+#---------------------------------------
+timber_grouped <- timber_total %>% 
+   mutate(region = case_when(
+    county %in% c("Garrett", "Allegany", "Washington") ~ "Western",
+    county %in% c("Carroll", "Baltimore", "Baltimore City", "Harford") ~ "North Central",
+    county %in% c("Montgomery", "Howard", "Anne Arundel", "Prince George's", "Frederick") ~ "Central",
+    county %in% c("Calvert", "Charles", "St. Mary's") ~ "Southern",
+    county %in% c("Cecil", "Kent", "Queen Anne's", "Caroline", "Talbot", "Dorchester") ~ "Upper Eastern",
+    county %in% c("Wicomico", "Somerset", "Worcester") ~ "Lower Eastern")) %>% 
+group_by(region) %>% 
+  summarise(tot_acres = sum(tot_acres)) %>% 
+  mutate(region = fct_relevel(region, "Western", "North Central", "Central", "Southern", "Upper Eastern", "Lower Eastern"))
+
+# Plot
+#---------------------------------------
+fig_21_grouped <- ggplot(data = timber_grouped, aes(x = region, y = tot_acres)) +
+  geom_col(aes(fill = region)) +
+  labs(
+    x = "Region",
+    y = "Timber Harvest Permits (Acres)"
+  ) +
+  theme_minimal() +
+  scale_y_continuous(labels = comma_format()) +
+  theme(
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 10, r = 0, b = 0, l = 0)),
+    legend.position = "none",
+    legend.title = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  )
+
+fig_21_grouped
+
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig21_timber_grouped.jpg"), fig_21_grouped)
+ggsave(here("Graphics", "SVGs", "fig21_timber_grouped.svg"), fig_21_grouped)
 
 ```
 
