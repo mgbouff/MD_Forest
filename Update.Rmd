@@ -438,7 +438,7 @@ county_tc_forest_grouped <- county_tc_forest_raw %>%
 
 # Grouped Plot
 #---------------------------------------
-fig_4_grouped <- ggplot(data = county_tc_forest_grouped, aes(x = fct_rev(region), y = percent)) +
+fig_4_grouped <- ggplot(data = county_tc_forest_grouped, aes(x = region, y = percent)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = c("#24693d", "#6eb663"),
                     labels = c("Inside Forest", "Outside Forest")
@@ -448,7 +448,6 @@ fig_4_grouped <- ggplot(data = county_tc_forest_grouped, aes(x = fct_rev(region)
     x = "Jurisdiction",
     y = "Percent Tree Canopy Cover"
   ) +
-  coord_flip() +
   theme_minimal() +
     theme(
     legend.position = "bottom",
@@ -742,6 +741,43 @@ fig_27_grouped
 ggsave(here("Graphics", "fig27_county_change_grouped.jpg"), fig_27_grouped)
 ggsave(here("Graphics", "SVGs", "fig27_county_change_grouped.svg"), fig_27_grouped)
 
+# Facet by land cover
+#---------------------------------------
+fig_27_grouped_lc_facet <- ggplot(data = county_change_grouped_table, aes(x = region, y = acres_change_sum)) +
+  geom_col(aes(fill = region)) +
+  facet_wrap(~land_cover, scales = "free") +
+  labs(
+    x = "Region",
+    y = "Area Change (Acres)"
+  ) +
+  scale_y_continuous(labels=comma_format()) +
+  theme_minimal() +
+  geom_hline(aes(yintercept=0)) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    strip.background = element_rect(color = "grey40", fill = "grey30"),
+    strip.text = element_text(color = "white", face = "bold"),
+    panel.border = element_rect(color = "grey40", fill = NA),
+    axis.title.y = element_text(size = 14,
+                                face = "bold",
+                                margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white", color = NA),
+    rect = element_rect(fill = "white", color = NA)
+  ) +
+  guides(fill = guide_legend(nrow = 1))
+
+fig_27_grouped_lc_facet
+
+# Export
+#---------------------------------------
+ggsave(here("Graphics", "fig27_county_change_grouped_lc_facet.jpg"), fig_27_grouped_lc_facet)
+ggsave(here("Graphics", "SVGs", "fig27_county_change_grouped_lc_facet.svg"), fig_27_grouped_lc_facet)
+
 ```
 ### Task 1b. Plantable Area
 
@@ -945,7 +981,7 @@ plantable_group <- plantable_raw %>%
 
 # Plot grouped plantable percent
 #---------------------------------------
-fig_7_grouped <- ggplot(data = plantable_group, aes(x = fct_rev(region), y = percent)) +
+fig_7_grouped <- ggplot(data = plantable_group, aes(x = region, y = percent)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = c("#85D5A3", # Lightest Green
                                "#3EB66A", # Lighter Green
@@ -955,7 +991,6 @@ fig_7_grouped <- ggplot(data = plantable_group, aes(x = fct_rev(region), y = per
     x = "Jurisdiction",
     y = "Percent of Jurisdiction Land Area"
   ) +
-  coord_flip() +
   theme_minimal() +
     theme(
     legend.position = "bottom",
