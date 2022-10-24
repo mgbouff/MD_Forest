@@ -228,7 +228,9 @@ axis.title.y = element_text(size = 14,
 
 lu_update_plot
 
-ggsave(here("Graphics", "fig35_projected_lu_change.jpg"), lu_update_plot, height = 6, width = 7.5)
+ggsave(here("Graphics", "fig29_projected_lu_change.jpg"), lu_update_plot, height = 6, width = 7.5)
+
+ggsave(here("Graphics", "SVGs", "fig29_projected_lu_change.svg"), lu_update_plot, height = 6, width = 7.5)
 
 ```
 

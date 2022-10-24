@@ -1076,7 +1076,7 @@ frag_state_full <- full_join(frag_state_merge, frag_state_diff) %>%
                               ))
 # Plot
 #---------------------------------------
-fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, label = area_diff)) +
+fig_8 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, label = area_diff)) +
   geom_col(aes(fill = year), position = "dodge") +
 #  scale_fill_manual(values = c("#6eb663", "#24693d")) +
   scale_fill_manual(values = c("gray70", "gray40")) +
@@ -1104,12 +1104,12 @@ fig_10 <- ggplot(data = frag_state_full, aes(x = frag_type, y = area_acres, labe
          fill = guide_legend(title = "Year", 
                              title.position = "top"))
 
-fig_10
+fig_8
 
 #Export
 #---------------------------------------
-ggsave(here("Graphics", "fig10_state_fragmentation.jpg"), fig_10)
-ggsave(here("Graphics", "SVGs", "fig10_state_fragmentation.svg"), fig_10)
+ggsave(here("Graphics", "fig8_state_fragmentation.jpg"), fig_8)
+ggsave(here("Graphics", "SVGs", "fig8_state_fragmentation.svg"), fig_8)
 
 ```
 
@@ -1148,7 +1148,7 @@ frag_county_pop <- full_join(frag_county_full, county_pop, by = "county") %>%
   
 # Plot
 #---------------------------------------
-fig_13 <- ggplot(data = frag_county_full, aes(x = county, y = acres_change)) +
+fig_9 <- ggplot(data = frag_county_full, aes(x = county, y = acres_change)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
     labs(
@@ -1177,9 +1177,9 @@ fig_13 <- ggplot(data = frag_county_full, aes(x = county, y = acres_change)) +
                                nrow = 4)) +
   scale_y_continuous(labels=comma_format())
 
-fig_13
+fig_9
 
-ggsave(here("Graphics", "fig13_county_fragmentation.jpg"), fig_13, height = 4.5, width = 8)
+ggsave(here("Graphics", "fig9_county_fragmentation.jpg"), fig_9, height = 4.5, width = 8)
 
 #---------------------------------------
 # County fragmentation change tables for Jessica
@@ -1205,9 +1205,9 @@ group_by(region, fragmentation_type) %>%
 
 # Export to excel
 #---------------------------------------
-# write.xlsx(as.data.frame(fragmentation_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx") , sheet = "county", row.names = FALSE)
-# 
-# write.xlsx(as.data.frame(fragmentation_grouped_table), file.path("Tables", file = "Fig13_Table_Fragmentation.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+write.xlsx(as.data.frame(fragmentation_table), file.path("Tables", file = "Fig9_Table_Fragmentation.xlsx") , sheet = "county", row.names = FALSE)
+
+write.xlsx(as.data.frame(fragmentation_grouped_table), file.path("Tables", file = "Fig9_Table_Fragmentation.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 #---------------------------------------
 # Grouped Plot
@@ -1215,7 +1215,7 @@ group_by(region, fragmentation_type) %>%
 
 # Facet by region
 #---------------------------------------
-fig_13_region_facet <- ggplot(data = fragmentation_grouped_table, aes(x = fragmentation_type, y = acres_change_sum)) +
+fig_9_region_facet <- ggplot(data = fragmentation_grouped_table, aes(x = fragmentation_type, y = acres_change_sum)) +
   geom_col(aes(fill = fragmentation_type)) +
     scale_fill_manual(values = frag_pallette) +
     labs(
@@ -1243,13 +1243,15 @@ fig_13_region_facet <- ggplot(data = fragmentation_grouped_table, aes(x = fragme
                                title.position = "top")) +
   scale_y_continuous(labels=comma_format())
 
-fig_13_region_facet
+fig_9_region_facet
 
-ggsave(here("Graphics", "fig13_grouped_fragmentation_region_facet.jpg"), fig_13_region_facet, height = 4.5, width = 8)
+ggsave(here("Graphics", "fig9_grouped_fragmentation_region_facet.jpg"), fig_9_region_facet, height = 4.5, width = 8)
+
+ggsave(here("Graphics", "SVGs", "fig9_grouped_fragmentation_region_facet.svg"), fig_9_region_facet, height = 4.5, width = 8)
 
 # Facet by fragmentation type
 #---------------------------------------
-fig_13_frag_facet <- ggplot(data = fragmentation_grouped_table, aes(x = region, y = acres_change_sum)) +
+fig_9_frag_facet <- ggplot(data = fragmentation_grouped_table, aes(x = region, y = acres_change_sum)) +
   geom_col(aes(fill = region)) +
     labs(
       #title = "Forest Fragment Type Area Change \n from 2013 to 2018",
@@ -1276,9 +1278,9 @@ fig_13_frag_facet <- ggplot(data = fragmentation_grouped_table, aes(x = region, 
                                title.position = "top")) +
   scale_y_continuous(labels=comma_format())
 
-fig_13_frag_facet
+fig_9_frag_facet
 
-ggsave(here("Graphics", "fig13_grouped_fragmentation_facet.jpg"), fig_13_frag_facet, height = 4.5, width = 8)
+ggsave(here("Graphics", "fig9_grouped_fragmentation_facet.jpg"), fig_9_frag_facet, height = 4.5, width = 8)
 
 ```
 
@@ -1348,7 +1350,7 @@ ggplot(data = riparian_buffer, aes(x = county, y = can_p_calc)) +
   )
 
 # Without threshold
-fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(county), y = can_p_calc)) +
+fig_14 <- ggplot(data = riparian_buffer, aes(x = fct_rev(county), y = can_p_calc)) +
   geom_col(aes(fill = county)) +
   scale_fill_manual(values = county_pallette) +
   labs(
@@ -1374,12 +1376,12 @@ fig_16 <- ggplot(data = riparian_buffer, aes(x = fct_rev(county), y = can_p_calc
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_16
+fig_14
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig16_riparian.jpg"), fig_16)
-ggsave(here("Graphics", "SVGs", "fig16_riparian.svg"), fig_16)
+ggsave(here("Graphics", "fig14_riparian.jpg"), fig_16)
+ggsave(here("Graphics", "SVGs", "fig14_riparian.svg"), fig_16)
 
 #---------------------------------------
 # Group by region
@@ -1402,7 +1404,7 @@ group_by(region) %>%
 
 # Plot
 #---------------------------------------
-fig_16_grouped <- ggplot(data = riparian_grouped, aes(x = region, y = can_p_calc)) +
+fig_14_grouped <- ggplot(data = riparian_grouped, aes(x = region, y = can_p_calc)) +
   geom_col(aes(fill = region)) +
   labs(
     x = "Region",
@@ -1426,12 +1428,12 @@ fig_16_grouped <- ggplot(data = riparian_grouped, aes(x = region, y = can_p_calc
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_16_grouped
+fig_14_grouped
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig16_riparian_grouped.jpg"), fig_16_grouped)
-ggsave(here("Graphics", "SVGs", "fig16_riparian_grouped.svg"), fig_16_grouped)
+ggsave(here("Graphics", "fig14_riparian_grouped.jpg"), fig_14_grouped)
+ggsave(here("Graphics", "SVGs", "fig14_riparian_grouped.svg"), fig_14_grouped)
 
 ```
 
@@ -1448,7 +1450,7 @@ outside_forest <- outside_forest_raw %>%
 
 # Plot
 #---------------------------------------
-fig_28 <- ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+fig_21 <- ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = type), position = "dodge") +
   scale_fill_manual(values = c("#24693d", "#6eb663"),
                     labels = c("Net Forest Change", "Net TC Outside Forest Change")
@@ -1475,13 +1477,13 @@ fig_28 <- ggplot(data = outside_forest, aes(x = fct_rev(county_jurisdiction_name
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_28
+fig_21
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig28_outside_forest_change.jpg"), fig_28)
+ggsave(here("Graphics", "fig21_outside_forest_change.jpg"), fig_21)
 
-ggsave(here("Graphics", "SVGs", "fig28_outside_forest_change.svg"), fig_28)
+ggsave(here("Graphics", "SVGs", "fig21_outside_forest_change.svg"), fig_21)
 
 #---------------------------------------
 # Outside forest change tables for Jessica
@@ -1506,14 +1508,14 @@ group_by(region, change_type) %>%
 
 # Export for Excel
 #---------------------------------------
-write.xlsx(as.data.frame(outside_forest_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx") , sheet = "county", row.names = FALSE)
+write.xlsx(as.data.frame(outside_forest_table), file.path("Tables", file = "Fig21_Table_Outside_Forest_Change.xlsx") , sheet = "county", row.names = FALSE)
 
-write.xlsx(as.data.frame(outside_forest_grouped_table), file.path("Tables", file = "Fig28_Table_Outside_Forest_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
+write.xlsx(as.data.frame(outside_forest_grouped_table), file.path("Tables", file = "Fig21_Table_Outside_Forest_Change.xlsx"), sheet = "region", append = TRUE, row.names = FALSE)
 
 #---------------------------------------
 # Net change outside forest grouped by region
 #---------------------------------------
-fig_28_grouped <- ggplot(data = outside_forest_grouped_table, aes(x = region, y = acres_change)) +
+fig_21_grouped <- ggplot(data = outside_forest_grouped_table, aes(x = region, y = acres_change)) +
   geom_col(aes(fill = change_type), 
            width = 0.7,
            position = "dodge") +
@@ -1541,12 +1543,12 @@ fig_28_grouped <- ggplot(data = outside_forest_grouped_table, aes(x = region, y 
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_28_grouped
+fig_21_grouped
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig28_outside_forest_change_grouped.jpg"), fig_28_grouped)
-ggsave(here("Graphics", "SVGs", "fig28_outside_forest_change_grouped.svg"), fig_28_grouped)
+ggsave(here("Graphics", "fig21_outside_forest_change_grouped.jpg"), fig_21_grouped)
+ggsave(here("Graphics", "SVGs", "fig21_outside_forest_change_grouped.svg"), fig_21_grouped)
 
 ```
 
@@ -1565,7 +1567,7 @@ development_change <- development_change_raw %>%
 
 # Plot
 #---------------------------------------
-fig_29 <- ggplot(data = development_change, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+fig_23 <- ggplot(data = development_change, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = development_palette,
                     labels=c("developed_to_forest" = "Developed to Forest", 
@@ -1595,12 +1597,12 @@ fig_29 <- ggplot(data = development_change, aes(x = fct_rev(county_jurisdiction_
   ) +
   guides(fill = guide_legend(nrow = 2))
 
-fig_29
+fig_23
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig29_development_change.jpg"), fig_29)
-ggsave(here("Graphics", "SVGs", "fig29_development_change.svg"), fig_29)
+ggsave(here("Graphics", "fig23_development_change.jpg"), fig_23)
+ggsave(here("Graphics", "SVGs", "fig23_development_change.svg"), fig_23)
 
 #---------------------------------------
 # Group by region
@@ -1620,7 +1622,7 @@ group_by(region, type) %>%
 
 # Plot
 #---------------------------------------
-fig_29_grouped <- ggplot(data = development_change_grouped, aes(x = region, y = acres_change)) +
+fig_23_grouped <- ggplot(data = development_change_grouped, aes(x = region, y = acres_change)) +
   geom_col(aes(fill = type)) +
   scale_fill_manual(values = development_palette,
                     labels=c("developed_to_forest" = "Developed to Forest", 
@@ -1649,12 +1651,12 @@ fig_29_grouped <- ggplot(data = development_change_grouped, aes(x = region, y = 
   ) +
   guides(fill = guide_legend(nrow = 2))
 
-fig_29_grouped
+fig_23_grouped
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig29_development_change_grouped.jpg"), fig_29_grouped)
-ggsave(here("Graphics", "SVGs", "fig29_development_change_grouped.svg"), fig_29_grouped)
+ggsave(here("Graphics", "fig23_development_change_grouped.jpg"), fig_23_grouped)
+ggsave(here("Graphics", "SVGs", "fig23_development_change_grouped.svg"), fig_23_grouped)
 
 ```
 
@@ -1680,7 +1682,7 @@ forest_transitions <- forest_transitions_raw %>%
 
 # Plot
 #---------------------------------------
-fig_30 <- ggplot(data = forest_transitions, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+fig_24 <- ggplot(data = forest_transitions, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = transition)) +
   scale_fill_manual(values = forest_transition_palette) +
   labs(
@@ -1705,12 +1707,12 @@ fig_30 <- ggplot(data = forest_transitions, aes(x = fct_rev(county_jurisdiction_
   ) +
   guides(fill = guide_legend(nrow = 3))
 
-fig_30
+fig_24
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig30_forest_transitions.jpg"), fig_30)
-ggsave(here("Graphics", "SVGs", "fig30_forest_transitions.svg"), fig_30)
+ggsave(here("Graphics", "fig24_forest_transitions.jpg"), fig_24)
+ggsave(here("Graphics", "SVGs", "fig24_forest_transitions.svg"), fig_24)
 
 ```
 Area of Tree Canopy Outside Forest Converted to Other Land Use Classes (acres)
@@ -1735,7 +1737,7 @@ tc_transitions <- tc_transitions_raw %>%
 
 # Plot
 #---------------------------------------
-fig_31 <- ggplot(data = tc_transitions, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
+fig_25 <- ggplot(data = tc_transitions, aes(x = fct_rev(county_jurisdiction_name), y = acres_change)) +
   geom_col(aes(fill = transition)) +
   scale_fill_manual(values = tc_transition_palette) +
   labs(
@@ -1761,12 +1763,12 @@ fig_31 <- ggplot(data = tc_transitions, aes(x = fct_rev(county_jurisdiction_name
   ) +
   guides(fill = guide_legend(nrow = 3))
 
-fig_31
+fig_25
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig31_tc_transitions.jpg"), fig_31)
-ggsave(here("Graphics", "SVGs", "fig31_tc_transitions.svg"), fig_31)
+ggsave(here("Graphics", "fig25_tc_transitions.jpg"), fig_25)
+ggsave(here("Graphics", "SVGs", "fig25_tc_transitions.svg"), fig_25)
 
 ```
 Net percent change in forest and tree canopy outside forest by jurisdictional population growth rate, 2010-2020.
@@ -1790,7 +1792,7 @@ growth_vs_change <- growth_vs_change_raw %>%
 
 # Plot
 #---------------------------------------
-fig_32 <- ggplot(data = growth_vs_change, aes(x = growth_rate, y = net_change_percent)) +
+fig_26 <- ggplot(data = growth_vs_change, aes(x = growth_rate, y = net_change_percent)) +
   geom_point(aes(color = region)) +
   geom_text_repel(aes(label = county_jurisdiction), size = 3) +
   scale_y_continuous(labels = percent) +
@@ -1819,12 +1821,12 @@ fig_32 <- ggplot(data = growth_vs_change, aes(x = growth_rate, y = net_change_pe
                              title.position = "top",
                              nrow = 1))
 
-fig_32
+fig_26
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig32_growth_vs_change.jpg"), fig_32)
-ggsave(here("Graphics", "SVGs", "fig32_growth_vs_change.svg"), fig_32)
+ggsave(here("Graphics", "fig26_growth_vs_change.jpg"), fig_26)
+ggsave(here("Graphics", "SVGs", "fig26_growth_vs_change.svg"), fig_26)
 
 ```
 
@@ -1950,7 +1952,7 @@ timber_pop <- full_join(timber_total, county_pop, by = "county") %>%
 
 # Plot
 #---------------------------------------
-fig_21 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
+fig_20 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
   geom_col(aes(fill = county)) +
  scale_fill_manual(values = county_pallette) +
     # scale_fill_manual(values = rep(c("#78b98f", "#453e7d", "#c1c2f5", "#1b511d", "#8fc86c", "#aedddd"),4)) +
@@ -1976,12 +1978,12 @@ fig_21 <- ggplot(data = timber_total, aes(x = fct_rev(county), y = tot_acres)) +
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_21
+fig_20
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig21_timber.jpg"), fig_21)
-ggsave(here("Graphics", "SVGs", "fig21_timber.svg"), fig_21)
+ggsave(here("Graphics", "fig20_timber.jpg"), fig_20)
+ggsave(here("Graphics", "SVGs", "fig20_timber.svg"), fig_20)
 
 #---------------------------------------
 # Group by region
@@ -2000,7 +2002,7 @@ group_by(region) %>%
 
 # Plot
 #---------------------------------------
-fig_21_grouped <- ggplot(data = timber_grouped, aes(x = region, y = tot_acres)) +
+fig_20_grouped <- ggplot(data = timber_grouped, aes(x = region, y = tot_acres)) +
   geom_col(aes(fill = region)) +
   labs(
     x = "Region",
@@ -2022,12 +2024,12 @@ fig_21_grouped <- ggplot(data = timber_grouped, aes(x = region, y = tot_acres)) 
     rect = element_rect(fill = "white", color = NA)
   )
 
-fig_21_grouped
+fig_20_grouped
 
 # Export
 #---------------------------------------
-ggsave(here("Graphics", "fig21_timber_grouped.jpg"), fig_21_grouped)
-ggsave(here("Graphics", "SVGs", "fig21_timber_grouped.svg"), fig_21_grouped)
+ggsave(here("Graphics", "fig20_timber_grouped.jpg"), fig_20_grouped)
+ggsave(here("Graphics", "SVGs", "fig20_timber_grouped.svg"), fig_20_grouped)
 
 ```
 
